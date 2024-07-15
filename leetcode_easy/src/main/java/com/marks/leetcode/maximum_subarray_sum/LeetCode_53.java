@@ -1,6 +1,4 @@
-package com.marks.leetcode.maxsubarray;
-
-import java.util.Arrays;
+package com.marks.leetcode.maximum_subarray_sum;
 
 public class LeetCode_53 {
     /**
