@@ -1,8 +1,8 @@
 package com.marks.leetcode;
 
+import com.marks.leetcode.rob.LeetCode_3186;
+import com.marks.leetcode.rob.LeetCode_740;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class LeetCode_740Test {
 

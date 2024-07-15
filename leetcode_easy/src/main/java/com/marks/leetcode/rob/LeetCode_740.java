@@ -1,4 +1,4 @@
-package com.marks.leetcode;
+package com.marks.leetcode.rob;
 
 import java.util.Arrays;
 

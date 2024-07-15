@@ -1,4 +1,4 @@
-package com.marks.leetcode;
+package com.marks.leetcode.climb_stairs;
 
 public class LeetCode_2466 {
     /**
