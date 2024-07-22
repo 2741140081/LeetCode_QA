@@ -19,6 +19,9 @@ public class LeetCode_2684 {
      * @param grid
      * @return
      */
+
+    private int res;
+
     public int maxMoves(int[][] grid) {
         int result = 0;
         result = method_01(grid);
@@ -34,28 +37,42 @@ public class LeetCode_2684 {
      */
     private int method_01(int[][] grid) {
         int m = grid.length;
-        int n = grid[0].length;
-        // 初始化dp, 0表示不可达, 1表示可达
-        int[][] dp = new int[m][n];
         for (int i = 0; i < m; i++) {
-            dp[0][i] = 1;
+            dfs(grid,  i, 0);
         }
-        /*
-        判断
-         */
-        for (int i = 1; i < n && i < m; i++) {
-            dp[i][0] = 0;
-            for (int j = 1; j <= i; j++) {
-                if (grid[i][j] > Math.min(grid[i-1][j+1],Math.min(grid[i-1][j], grid[i-1][j+1]))) {
-//                    dp[]
-                }
-            }
-            if (grid[i][m-1] > Math.min(grid[i-1][m-2], grid[i-1][m-1])) {
-                dp[i][m-1] = 1;
-            }
+        return res;
+    }
+
+    private void dfs(int[][] grid, int i, int j) {
+        res = Math.max(j, res);
+
+        // 如果到达最大值
+        if (res == grid[0].length - 1) {
+            return;
+        }
+        // 判断是否可以到达(i-1, i, i + 1), j + 1
+        if (i-1 >= 0 && i < grid.length && grid[i][j] < grid[i-1][j+1]) {
+            dfs(grid, i-1, j+1);
         }
 
-        int res = 0;
-        return res;
+        if (i < grid.length && grid[i][j] < grid[i][j+1]) {
+            dfs(grid, i, j+1);
+        }
+
+        if (i+1 < grid.length && grid[i][j] < grid[i+1][j+1]) {
+            dfs(grid, i+1, j+1);
+        }
+        // 将已访问的元素值重置为0
+        /**
+         * 如何理解将数组元素重置为0
+         * 1.假设grid[1, 1] 可以由grid[1, 0] 和 grid[2, 0] 访问
+         * 2.首先是grid[1, 0] 访问 grid[1, 1], 并且将重置grid[1, 1] = 0
+         * 3.当我由grid[2, 0] 访问grid[1, 1]时, 无法访问
+         * 4.并且有grid[1, 1]向后访问的res 值和路径是固定的。
+         * 5.需要后来者自行寻找更好的路径, 设置grid[i, j] = 0 仅仅只是将这条路给堵住了。
+         * 6.如果grid[2, 0] 也走 grid[1, 1] 也只是和grid[1, 0]的res一样长, 不可能更长, 只能需要新的路径来实现更长。
+         * 7.所以综上所述, grid[i][j] = 0 是这道题的点睛之笔
+         */
+        grid[i][j] = 0;
     }
 }
