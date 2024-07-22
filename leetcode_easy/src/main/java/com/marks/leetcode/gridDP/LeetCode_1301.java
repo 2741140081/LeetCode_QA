@@ -64,7 +64,22 @@ public class LeetCode_1301 {
      */
     private int[] method_01(List<String> board) {
         final int MOD = 1000000007;
+        // 数组是正方形
+        int m = board.size();
 
+        // dpMaxValue 存放最大值, dpSumPlan 存放方案数
+        int[][] dpMaxValue = new int[m][m];
+        int[][] dpSumPlan = new int[m][m];
+
+        // 初始化dpMaxValue, dpSumPlan
+        dpMaxValue[m-1][m-1] = 0;
+        dpSumPlan[m-1][m-1] = 1;
+        char[] charLast = board.get(m - 1).toCharArray();
+        for (int i = m - 2; i > 0; i--) {
+            if (charLast[i] != 'X') {
+                dpMaxValue[m-1][i] = dpMaxValue[m-1][i+1] + Integer.parseInt(String.valueOf(charLast[i]));
+            }
+        }
         return new int[2];
     }
 }
