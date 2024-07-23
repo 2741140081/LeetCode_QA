@@ -68,8 +68,8 @@ public class LeetCode_1301 {
         int m = board.size();
 
         // dpMaxValue 存放最大值, dpSumPlan 存放方案数
-        int[][] dpMaxValue = new int[m][m];
-        int[][] dpSumPlan = new int[m][m];
+        long[][] dpMaxValue = new long[m][m];
+        long[][] dpSumPlan = new long[m][m];
 
         // 初始化dpMaxValue, dpSumPlan
         dpMaxValue[m-1][m-1] = 0;
@@ -80,11 +80,36 @@ public class LeetCode_1301 {
             charArray[i] = board.get(i).toCharArray();
         }
 
+        if (m == 2) {
+            if (charArray[0][1] == 'X') {
+                if (charArray[1][0] == 'X') {
+                    return new int[]{0, 1};
+                }else {
+                    int source = Integer.parseInt(String.valueOf(charArray[1][0]));
+                    return new int[]{source, 1};
+                }
+            }else {
+                if (charArray[1][0] == 'X') {
+                    int source = Integer.parseInt(String.valueOf(charArray[1][0]));
+                    return new int[]{source, 1};
+                }else {
+                    int source1 = Integer.parseInt(String.valueOf(charArray[1][0]));
+                    int source2 = Integer.parseInt(String.valueOf(charArray[1][0]));
+                    if (source1 == source2) {
+                        return new int[]{source1, 2};
+                    }else {
+                        return new int[]{Math.max(source1, source2), 1};
+                    }
+
+                }
+            }
+        }
 
         for (int i = m - 2; i >= 0; i--) {
             // 行
             if (charArray[m-1][i] != 'X' && dpMaxValue[m-1][i+1] != -1) {
-                dpMaxValue[m-1][i] = dpMaxValue[m-1][i+1] + Integer.parseInt(String.valueOf(charArray[m-1][i]));
+                dpMaxValue[m-1][i] = dpMaxValue[m-1][i+1] +
+                        Integer.parseInt(String.valueOf(charArray[m-1][i]));
                 dpSumPlan[m-1][i] = 1;
             }else {
                 dpMaxValue[m-1][i] = -1;
@@ -93,7 +118,8 @@ public class LeetCode_1301 {
 
             // 列
             if (charArray[i][m-1] != 'X' && dpMaxValue[i+1][m-1] != -1) {
-                dpMaxValue[i][m-1] = dpMaxValue[i+1][m-1] + Integer.parseInt(String.valueOf(charArray[i][m-1]));
+                dpMaxValue[i][m-1] = dpMaxValue[i+1][m-1] +
+                        Integer.parseInt(String.valueOf(charArray[i][m-1]));
                 dpSumPlan[i][m-1] = 1;
             }else {
                 dpMaxValue[i][m-1] = -1;
@@ -102,10 +128,78 @@ public class LeetCode_1301 {
 
         }
         // 先处理最大值
+        for (int i = m-2; i >= 0; i--) {
+            for (int j = m-2; j >= 0; j--) {
+                // 先判断当前节点是否是 'X'
+                if (i ==0 && j==0) {
+                    continue;
+                }
+                boolean flag = dpMaxValue[i+1][j] != -1 || dpMaxValue[i+1][j+1] != -1 || dpMaxValue[i][j+1] != -1;
+                if (charArray[i][j] != 'X' && flag) {
+                    dpMaxValue[i][j] = Math.max(dpMaxValue[i+1][j],
+                            Math.max(dpMaxValue[i+1][j+1], dpMaxValue[i][j+1])) +
+                            Integer.parseInt(String.valueOf(charArray[i][j]));
+                }else {
+                    dpMaxValue[i][j] = -1;
+                }
+            }
+        }
+        // 获取 'S' 是否可以到达, 以及最大得分值
+        if (dpMaxValue[0][1] != -1 || dpMaxValue[1][1] != -1 || dpMaxValue[1][0] != -1) {
+            dpMaxValue[0][0] = Math.max(dpMaxValue[0][1], Math.max(dpMaxValue[1][1], dpMaxValue[1][0]));
+        }else {
+            dpMaxValue[0][0] = 0;
+        }
 
+        // 我已获取得分的 dpMaxValue
+        // 我该如何利用这个来处理
+        // 先判断不可达的情况
+        int[] res = new int[2];
+        res[0] = (int)dpMaxValue[0][0] % MOD;
+        if (res[0] == 0) {
+            res[1] = 0;
+            return res;
+        }
+        // 可达情况
+        // 判断到达 dpMaxValue[0][0]
+        for (int i = m-2; i >= 0; i--) {
+            for (int j = m-2; j >= 0; j--) {
+                if (i == 0 && j == 0) {
+                    continue;
+                }
+                dpSumPlan[i][j] = getCountByMaxValue(dpSumPlan, dpMaxValue, charArray, i, j) % MOD;
+            }
+        }
+        // 获取dpSumPlan[0][0]
+        if (dpMaxValue[0][1] != -1 && dpMaxValue[0][1] == dpMaxValue[0][0]) {
+            dpSumPlan[0][0] += dpSumPlan[0][1];
+        }
+        if (dpMaxValue[1][1] != -1 && dpMaxValue[1][1] == dpMaxValue[0][0]) {
+            dpSumPlan[0][0] += dpSumPlan[1][1];
+        }
+        if (dpMaxValue[1][0] != -1 && dpMaxValue[1][0] == dpMaxValue[0][0]) {
+            dpSumPlan[0][0] += dpSumPlan[1][0];
+        }
+        res[1] = (int) dpSumPlan[0][0];
+        return res;
+    }
 
+    private long getCountByMaxValue(long[][] dpSumPlan, long[][] dpMaxValue, char[][] charArray, int i, int j) {
+        if (dpMaxValue[i][j] == -1) {
+            return -1;
+        }
+        long count = 0;
+        long value = dpMaxValue[i][j] - Integer.parseInt(String.valueOf(charArray[i][j]));
 
-
-        return new int[2];
+        if (value == dpMaxValue[i+1][j]) {
+            count += dpSumPlan[i+1][j];
+        }
+        if (value == dpMaxValue[i+1][j+1]) {
+            count += dpSumPlan[i+1][j+1];
+        }
+        if (value == dpMaxValue[i][j+1]) {
+            count += dpSumPlan[i][j+1];
+        }
+        return count;
     }
 }
