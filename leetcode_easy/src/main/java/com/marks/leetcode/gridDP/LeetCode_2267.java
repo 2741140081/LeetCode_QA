@@ -57,40 +57,67 @@ public class LeetCode_2267 {
      * @author marks
      * @CreateDate: 2024/7/24 17:37
      * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
+     *
+     * tips:
+     * 1. 用一个变量 c 表示括号字符串的平衡度：遇到左括号就 +1，遇到右括号就 −1。那么合法字符串等价于任意时刻 c≥0 且最后 c=0。
+     * 2. 从起点到终点，往下走的次数是固定的，即 m−1 次，往右走的次数也是固定的，即 n−1 次，
+     * 因此路径长度（字符串长度）是一个定值，即 (m−1)+(n−1)+1=m+n−1。
+     * 极限情况下合法的字符串左半均为左括号，右半均为右括号，因此 c 最大为 c = (m + n -1) / 2;
+     *
      */
+    private char[][] grid;
+
+    private boolean[][][] via;
+
     private boolean method_01(char[][] grid) {
         m = grid.length;
         n = grid[0].length;
         int len = m + n - 1;
+        this.grid = grid;
+        this.via = new boolean[m][n][(m + n + 1)/2];
         // 先判断最外层是否符合条件
         if (grid[0][0] == ')' || grid[m-1][n-1] == '(' || len % 2 != 0) {
             return false;
         }
-        String[][] memo = new String[m][n];
-        int[][] dp = new int[m][n];
-        // 初始化边界
-        memo[0][0] = String.valueOf(grid[0][0]);
-        dp[0][0] = 1;
-        for (int i = 1; i < n; i++) {
-            memo[0][i] = memo[0][i - 1] + grid[0][i];
-            dp[0][i] = 1;
+        boolean res = dfs(0, 0, 0);
+
+        return res;
+    }
+
+    /**
+     * @Description: [功能描述]
+     * @param i
+     * @param j
+     * @param c 遇到左括号就 +1，遇到右括号就 −1
+     * @return boolean
+     * @author marks
+     * @CreateDate: 2024/7/26 9:37
+     * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
+     */
+    private boolean dfs(int i, int j, int c) {
+        // 判断当前 c 是否符合要求 c >= 0
+        // 相当于将 "())" 这种状态以数值的方式展示, 此时 c = -1
+
+        // 判断后续剩余的数量是否足够抵消当前的c值, 例如当前c = 3, 即前面存在4个未抵消的"((((",
+        // 如果后续只剩余2个格子, 即使这两个格子内全都是"))" 也是不合法的情况
+        // 这种情况如何计算剩余的格子数量
+        // 1. 格子的总数m + n -1, 当前格子的坐标为i, j, 所以已走过的格子数x + y(当前格子不包含在内)
+        if (c > m + n -1 - (i + j)) {
+            return false;
         }
-
-        for (int i = 1; i < m; i++) {
-            memo[i][0] = memo[i - 1][0] + grid[i][0];
-            dp[i][0] = 1;
+        // 如果是最后一个格子
+        if (i == m - 1 && j == n - 1) {
+            return c == 1;
         }
-        ArrayList<String> temp = new ArrayList<>();
-        for (int i = 1; i < m; i++) {
-            for (int j = 1; j < n; j++) {
-                dp[i][j] = dp[i-1][j] + dp[i][j-1];
-                for (int k = 0; k < dp[i][j]; k++) {
-
-                }
-            }
+        // 判断节点是否已被访问, 节点的默认值为false
+        if (via[i][j][c]) {
+            return false;
         }
-
-
-        return false;
+        via[i][j][c] = true;
+        c += grid[i][j] == '(' ? 1 : -1;
+        if (c < 0) {
+            return false;
+        }
+        return ((i < m-1 && dfs(i+1, j, c)) ||  (j < n - 1 && dfs(i, j+1, c)));
     }
 }
