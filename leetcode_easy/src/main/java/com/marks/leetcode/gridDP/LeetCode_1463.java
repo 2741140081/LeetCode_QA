@@ -71,7 +71,7 @@ public class LeetCode_1463 {
                 }
             }
         }
-        return 0;
+        return dp[0][1][n];
     }
 
     private int maxValue(int x, int... values) {

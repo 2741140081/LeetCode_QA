@@ -16,7 +16,21 @@ public class LeetCode_1937 {
     private int m;
     private int n;
     /**
-     * @Description: [功能描述]
+     * @Description: [给你一个 m x n 的整数矩阵 points （下标从 0 开始）。一开始你的得分为 0 ，你想最大化从矩阵中得到的分数。
+     * 你的得分方式为：每一行 中选取一个格子，选中坐标为 (r, c) 的格子会给你的总得分 增加 points[r][c] 。
+     * 然而，相邻行之间被选中的格子如果隔得太远，你会失去一些得分。对于相邻行 r 和 r + 1
+     * （其中 0 <= r < m - 1），选中坐标为 (r, c1) 和 (r + 1, c2) 的格子，你的总得分 减少 abs(c1 - c2) 。
+     *
+     * 请你返回你能得到的 最大 得分。
+     * abs(x) 定义为：
+     * 如果 x >= 0 ，那么值为 x 。
+     * 如果 x < 0 ，那么值为 -x 。
+     * tips:
+     * m == points.length
+     * n == points[r].length
+     * 1 <= m, n <= 10^5
+     * 1 <= m * n <= 10^5
+     * 0 <= points[r][c] <= 10^5]
      * @param points
      * @return long
      * @author marks
@@ -73,7 +87,7 @@ public class LeetCode_1937 {
             long best = Long.MIN_VALUE;
             // 正序遍历
             // 假设当前的j = 3, 那么best 就是在0 1 2 3 中需要Math.max(pre[j] + j)的最大值, 假设找到的最大值 j = 1
-            // 如此设定正好满足 k <= j的设定, 最大值只会在j的左边出现
+            // 优雅的设计: 如此设定正好满足 k <= j的设定, 最大值只会在j的左边出现
             for (int j = 0; j < n; j++) {
                 best = Math.max(best, pre[j] + j); // Math.max(dp[j] + j)
                 cur[j] = Math.max(cur[j], points[i][j] + best - j);
