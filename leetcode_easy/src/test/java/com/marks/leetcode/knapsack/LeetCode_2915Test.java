@@ -22,12 +22,19 @@ class LeetCode_2915Test {
     @Test
     void lengthOfLongestSubsequence() {
         List<Integer> nums = new ArrayList<>();
+        // 1,3,3,8 target = 7
         nums.add(1);
-        nums.add(2);
         nums.add(3);
-        nums.add(4);
-        nums.add(5);
-        int result = new LeetCode_2915().lengthOfLongestSubsequence(nums, 9);
+        nums.add(3);
+        nums.add(8);
+        // 1,2,3,4,5 target = 9
+//        nums.add(1);
+//        nums.add(2);
+//        nums.add(3);
+//        nums.add(4);
+//        nums.add(5);
+        int result = new LeetCode_2915().lengthOfLongestSubsequence(nums, 7);
+//        int result = new LeetCode_2915().lengthOfLongestSubsequence(nums, 9);
         System.out.println(result);
     }
 }

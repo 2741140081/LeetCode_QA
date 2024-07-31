@@ -16,7 +16,9 @@ import java.util.List;
 public class LeetCode_2915 {
     public int lengthOfLongestSubsequence(List<Integer> nums, int target) {
         int result = 0;
-        result = method_01(nums, target);
+//        result = method_01(nums, target);
+//        result = method_02(nums, target);
+        result = method_03(nums, target);
         return result;
     }
 
@@ -56,18 +58,84 @@ public class LeetCode_2915 {
      */
     private int method_01(List<Integer> nums, int target) {
         int n = nums.size();
+        int[] ints = nums.stream().mapToInt(Integer::intValue).toArray();
 
         int[][] dp = new int[n + 1][target + 1];
-        Arrays.fill(dp[0], -1);
+        Arrays.fill(dp[0], Integer.MIN_VALUE);
         dp[0][0] = 0;
 
-        for (int i = 1; i < n; i++) {
-            for (int j = nums.get(i); j <= target; j++) {
-                dp[i][j] = Math.max(dp[i-1][j], dp[i-1][j-nums.get(i-1)]);
+        for (int i = 1; i <= n; i++) {
+            for (int j = 0; j <= target; j++) {
+                int temp = ints[i - 1];
+                if (temp > j) {
+                    dp[i][j] = dp[i-1][j];
+                }else {
+                    dp[i][j] = Math.max(dp[i-1][j], dp[i-1][j-temp] + 1);
+                }
+
             }
         }
-        return 0;
+        int ans = dp[n][target];
+
+        return ans <= 0 ? -1 : ans;
     }
+
+    private int method_02(List<Integer> numList, int target) {
+        int[] nums = numList.stream().mapToInt(i -> i).toArray();
+        int len = nums.length;
+        int[][] f = new int[len+1][target+1];
+        Arrays.fill(f[0], Integer.MIN_VALUE);
+        f[0][0] = 0;
+        for(int i=0;i < len;i++){
+            int x = nums[i];
+            for(int c = 0; c <= target; c++){
+                if(c < x) f[i+1][c] = f[i][c];
+                else f[i+1][c] = Math.max(f[i][c], f[i][c - x] + 1);
+            }
+        }
+        int ans = f[len][target];
+        return ans <= 0 ? -1 : ans;
+    }
+    /**
+     * @Description: [
+     * 使用滑动数组优化二维dp数组空间
+     * 由于dp[i][j] 只与 dp[i-1][j] 或者 dp[i-1][j-temp] 有关
+     * 所以使用二维数组进行优化
+     * ]
+     * @param nums
+     * @param target
+     * @return int
+     * @author marks
+     * @CreateDate: 2024/7/31 16:21
+     * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
+     */
+    private int method_03(List<Integer> nums, int target) {
+        int n = nums.size();
+        int[] ints = nums.stream().mapToInt(Integer::intValue).toArray();
+
+        int[][] dp = new int[2][target + 1];
+        Arrays.fill(dp[0], Integer.MIN_VALUE);
+        dp[0][0] = 0;
+
+        int curr = 0;
+        for (int i = 1; i <= n; i++) {
+            for (int j = 0; j <= target; j++) {
+                int temp = ints[i - 1];
+                curr = i % 2;
+                int pre = 1 - curr;
+                if (temp > j) {
+                    dp[curr][j] = dp[pre][j];
+                }else {
+                    dp[curr][j] = Math.max(dp[pre][j], dp[pre][j-temp] + 1);
+                }
+
+            }
+        }
+        int ans = dp[curr][target];
+
+        return ans <= 0 ? -1 : ans;
+    }
+
 
 
 }
