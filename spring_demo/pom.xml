@@ -47,6 +47,19 @@
             <artifactId>junit-jupiter</artifactId>
             <version>${junit.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombox.version}</version> <!-- 使用最新的版本 -->
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+            <version>${validation.version}</version>
+        </dependency>
     </dependencies>
 
 </project>

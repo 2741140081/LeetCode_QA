@@ -29,13 +29,20 @@ public class LeetCode_2915 {
      * [4, 5] = 9
      * [1, 3, 5]
      * [2, 3, 5]
+     * 定义dp[i][j]
+     * i表示最大子序列的长度, j表示前0 ~ i的和
+     * 初始化
+     * dp[0][j] = -1 (不存在)
+     * dp[0][0] = 0;
+     * dp[1][1] = 1
+     * if j < nums[i]
+     * dp[i][j] = dp[i][j-1]
      *
-     * 我想到一个方式是
-     * 倒序
-     * for r n
+     * nums = [1,2,3,4,5], target = 9
+     * dp[i][j]
+     * i= 0 ~ 5
+     * 0    -1  -1  -1  -1
      *
-     *
-     * ]
      * @param nums
      * @param target
      * @return int
@@ -50,9 +57,9 @@ public class LeetCode_2915 {
     private int method_01(List<Integer> nums, int target) {
         int n = nums.size();
 
-        int[][] dp = new int[n][target + 1];
-        Arrays.fill(dp[0], 1);
-
+        int[][] dp = new int[n + 1][target + 1];
+        Arrays.fill(dp[0], -1);
+        dp[0][0] = 0;
 
         for (int i = 1; i < n; i++) {
             for (int j = nums.get(i); j <= target; j++) {

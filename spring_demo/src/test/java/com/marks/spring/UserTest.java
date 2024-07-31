@@ -1,5 +1,6 @@
 package com.marks.spring;
 
+import com.marks.spring.entity.User;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -20,7 +21,8 @@ class UserTest {
     void testSpringCreateUserObj() {
         ApplicationContext context = new ClassPathXmlApplicationContext("spring-config.xml");
 
-        User user = context.getBean("user", User.class);
-        user.addUser();
+        User user = context.getBean("user", User.class); // 使用无参的构造方法创建User对象
+        user.setUserId("12345678");
+        System.out.println(user.getUserId());
     }
 }
