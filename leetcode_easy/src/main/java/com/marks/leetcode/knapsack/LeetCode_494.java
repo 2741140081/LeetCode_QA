@@ -62,12 +62,9 @@ public class LeetCode_494 {
      */
     private int method_01(int[] nums, int target) {
         int sum = Arrays.stream(nums).sum();
-        if (Math.abs(target) >= sum) {
-            return Math.abs(target) == sum ? 1 : 0;
-        }
         // Math.abs(target) < sum
         // 判断对2取余是否合法
-        if ((sum - target) % 2 != 0) {
+        if ((sum - target) % 2 != 0 || Math.abs(target) > sum) {
             // 不合法
             return 0;
         }
@@ -82,13 +79,18 @@ public class LeetCode_494 {
             int pre = 1 - curr;
             int temp = nums[i-1];
             for (int j = 0; j <= target_new; j++) {
+                /*
+                j < temp (nums[i-1]) 时: 则不能选temp, dp[i][j] = dp[i-1][j]
+                j >= temp 时: 如果不选temp, dp[i-1][j]; 如果选temp, dp[i-1][j-temp],
+                即dp[i][j] = dp[i-1][j] + dp[i-1][j-temp]
+                总上所述:可得如下转态转移方程
+                 */
                 dp[curr][j] = dp[pre][j];
                 if (j >= temp) {
                     dp[curr][j] += dp[pre][j - temp];
                 }
             }
         }
-
 
         return dp[curr][target_new];
     }

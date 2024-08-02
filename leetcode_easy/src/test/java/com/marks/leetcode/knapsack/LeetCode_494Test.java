@@ -19,8 +19,11 @@ class LeetCode_494Test {
     @Test
     void findTargetSumWays() {
         // nums = [1,1,1,1,1], target = 3
-        int[] nums = new int[]{1,1,1,1,1};
-        int target = 3;
+//        int[] nums = new int[]{1,1,1,1,1};
+//        int target = 3;
+        // nums = [1,0], target = 1
+        int[] nums = new int[]{1,0};
+        int target = 1;
         int result = new LeetCode_494().findTargetSumWays(nums, target);
         System.out.println(result);
     }
