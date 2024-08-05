@@ -14,7 +14,6 @@ import java.util.Arrays;
  * @update [序号][日期YYYY-MM-DD] [更改人姓名][变更描述]
  */
 public class LeetCode_1774 {
-    private ArrayList<Integer> list = new ArrayList<>();
     /**
      * @Description: [
      * 你打算做甜点，现在需要购买配料。目前共有 n 种冰激凌基料和 m 种配料可供选购。
@@ -50,8 +49,126 @@ public class LeetCode_1774 {
      */
     public int closestCost(int[] baseCosts, int[] toppingCosts, int target) {
         int result = 0;
-        result = method_01(baseCosts, toppingCosts, target);
+//        result = method_01(baseCosts, toppingCosts, target); // error
+//        result = method_02(baseCosts, toppingCosts, target);
+        result = method_03(baseCosts, toppingCosts, target);
         return result;
+    }
+
+    /**
+     * @Description: [动态规划]
+     * 定义一个 boolean can[target+1]
+     * @param baseCosts
+     * @param toppingCosts
+     * @param target
+     * @return int
+     * @author marks
+     * @CreateDate: 2024/8/5 10:23
+     * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
+     */
+    private int method_03(int[] baseCosts, int[] toppingCosts, int target) {
+        int x = Arrays.stream(baseCosts).min().getAsInt();
+        if (x >= target) {
+            return x;
+        }
+        res = 2 * target - x; // 基料的上边界, 上下边界分别是[target - x, 2 * target - x], 相当于A 、 A`两点 关于点[target, 0] 对称
+        boolean[] can = new boolean[target + 1];
+        // 初始化
+        for (int baseCost : baseCosts) {
+            if (baseCost <= target) {
+                can[baseCost] = true;
+            }else {
+                // baseCost > target
+                // 找到> target 中最接近target的值
+                res = Math.min(res, baseCost);
+            }
+        }
+
+        for (int toppingCost : toppingCosts) {
+            for (int count = 0; count < 2; count++) {
+                for (int i = target; i > 0; i--) {
+                    // 可能存在值 基料 + 配料 > target
+                    if (can[i] && i + toppingCost > target) {
+                        res = Math.min(res, i + toppingCost);
+                    }
+
+                    // 转态转移方程 can[i] = can[i] | can[i - c]
+                    if (i - toppingCost > 0) {
+                        can[i] = can[i] | can[i - toppingCost];
+                    }
+                }
+            }
+        }
+        // 找到can[i] == true 中i的最大值
+        // 已经存在了 res , 如果此时 target - i > res - target, 那么取 res, 否则取 i
+        for (int i = 0; i <= res - target; i++) {
+            if (can[target - i]) {
+                return target - i;
+            }
+        }
+        return res;
+    }
+
+
+    /**
+     * @Description: [官方题解: <方式一> 回溯]
+     *
+     * @param baseCosts
+     * @param toppingCosts
+     * @param target
+     * @return int
+     * @author marks
+     * @CreateDate: 2024/8/5 9:42
+     * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
+     */
+    private int res;
+
+    private int method_02(int[] baseCosts, int[] toppingCosts, int target) {
+        res = Arrays.stream(baseCosts).min().getAsInt();
+        if (res >= target) {
+            return res;
+        }
+        for (int baseCost : baseCosts) {
+            dfs(toppingCosts, 0, baseCost, target);
+        }
+        return res;
+    }
+
+    /**
+     * @Description: [深度优先]
+     * 必须选择一种冰淇淋基料；
+     * 可以添加一种或多种配料，也可以不添加任何配料；
+     * 每种配料最多两份。
+     *
+     * 对于每一种冰淇淋基料用回溯的方式来针对它进行甜品制作。又因为每一种配料都是正整数，所以在回溯的过程中总开销只能只增不减，
+     * 当回溯过程中当前开销大于目标价格 target 后，继续往下搜索只能使开销与 target 的差值更大，
+     * 所以如果此时差值已经大于等于我们已有最优方案的差值，我们可以停止继续往下搜索，及时回溯。
+     * @param toppingCosts
+     * @param j
+     * @param currCost
+     * @param target
+     * @return void
+     * @author marks
+     * @CreateDate: 2024/8/5 9:48
+     * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
+     */
+    private void dfs(int[] toppingCosts, int j, int currCost, int target) {
+        if (Math.abs(target - res) < currCost - target) {
+            return;
+        } else if (Math.abs(target - res) >= Math.abs(target - currCost)) {
+            if (Math.abs(target - res) > Math.abs(target - currCost)) {
+                res = currCost;
+            }else {
+                res = Math.min(res, currCost);
+            }
+        }
+
+        if (j == toppingCosts.length) {
+            return;
+        }
+        dfs(toppingCosts, j + 1, currCost + toppingCosts[j] * 2, target);
+        dfs(toppingCosts, j + 1, currCost + toppingCosts[j], target);
+        dfs(toppingCosts, j + 1, currCost, target);
     }
 
     /**

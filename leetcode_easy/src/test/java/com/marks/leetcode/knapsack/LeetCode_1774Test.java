@@ -24,9 +24,13 @@ class LeetCode_1774Test {
 //        int target = 10;
 
         // baseCosts = [2,3] toppingCosts = [4,5,100] target =18
-        int[] baseCosts = new int[]{2,3};
-        int[] toppingCosts = new int[]{4,5,100};
-        int target = 18;
+//        int[] baseCosts = new int[]{2,3};
+//        int[] toppingCosts = new int[]{4,5,100};
+//        int target = 18;
+
+        int[] baseCosts = new int[]{4};
+        int[] toppingCosts = new int[]{9};
+        int target = 9;
         int result = new LeetCode_1774().closestCost(baseCosts, toppingCosts, target);
         System.out.println(result);
     }
