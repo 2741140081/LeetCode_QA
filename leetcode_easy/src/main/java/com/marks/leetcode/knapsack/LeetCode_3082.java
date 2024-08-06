@@ -37,8 +37,36 @@ public class LeetCode_3082 {
      */
     public int sumOfPower(int[] nums, int k) {
         int result = 0;
-        result = method_01(nums, k); // 暴力破解行不通, 超时
+//        result = method_01(nums, k); // 暴力破解行不通, 超时
+        result = method_02(nums, k);
         return result;
+    }
+
+    private int method_02(int[] nums, int k) {
+        int sum = Arrays.stream(nums).sum();
+        if (sum < k) {
+            return 0;
+        }
+        int len = nums.length;
+        int[][][] dp = new int[2][k + 1][len + 1];
+        dp[0][0][0] = 1;
+        int curr = 0;
+        for (int i = 1; i <= len; i++) {
+            curr = i % 2;
+            int pre = 1 - curr;
+            int temp = nums[i - 1];
+            for (int j = 0; j <= k; j++) {
+                for (int p = 0; p <= i; p++) {
+                    dp[curr][j][p] = (j >= temp && p >= 1) ? (dp[pre][j][p] + dp[pre][j - temp][p - 1]) % MOD :
+                            (dp[pre][j][p]) % MOD;
+                }
+            }
+        }
+        long result = 0;
+        for (int p = len, power = 1; p > 0; p--, power = power * 2 % MOD) {
+            result = (result + (long) dp[curr][k][p] * power) % MOD;
+        }
+        return (int) result;
     }
 
     private List<List<Integer>> allSubList = new ArrayList<>();
