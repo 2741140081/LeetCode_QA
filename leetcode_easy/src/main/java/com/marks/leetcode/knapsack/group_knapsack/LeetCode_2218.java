@@ -2,7 +2,7 @@ package com.marks.leetcode.knapsack.group_knapsack;
 
 import java.util.List;
 
-public class LeetCode_2219 {
+public class LeetCode_2218 {
     /**
      * 从栈中取出 K 个硬币的最大面值和
      * 一张桌子上总共有 n 个硬币 栈 。每个栈有 正整数 个带面值的硬币。
@@ -12,7 +12,7 @@ public class LeetCode_2219 {
      *
      * n == piles.length
      * 1 <= n <= 1000
-     * 1 <= piles[i][j] <= 105
+     * 1 <= piles[i][j] <= 10^5
      * 1 <= k <= sum(piles[i].length) <= 2000
      * @param piles
      * @param k
@@ -38,14 +38,22 @@ public class LeetCode_2219 {
      * @return
      */
     private int method_01(List<List<Integer>> piles, int k) {
-        int n = piles.size();
-        boolean[][] dp = new boolean[k + 1][2000];
-        dp[0][0] = false;
-        for (int i = 1; i <= k; i++) {
-            for (int j = 0; j <= 2000; j++) {
 
+        int[] dp = new int[k + 1];
+        dp[0] = 0;
+        for (List<Integer> pile : piles) {
+            int n = pile.size();
+            for (int i = 1; i < n; i++) {
+                // 前缀和
+                pile.set(i, pile.get(i) + pile.get(i - 1));
             }
+            for (int j = k; j > 0; j--) {
+                for (int g = 0; g < Math.min(n, j); g++) {
+                    dp[j] = Math.max(dp[j], dp[j - g - 1] + pile.get(g));
+                }
+            }
+
         }
-        return 0;
+        return dp[k];
     }
 }
