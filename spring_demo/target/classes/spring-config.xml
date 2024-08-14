@@ -4,5 +4,6 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
     <!--定义bean-->
     <bean id="user" class="com.marks.spring.entity.User"></bean>
-    <!--在printer中注入ink和paper，ink使用greyInk，paper使用textPaper，此处利用面向接口编程的思想-->
+    <bean id="myBean" class="com.marks.spring.factory.MyBean"></bean>
+
 </beans>

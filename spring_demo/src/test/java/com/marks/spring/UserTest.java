@@ -24,5 +24,8 @@ class UserTest {
         User user = context.getBean("user", User.class); // 使用无参的构造方法创建User对象
         user.setUserId("12345678");
         System.out.println(user.getUserId());
+
+        User myBean = context.getBean("myBean", User.class);
+        System.out.println(myBean.getUserId());
     }
 }
