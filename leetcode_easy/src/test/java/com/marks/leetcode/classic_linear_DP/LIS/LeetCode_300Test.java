@@ -20,7 +20,8 @@ class LeetCode_300Test {
     void lengthOfLIS() {
         // nums = [10,9,2,5,3,7,101,18]
         // nums = [1,3,6,7,9,4,10,5,6]
-        int[] nums = new int[]{1,3,6,7,9,4,10,5,6};
+        // [3,5,6,2,5,4,19,5,6,7,12]
+        int[] nums = new int[]{3,5,6,2,5,4,19,5,6,7,12};
         System.out.println(new LeetCode_300().lengthOfLIS(nums));
     }
 }

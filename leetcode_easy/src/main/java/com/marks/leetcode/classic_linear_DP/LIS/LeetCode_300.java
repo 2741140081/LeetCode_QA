@@ -40,17 +40,9 @@ public class LeetCode_300 {
      * 看不太懂题解
      * 题解的思路是:
      * 贪心:为使得递增子序列的长度尽可能的长，需要让子序列递增的每次添加的数字尽可能的小
-     * eg[1, 4, 2]
-     * [1, 2] 比 [1, 4]的递增大小要小
-     *
-     * dp[1] = nums[0] = 1
-     * if(nums[i] > dp[len]) {
-     *     dp[len + 1] = nums[i]
-     * }else{
-     *     for(int i = 0; i < len; i++) {
-     *
-     *     }
-     * }
+     * 他可能得到的不是正确的序列, 但是如果只是求长度, 这种足够了</p>
+     * <img src= "https://writings.sh/assets/images/posts/longest-increasing-subsequence-revisited/lis-seq-4.gif" />
+     * or <src ="resources/images/LeetCode_300_method_01.gif" />
      *
      * ]
      * @param nums
@@ -60,7 +52,32 @@ public class LeetCode_300 {
      * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
      */
     private int method_02(int[] nums) {
-        return 0;
+        int n = nums.length;
+        int len = 1;
+        if (n == 0) {
+            return 0;
+        }
+        int[] dp = new int[n + 1];
+        dp[len] = nums[0];
+        for (int i = 1; i < n; i++) {
+            if (nums[i] > dp[len]) {
+                len++;
+                dp[len] = nums[i];
+            }else {
+                // 如果找不到说明所有的数都比 nums[i] 大，此时要更新 d[1]，所以这里将 pos 设为 0
+                // 使用Arrays.binarySearch 二分查找库来简化代码(不要重复造轮子)
+                // 但是使用Arrays.binarySearch() 会产生额外的空间, 使得空间复杂度提高
+                int pos = 0;
+                int targetIndex = Arrays.binarySearch(dp, 1, len + 1, nums[i]);
+                if (targetIndex > 0) {
+                    pos = targetIndex;
+                }else {
+                    pos = Math.abs(targetIndex) - 1;
+                }
+                dp[pos] = nums[i];
+            }
+        }
+        return len;
     }
 
     /**
@@ -71,6 +88,23 @@ public class LeetCode_300 {
      * 输入：nums = [10,9,2,5,3,7,101,18]
      * 输出：4
      * 解释：最长递增子序列是 [2,3,7,101]，因此长度为 4 。
+     * dp[0] = 1
+     * 10 > 9
+     * dp[1] = 1
+     * ...
+     * i = 5
+     * dp[] = {1, 1, 1, 2, 2}
+     * nums[i] = 7
+     * 存在以下情况
+     * j = 2
+     * dp[i] > dp[j] dp[i] = Math.max(dp[i], dp[j] + 1)
+     * j = 3
+     * dp[i] > dp[j] dp[i] = Math.max(dp[i], dp[j] + 1)
+     * j = 4
+     * dp[i] > dp[j] dp[i] = Math.max(dp[i], dp[j] + 1)
+     * dp[5] = 3
+     * 时间复杂度:O(n^2)
+     * 空间复杂度:O(n)
      * ]
      * @param nums
      * @return int
@@ -83,6 +117,7 @@ public class LeetCode_300 {
         int[] dp = new int[n];
         for (int i = 0; i < n; i++) {
             dp[i] = 1;
+            // 遍历nums[0 ~ (i - 1)], 查找其中nums[i] > nums[j]的值, 更新dp[i] = Math.max(dp[i], dp[j] + 1)
             for (int j = 0; j < i; j++) {
                 if (nums[i] > nums[j]) {
                     dp[i] = Math.max(dp[i], dp[j] + 1);
