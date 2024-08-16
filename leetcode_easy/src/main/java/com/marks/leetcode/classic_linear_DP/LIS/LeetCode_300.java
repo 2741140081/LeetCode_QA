@@ -31,8 +31,36 @@ public class LeetCode_300 {
      */
     public int lengthOfLIS(int[] nums) {
         int result = 0;
-        result = method_01(nums);
+//        result = method_01(nums);
+        result = method_02(nums);
         return result;
+    }
+    /**
+     * @Description: [贪心算法 + 二分查找
+     * 看不太懂题解
+     * 题解的思路是:
+     * 贪心:为使得递增子序列的长度尽可能的长，需要让子序列递增的每次添加的数字尽可能的小
+     * eg[1, 4, 2]
+     * [1, 2] 比 [1, 4]的递增大小要小
+     *
+     * dp[1] = nums[0] = 1
+     * if(nums[i] > dp[len]) {
+     *     dp[len + 1] = nums[i]
+     * }else{
+     *     for(int i = 0; i < len; i++) {
+     *
+     *     }
+     * }
+     *
+     * ]
+     * @param nums
+     * @return int
+     * @author marks
+     * @CreateDate: 2024/8/14 16:22
+     * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
+     */
+    private int method_02(int[] nums) {
+        return 0;
     }
 
     /**
