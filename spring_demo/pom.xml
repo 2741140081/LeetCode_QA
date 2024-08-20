@@ -60,6 +60,12 @@
             <artifactId>validation-api</artifactId>
             <version>${validation.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>druid</artifactId>
+            <version>${druid.version}</version>
+        </dependency>
     </dependencies>
 
 </project>

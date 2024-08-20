@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/util
+                           http://www.springframework.org/schema/util/spring-util.xsd
+                           http://www.springframework.org/schema/context
+                           http://www.springframework.org/schema/context/spring-context.xsd">
+    <!--开启组件扫描-->
+    <!--扫描多个包，使用com.marks.spring.entity, com.marks.spring.service 逗号分隔-->
+    <context:component-scan base-package="com.marks.spring"></context:component-scan>
+
+
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
+        <!-- com.mysql.jdbc.Driver对应低版本msyql、也就是mysql-connector-java 5中的-->
+        <property name="driverClassName" value="${jdbc.driverClassName}"></property>
+        <!-- com.mysql.cj.jdbc.Driver 对应高版本mysql、也就是 mysql-connector-java 6及以上。-->
+        <!--<property name="driverClassName" value="com.mysql.jdbc.Driver"></property>-->
+        <property name="url" value="${jdbc.url}"></property>
+        <property name="username" value="${jdbc.username}"></property>
+        <property name="password" value="${jdbc.password}"></property>
+
+    </bean>
+    <context:property-placeholder location="classpath:jdbc.properties"></context:property-placeholder>
+</beans>
