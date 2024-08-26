@@ -22,5 +22,7 @@ class LeetCode_121Test {
         int[] prices = {7,1,5,3,6,4};
         int result = new LeetCode_121().maxProfit(prices);
         System.out.println(result);
+        int result_122 = new LeetCode_122().maxProfit(prices);
+        System.out.println(result_122);
     }
 }
