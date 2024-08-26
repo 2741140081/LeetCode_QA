@@ -19,10 +19,16 @@ class LeetCode_121Test {
     @Test
     void maxProfit() {
         // [7,1,5,3,6,4]
-        int[] prices = {7,1,5,3,6,4};
+        // prices = [3,3,5,0,0,3,1,4]
+        // prices = [1,2,3,4,5]
+        // prices = [7,6,4,3,1]
+        int[] prices = {3,3,5,0,0,3,1,4};
+//        int[] prices = {7,6,4,3,1};
         int result = new LeetCode_121().maxProfit(prices);
         System.out.println(result);
         int result_122 = new LeetCode_122().maxProfit(prices);
         System.out.println(result_122);
+        int result_123 = new LeetCode_123().maxProfit(prices);
+        System.out.println(result_123);
     }
 }
