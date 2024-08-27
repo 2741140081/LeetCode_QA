@@ -29,10 +29,72 @@ public class LeetCode_309 {
      */
     public int maxProfit(int[] prices) {
         int result = 0;
-        result = method_01(prices);
+//        result = method_01(prices);
 //        int result_2 = method_02(prices);
         int result_3 = method_03(prices);
+//        result = method_04(prices);
+        result = method_05(prices);
         return result == result_3 ? result : result_3;
+    }
+
+    /**
+     * @Description: [官方题解: 动态规划之空间优化]
+     * @param prices
+     * @return int
+     * @author marks
+     * @CreateDate: 2024/8/27 15:09
+     * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
+     */
+    private int method_05(int[] prices) {
+        int n = prices.length;
+        if (n <= 1) {
+            return 0;
+        }
+        int[][] dp = new int[n][3];
+        int dp_0 = -prices[0];
+        int dp_1 = 0;
+        int dp_2 = 0;
+        dp[0][0] = -prices[0];
+        for (int i = 1; i < n; i++) {
+            int pre_0 = dp_0;
+            int pre_1 = dp_1;
+            int pre_2 = dp_2;
+            dp_0 = Math.max(pre_0, pre_2 - prices[i]);
+            dp_1 = pre_0 + prices[i];
+            dp_2 = Math.max(pre_2, pre_1);
+        }
+        return Math.max(dp_1, dp_2);
+    }
+
+    /**
+     * @Description: [官方题解
+     * // dp[i][0]: 手上持有股票的最大收益
+     * // dp[i][1]: 手上不持有股票，并且处于冷冻期中的累计最大收益
+     * // dp[i][2]: 手上不持有股票，并且不在冷冻期中的累计最大收益
+     * 动态规划: 由于dp[i] 只与dp[i - 1]存在关系, 且无后效性
+     * 可以使用空间优化 第一维空间, 优化后为dp[3] 即常数的空间复杂度
+     * 可以使用3个变量来记录值 method_05: 空间优化
+     *
+     * ]
+     * @param prices
+     * @return int
+     * @author marks
+     * @CreateDate: 2024/8/27 15:01
+     * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
+     */
+    private int method_04(int[] prices) {
+        int n = prices.length;
+        if (n <= 1) {
+            return 0;
+        }
+        int[][] dp = new int[n][3];
+        dp[0][0] = -prices[0];
+        for (int i = 1; i < n; i++) {
+            dp[i][0] = Math.max(dp[i - 1][0], dp[i - 1][2] - prices[i]);
+            dp[i][1] = dp[i - 1][0] + prices[i];
+            dp[i][2] = Math.max(dp[i - 1][2], dp[i - 1][1]);
+        }
+        return Math.max(dp[n - 1][1], dp[n - 1][2]);
     }
 
     /**
