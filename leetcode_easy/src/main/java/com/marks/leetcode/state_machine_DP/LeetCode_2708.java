@@ -32,8 +32,30 @@ public class LeetCode_2708 {
      */
     public long maxStrength(int[] nums) {
         long result = 0;
-        result = method_01(nums);
+//        result = method_01(nums);
+        result = method_02(nums);
+
         return result;
+    }
+
+    private long method_02(int[] nums) {
+        // max 维护[0, i - 1]最大的乘积
+        // min 维护[0, i - 1]最小的乘积
+        long max = nums[0];
+        long min = nums[0];
+
+        for (int i = 1; i < nums.length; i++) {
+            long tmp1 = max * nums[i];
+            long tmp2 = min * nums[i];
+
+            max = Math.max(max, Math.max(tmp1, tmp2));
+            max = Math.max(max, nums[i]);
+
+            min = Math.min(min, Math.min(tmp1, tmp2));
+            min = Math.min(min, nums[i]);
+        }
+
+        return max;
     }
 
     /**
