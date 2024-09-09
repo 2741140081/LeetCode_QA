@@ -34,8 +34,69 @@ public class LeetCode_1363 {
     public String largestMultipleOfThree(int[] digits) {
         String result = "";
         result = method_01(digits);
+        result = method_02(digits);
         return result;
     }
+
+    /**
+     * @Description: [官方题解:
+     * 与我的题解思路类似, 但是官方题解更加优秀
+     * 使用cnt[] 存储0~9的数量
+     * 使用modulo[]存储 % 3 的数量, 相当于method_01的map_1 和map_2
+     * 然后判断是否mod = sum % 3
+     * 判断modulo[mod] >= 1, 如果true, 则只需要去除一个该值, 使用left存储mod值，使用rest记录要舍弃的数量
+     * for i (0 ~ 9)
+     *  如果cnt[i] > 0
+     * ]
+     * @param digits
+     * @return java.lang.String
+     * @author marks
+     * @CreateDate: 2024/9/9 14:11
+     * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
+     */
+    private String method_02(int[] digits) {
+        int[] cnt = new int[10];
+        int[] modulo = new int[3];
+        int sum = 0;
+        for (int d : digits) {
+            cnt[d]++;
+            modulo[d % 3]++;
+            sum += d;
+        }
+
+        final int left;
+        int rest;
+        final int mod = sum % 3;
+        if (mod == 0) {
+            left = rest = 0;
+        } else {
+            if (modulo[mod] >= 1) {
+                left = mod;
+                rest = 1;
+            } else {
+                // left = ~mod & 0b11;
+                left = 2 * mod % 3;
+                rest = 2;
+            }
+        }
+
+        StringBuffer buffer = new StringBuffer();
+        for (int i = 0; i < 10; ++i) {
+            char ch = (char) (i + '0');
+            for (int j = 0; j < cnt[i]; ++j) {
+                if (rest > 0 && i % 3 == left) {
+                    --rest;
+                } else {
+                    buffer.append(ch);
+                }
+            }
+        }
+        if (buffer.length() > 0 && buffer.charAt(buffer.length() - 1) == '0') {
+            buffer = new StringBuffer("0");
+        }
+        return buffer.reverse().toString();
+    }
+
     /**
      * @Description: [
      * 贪心 + 逆向思维
@@ -51,6 +112,7 @@ public class LeetCode_1363 {
      * sum % 3 = 1 舍弃余数为1的最小值, 如果不存在则舍弃2个余数为2的最小值
      * sum % 3 = 2 舍弃余数为2的最小值, 如果不存在则舍弃2个余数为1的最小值
      *
+     * AC:11ms/44.58MB
      * ]
      * @param digits
      * @return java.lang.String
