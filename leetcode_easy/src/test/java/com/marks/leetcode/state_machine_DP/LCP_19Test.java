@@ -18,7 +18,9 @@ class LCP_19Test {
 
     @Test
     void minimumOperations() {
-        String leaves = "rrryyyrryyyrr";
+//        String leaves = "rrryyyrryyyrr";
+//        String leaves = "yyyyryyyy";
+        String leaves = "ryyryyyrryyyyyryyyrrryyyryryyyyryyrrryryyyryrryrrrryyyrrrrryryyrrrrryyyryyryrryryyryyyyryyrryrryryy";
         int result = new LCP_19().minimumOperations(leaves);
         System.out.println(result);
     }
