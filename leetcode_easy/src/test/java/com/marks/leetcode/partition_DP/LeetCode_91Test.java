@@ -11,15 +11,15 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  * @author marks
  * @version v1.0
- * @data 2024/9/20 18:16
+ * @data 2024/9/23 11:11
  * @update [序号][日期YYYY-MM-DD] [更改人姓名][变更描述]
  */
-class LeetCode_2767Test {
+class LeetCode_91Test {
 
     @Test
-    void minimumBeautifulSubstrings() {
-//        String s = "1011";
-        String s = "1";
-        int result = new LeetCode_2767().minimumBeautifulSubstrings(s);
+    void numDecodings() {
+        String s = "226";
+        int result = new LeetCode_91().numDecodings(s);
+        System.out.println(result);
     }
 }
