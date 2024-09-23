@@ -18,4 +18,39 @@ public class Trie {
         this.isFinished = false;
         this.child = new Trie[26];
     }
+
+    public void insert(String word) {
+        Trie node = this;
+        for (int i = 0; i < word.length(); i++) {
+            char ch = word.charAt(i);
+            if (node.child[ch - 'a'] == null) {
+                node.child[ch - 'a'] = new Trie();
+            }
+            node = node.child[ch - 'a'];
+        }
+        node.isFinished = true;
+    }
+
+    public boolean search(String word) {
+        Trie node = searchPrefix(word);
+        return node != null && node.isFinished;
+    }
+
+    public boolean startsWith(String word) {
+        return searchPrefix(word) != null;
+    }
+
+    private Trie searchPrefix(String word) {
+        Trie node = this;
+        for (int i = 0; i < word.length(); i++) {
+            char ch = word.charAt(i);
+            if (node.child[ch - 'a'] == null) {
+                return null;
+            }
+            node = node.child[ch - 'a'];
+        }
+        return node;
+    }
+
+
 }

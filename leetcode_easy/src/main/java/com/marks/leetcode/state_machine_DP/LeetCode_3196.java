@@ -44,7 +44,7 @@ public class LeetCode_3196 {
     /**
      * @Description: [
      * 基于method_01, 使用空间优化复杂度
-     * AC:2ms/60.43MB
+     * AC:1ms/60.38MB
      * @see #method_01(int[])
      * ]
      * @param nums
@@ -62,9 +62,8 @@ public class LeetCode_3196 {
         long dp1 = nums[0];
         for (int i = 1; i < n; i++) {
             long temp0 = Math.max(dp0, dp1) + nums[i];
-            long temp1 = Math.max(dp0 - nums[i], dp1 + nums[i]);
+            dp1 = Math.max(dp0 - nums[i], dp1 + nums[i]);
             dp0 = temp0;
-            dp1 = temp1;
         }
         return Math.max(dp0, dp1);
     }
