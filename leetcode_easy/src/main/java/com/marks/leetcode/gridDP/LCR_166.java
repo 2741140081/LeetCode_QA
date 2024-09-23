@@ -2,7 +2,7 @@ package com.marks.leetcode.gridDP;
 
 import java.util.Arrays;
 
-public class LeetCode_LCR_166 {
+public class LCR_166 {
     /**
      * 现有一个记作二维矩阵 frame 的珠宝架，其中 frame[i][j] 为该位置珠宝的价值。拿取珠宝的规则为：
      * 只能从架子的左上角开始拿珠宝
