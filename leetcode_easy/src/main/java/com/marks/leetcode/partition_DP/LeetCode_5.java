@@ -14,7 +14,13 @@ import java.util.Arrays;
  */
 public class LeetCode_5 {
     /**
-     * @Description: [功能描述]
+     * @Description: [
+     * 给你一个字符串 s，找到 s 中最长的 回文子串。
+     * E1:
+     * 输入：s = "babad"
+     * 输出："bab"
+     * 解释："aba" 同样是符合题意的答案。
+     * ]
      * @param s
      * @return java.lang.String
      * @author marks
