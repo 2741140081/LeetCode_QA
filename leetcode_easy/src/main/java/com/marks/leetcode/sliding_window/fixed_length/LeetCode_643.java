@@ -34,8 +34,40 @@ public class LeetCode_643 {
     public double findMaxAverage(int[] nums, int k) {
         double result = 0;
         result = method_01(nums, k);
+        result = method_02(nums, k);
         return result;
     }
+    /**
+     * @Description: [
+     * AC:6ms/54.89MB
+     * 将 double sum, answer 改为int sum, answer
+     * Java中的double类型比int类型在计算上可能会慢一些，因为double类型的数据比int类型的数据占用更多的内存，并且在计算时可能需要使用更多的CPU资源。
+     * double是8字节, int 是4字节
+     * AC:2ms/54.89MB
+     * ]
+     * @param nums
+     * @param k
+     * @return double
+     * @author marks
+     * @CreateDate: 2024/10/9 16:02
+     * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
+     */
+    private double method_02(int[] nums, int k) {
+        int n = nums.length;
+        int sum = 0;
+        int answer = Integer.MIN_VALUE;
+        for (int i = 0; i < n; i++) {
+            sum += nums[i];
+            if (i < k - 1) {
+                continue;
+            }
+            answer = Math.max(answer, sum);
+            sum -= nums[i - k + 1];
+        }
+
+        return answer * 1.0 / k;
+    }
+
     /**
      * @Description: [
      * 还是应该先把窗口给弄出来, 在慢慢滑动
