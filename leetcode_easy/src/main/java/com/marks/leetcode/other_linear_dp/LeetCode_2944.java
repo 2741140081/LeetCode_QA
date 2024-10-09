@@ -1,4 +1,4 @@
-package com.marks.leetcode.partition_DP;
+package com.marks.leetcode.other_linear_dp;
 
 import java.util.Arrays;
 

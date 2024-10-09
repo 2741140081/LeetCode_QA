@@ -1,8 +1,7 @@
 package com.marks.leetcode.partition_DP;
 
+import com.marks.leetcode.other_linear_dp.LeetCode_2944;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * <p>项目名称:  </p>
