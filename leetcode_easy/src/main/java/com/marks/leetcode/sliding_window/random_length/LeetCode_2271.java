@@ -42,7 +42,7 @@ public class LeetCode_2271 {
     }
 
     private int method_02(int[][] tiles, int carpetLen) {
-        Arrays.sort(tiles, (o1, o2) -> o1[0] - o2[0]);
+        Arrays.sort(tiles, Comparator.comparingInt(o -> o[0]));
         int n = tiles.length, l = 0, r = 0, sum = 0, max = 0;
         while (l <= r && r < n) {
             int leftBoundary = tiles[l][0], rightBoundary = leftBoundary + carpetLen - 1;
