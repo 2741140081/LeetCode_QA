@@ -36,9 +36,26 @@ public class LeetCode_2831 {
      */
     public int longestEqualSubarray(List<Integer> nums, int k) {
         int result = 0;
-        result = method_01(nums, k);
+//        result = method_01(nums, k);
+        result = method_02(nums, k);
         return result;
     }
+
+    private int method_02(List<Integer> nums, int k) {
+        int n = nums.size();
+        HashMap<Integer, Integer> map = new HashMap<>();
+        int ans = 0;
+        for (int i = 0, left = 0; i < n; i++) {
+            map.put(nums.get(i), map.getOrDefault(nums.get(i), 0) + 1);
+            if (i - left + 1 - map.get(nums.get(i)) > k) {
+                map.put(nums.get(left), map.get(nums.get(left)) - 1);
+                left++;
+            }
+            ans = Math.max(ans, map.get(nums.get(i)));
+        }
+        return ans;
+    }
+
     /**
      * @Description: [
      * E1:
@@ -51,6 +68,8 @@ public class LeetCode_2831 {
      *
      * Code Tips 1:
      * For each indicesx, find i, j such that (indicesx[j] - indicesx[i]) - (j - i) <= k and j - i + 1 is maximized.
+     * 查看官方题解
+     * AC:109ms/66.51MB
      * ]
      * @param nums
      * @param k
@@ -66,6 +85,16 @@ public class LeetCode_2831 {
             map.computeIfAbsent(nums.get(i), x->new ArrayList<>()).add(i);
 
         }
-        return 0;
+        int ans = 0;
+        for (List<Integer> list : map.values()) {
+            for (int i = 0, j = 0; i < list.size(); i++) {
+                while (list.get(i) - list.get(j) - (i - j) > k) {
+                    j++;
+                }
+                ans = Math.max(ans, i - j + 1);
+            }
+        }
+
+        return ans;
     }
 }
