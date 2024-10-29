@@ -10,7 +10,7 @@ package com.marks.leetcode.sliding_window.random_length;
  * @data 2024/10/29 10:19
  * @update [序号][日期YYYY-MM-DD] [更改人姓名][变更描述]
  */
-public class LeetCode_1356 {
+public class LeetCode_1358 {
     /**
      * @Description: [
      * 给你一个字符串 s ，它只包含三种字符 a, b 和 c 。

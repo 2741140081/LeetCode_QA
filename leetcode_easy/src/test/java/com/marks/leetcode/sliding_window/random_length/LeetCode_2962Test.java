@@ -11,16 +11,16 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  * @author marks
  * @version v1.0
- * @data 2024/10/29 10:34
+ * @data 2024/10/29 17:19
  * @update [序号][日期YYYY-MM-DD] [更改人姓名][变更描述]
  */
-class LeetCode_1356Test {
+class LeetCode_2962Test {
 
     @Test
-    void numberOfSubstrings() {
-        // s = "abcabc"
-        String s = "abcabc";
-        int result = new LeetCode_1356().numberOfSubstrings(s);
+    void countSubarrays() {
+        int[] nums = {1,3,2,3,3};
+        int k = 2;
+        long result = new LeetCode_2962().countSubarrays(nums, k);
         System.out.println(result);
     }
 }
