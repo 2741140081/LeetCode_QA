@@ -18,8 +18,11 @@ class LeetCode_2875Test {
 
     @Test
     void minSizeSubarray() {
-        int[] nums = {1,1,1,2,3};
-        int target = 20;
+        // 18,3,11,19,7,16,6,7,3,6,18,9,9,1,14,17,15,14,12,10  target = 7
+//        int[] nums = {18,3,11,19,7,16,6,7,3,6,18,9,9,1,14,17,15,14,12,10};
+        // 5,5,4,1,2,2,2,3,2,4,2,5 target = 56
+        int[] nums = {5,5,4,1,2,2,2,3,2,4,2,5};
+        int target = 56;
         int result = new LeetCode_2875().minSizeSubarray(nums, target);
         System.out.println(result);
     }

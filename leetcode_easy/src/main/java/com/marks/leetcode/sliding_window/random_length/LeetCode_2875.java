@@ -26,6 +26,9 @@ public class LeetCode_2875 {
      * 解释：在这个例子中 infinite_nums = [1,1,1,2,3,1,1,1,2,3,1,1,...].
      * 区间 [4,5] 内的子数组的元素和等于 target = 4 ，且长度 length = 2 。
      * 可以证明，当元素和等于目标值 target = 4 时，2 是子数组的最短长度。
+     * AC:161ms/53.91MB
+     * 修改 k值获取方式和 cnt的方式将循环变成整除
+     * AC:8ms/53.86MB
      * ]
      * @param nums
      * @param target
@@ -36,35 +39,24 @@ public class LeetCode_2875 {
      */
     private int method_01(int[] nums, int target) {
         int n = nums.length;
-        long k = target;
-        int[] pre = new int[n + 1];
-        for (int i = 1; i <= n; i++) {
-            pre[i] = pre[i - 1] + nums[i - 1];
-        }
-        long sum = pre[n];
+        long total = Arrays.stream(nums).sum();
+        long k = target % total;
         long ans = 0;
-        while (k > 2 * sum) {
-            ans += n;
-            k = k - sum;
-        }
-        // k = pre[i] + cnt * sum + pre[j]
-        int left = 0;
-        int len = 2 * n + 1;
-        for (int i = 0; i <= n; i++) {
-            while (left <= n && pre[n] - pre[left] + pre[i] > k) {
-                left++;
-            }
-            if (left <= n) {
-                if (pre[n] - pre[left] + pre[i] == k) {
-                    len = Math.min(len, n - left + i);
-                }
-            }else {
-                // left > n
-                if (pre[i] == k) {
-                    len = Math.min(len, i + 1);
-                }
+        ans += (target / total) * n;
+
+        int left = 0; // 窗口的左边界
+        int len = 2 * n + 1; // len为窗口的长度
+        long sum = 0; // 窗口部分的sum值
+        for (int right = 0; right < 2 * n; right++) {
+            // 遍历找到[left, right] 使得结果等于k
+            sum += nums[right % n];
+            while (left < n && sum > k) {
+                sum -= nums[left++];
             }
 
+            if (sum == k) {
+                len = Math.min(len, right - left + 1);
+            }
         }
         // 判断是否符合要求, 即是否存在k, 使得pre[left] + pre[right] == k
         if (len == 2 * n + 1) {
