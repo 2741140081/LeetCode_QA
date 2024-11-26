@@ -1,6 +1,7 @@
 package com.marks.leetcode.binary_algorithm;
 
 import java.util.Arrays;
+import java.util.PriorityQueue;
 
 /**
  * <p>项目名称:  </p>
@@ -42,8 +43,48 @@ public class LeetCode_1642 {
      */
     public int furthestBuilding(int[] heights, int bricks, int ladders) {
         int result;
-        result = method_01(heights, bricks, ladders);
+//        result = method_01(heights, bricks, ladders);
+        result = method_02(heights, bricks, ladders);
         return result;
+    }
+
+    /**
+     * @Description: [
+     * 查看题解:
+     * 贪心 + 堆(PriorityQueue, 优先队列)
+     * 1. 方法与method_01类似, 也是将落差大的用梯子跳过, 落差小的用方块跳过
+     * 不使用二分法, 直接
+     * 使用 PriorityQueue 存储用梯子跳过的, PriorityQueue中是按自然顺序排序, [3, 5, 8]
+     * AC:19ms/56.13MB
+     * ]
+     * @param heights
+     * @param bricks
+     * @param ladders
+     * @return int
+     * @author marks
+     * @CreateDate: 2024/11/26 17:02
+     * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
+     */
+    private int method_02(int[] heights, int bricks, int ladders) {
+        int n = heights.length;
+        int sum = 0; // 需要砖头的数量
+        PriorityQueue<Integer> queue = new PriorityQueue<>();
+        for (int i = 1; i < n; i++) {
+            int diff = heights[i] - heights[i - 1];
+            if (diff > 0) {
+                queue.offer(diff);
+                // 如果梯子数量不足
+                if (queue.size() > ladders) {
+                    // 获取并删除队列头部元素, 即queue中最小值
+                    sum += queue.poll();
+                }
+                if (sum > bricks) {
+                    // 当需要的砖头 大于 提供的砖头时, 即不能到达下一个i, 返回i - 1
+                    return i - 1;
+                }
+            }
+        }
+        return n - 1;
     }
 
     /**
