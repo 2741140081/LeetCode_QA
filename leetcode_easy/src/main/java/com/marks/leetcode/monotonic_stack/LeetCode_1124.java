@@ -1,5 +1,8 @@
 package com.marks.leetcode.monotonic_stack;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
+
 /**
  * <p>项目名称:  </p>
  * <p>文件名称:  </p>
@@ -39,10 +42,15 @@ public class LeetCode_1124 {
      * 输入：hours = [9,9,6,0,6,6,9]
      * 输出：3
      * 解释：最长的表现良好时间段是 [9,9,6]。
-     * hours = {1, 1, 0, 0, 0, 0, 1}
-     * pre[] = {1, 2, 2, 2, 2, 2, 3}
+     * hours = {1, 1, -1, -1, -1, -1, 1}
+     * pre[] = {1, 2, 1, 0, -1, -2, -1}
+     * stack = {^2, 1, 0}
+     * stack = {^2, 1, 0}
+     * i = 2
+     * 0, 1
+     * 2 >
      *
-     *
+     * AC:8ms/44.50MB
      * ]
      * @param hours
      * @return int
@@ -52,12 +60,25 @@ public class LeetCode_1124 {
      */
     private int method_01(int[] hours) {
         int n = hours.length;
-        int[] pre = new int[n];
-        pre[0] = hours[0] > 8 ? 1 : 0;
-        for (int i = 1; i < n; i++) {
-            pre[i] = pre[i - 1] + hours[i] > 8 ? 1 : 0;
+        int[] pre = new int[n + 1];
+        Deque<Integer> stack = new ArrayDeque<>();
+
+        stack.push(0);
+        for (int i = 1; i <= n; i++) {
+            pre[i] = pre[i - 1] + (hours[i - 1] > 8 ? 1 : -1);
+            if (pre[stack.peek()] > pre[i]) {
+                stack.push(i);
+            }
+
+        }
+        int ans = 0;
+        for (int i = n; i >= 1; i--) {
+            while (!stack.isEmpty() && pre[stack.peek()] < pre[i]) {
+                ans = Math.max(ans, i - stack.poll());
+
+            }
         }
 
-        return 0;
+        return ans;
     }
 }
