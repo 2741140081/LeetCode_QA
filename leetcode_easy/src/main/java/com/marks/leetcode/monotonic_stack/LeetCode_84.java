@@ -76,7 +76,7 @@ public class LeetCode_84 {
      * @CreateDate: 2024/12/2 10:33
      * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
      */
-    private int method_02(int[] heights) {
+    public int method_02(int[] heights) {
         int n = heights.length;
         int[] left = new int[n];
         int[] right = new int[n];

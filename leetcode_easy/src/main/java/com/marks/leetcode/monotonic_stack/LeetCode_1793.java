@@ -1,5 +1,9 @@
 package com.marks.leetcode.monotonic_stack;
 
+import java.util.ArrayDeque;
+import java.util.Arrays;
+import java.util.Deque;
+
 /**
  * <p>项目名称:  </p>
  * <p>文件名称:  </p>
@@ -34,7 +38,91 @@ public class LeetCode_1793 {
     public int maximumScore(int[] nums, int k) {
         int result;
         result = method_01(nums, k);
+        result = method_02(nums, k);
+        result = method_03(nums, k);
         return result;
+    }
+
+    /**
+     * @Description: [
+     * 优化栈, 只需要一次遍历即可求出left[] 和  right[]
+     * AC:32ms/58.19MB
+     * ]
+     * @param nums
+     * @param k
+     * @return int
+     * @author marks
+     * @CreateDate: 2024/12/4 10:14
+     * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
+     */
+    private int method_03(int[] nums, int k) {
+        int n = nums.length;
+        int[] left = new int[n];
+        int[] right = new int[n];
+        Deque<Integer> stack = new ArrayDeque<>();
+        Arrays.fill(right, n);
+        for (int i = 0; i < n; i++) {
+            while (!stack.isEmpty() && nums[stack.peek()] >= nums[i]) {
+                right[stack.peek()] = i;
+                stack.poll();
+            }
+            left[i] = stack.isEmpty() ? -1 : stack.peek();
+            stack.push(i);
+        }
+        int ans = nums[k];
+        for (int i = 0; i < n; i++) {
+            // i <= k <= j, 但是left[] 和right[] 存储的是小于ming(nums[i] ~ nums[j]), 所以需要大于left[i], 小于right[i]
+            if (k > left[i] && k < right[i]) {
+                ans = Math.max(ans, (right[i] - left[i] - 1) * nums[i]);
+            }
+        }
+        return ans;
+    }
+
+    /**
+     * @Description: [
+     * @see LeetCode_84#method_02(int[])
+     * 本地与之方法一致, 同样是求
+     * AC:48ms/56.75MB
+     * ]
+     * @param nums
+     * @param k
+     * @return int
+     * @author marks
+     * @CreateDate: 2024/12/2 14:23
+     * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
+     */
+    private int method_02(int[] nums, int k) {
+        int n = nums.length;
+        int[] left = new int[n];
+        int[] right = new int[n];
+        Deque<Integer> stack = new ArrayDeque<>();
+//        Arrays.fill(right, n);
+        for (int i = 0; i < n; i++) {
+            while (!stack.isEmpty() && nums[stack.peek()] >= nums[i]) {
+                stack.poll();
+            }
+            left[i] = stack.isEmpty() ? -1 : stack.peek();
+            stack.push(i);
+        }
+
+        stack.clear();
+        for (int i = n - 1; i >= 0; i--) {
+            while (!stack.isEmpty() && nums[stack.peek()] >= nums[i]) {
+                stack.poll();
+            }
+            right[i] = stack.isEmpty() ? n : stack.peek();
+            stack.push(i);
+        }
+
+        int ans = nums[k];
+        for (int i = 0; i < n; i++) {
+            // i <= k <= j, 但是left[] 和right[] 存储的是小于ming(nums[i] ~ nums[j]), 所以需要大于left[i], 小于right[i]
+            if (k > left[i] && k < right[i]) {
+                ans = Math.max(ans, (right[i] - left[i] - 1) * nums[i]);
+            }
+        }
+        return ans;
     }
 
     /**
