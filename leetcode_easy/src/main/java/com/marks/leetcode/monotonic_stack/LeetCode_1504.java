@@ -1,5 +1,8 @@
 package com.marks.leetcode.monotonic_stack;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
+
 /**
  * <p>项目名称:  </p>
  * <p>文件名称:  </p>
@@ -47,6 +50,7 @@ public class LeetCode_1504 {
      * [-1,  0, -1]
      * [-1,  0, -1]
      * 输出：13
+     * AC:13ms/44.5MB
      * ]
      * @param mat
      * @return int
@@ -55,6 +59,38 @@ public class LeetCode_1504 {
      * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
      */
     private int method_01(int[][] mat) {
-        return 0;
+        int m = mat.length;
+        int n = mat[0].length;
+        int[][] pre = new int[m][n];
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (j == 0) {
+                    pre[i][j] = mat[i][j];
+                } else if (mat[i][j] == 0) {
+                    pre[i][j] = 0;
+                } else if (mat[i][j] == 1) {
+                    pre[i][j] = pre[i][j - 1] + 1;
+                }
+            }
+        }
+        int ans = 0;
+        Deque<int[]> stack = new ArrayDeque<>();
+        for (int i = 0; i < n; i++) {
+            int sum = 0;
+            for (int j = 0; j < m; j++) {
+                int height = 1;
+                while (!stack.isEmpty() && stack.peek()[0] > pre[j][i]) {
+                    sum -= stack.peek()[1] * (stack.peek()[0] - pre[j][i]);
+                    height += stack.peek()[1];
+                    stack.poll();
+                }
+                sum += pre[j][i];
+                ans += sum;
+                stack.push(new int[] {pre[j][i], height});
+            }
+
+            stack.clear();
+        }
+        return ans;
     }
 }
