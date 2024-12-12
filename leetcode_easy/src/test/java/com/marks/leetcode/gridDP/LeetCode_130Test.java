@@ -7,7 +7,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class LeetCode_120Test {
+class LeetCode_130Test {
 
     /**
      *      * 2
