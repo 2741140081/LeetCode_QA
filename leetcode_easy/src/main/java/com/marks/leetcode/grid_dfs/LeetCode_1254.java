@@ -1,4 +1,4 @@
-package com.marks.leetcode.gird_dfs;
+package com.marks.leetcode.grid_dfs;
 
 /**
  * <p>项目名称:  </p>

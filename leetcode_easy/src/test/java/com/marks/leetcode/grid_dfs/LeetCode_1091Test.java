@@ -1,6 +1,6 @@
-package com.marks.leetcode.gird_dfs;
+package com.marks.leetcode.grid_dfs;
 
-import com.marks.leetcode.grid_dfs.LeetCode_1091;
+import com.marks.leetcode.grid_bfs.LeetCode_1091;
 import org.junit.jupiter.api.Test;
 
 /**

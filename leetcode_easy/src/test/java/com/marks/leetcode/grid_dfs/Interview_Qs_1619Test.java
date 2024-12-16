@@ -1,8 +1,6 @@
-package com.marks.leetcode.gird_dfs;
+package com.marks.leetcode.grid_dfs;
 
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * <p>项目名称:  </p>
