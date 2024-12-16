@@ -89,6 +89,8 @@ public class LeetCode_2146 {
      * }
      *
      * 按照题目要求, 将前4个元素进行升序排序
+     *
+     * AC:140ms/79.96MB
      * ]
      * @param grid
      * @param pricing
