@@ -1,4 +1,4 @@
-package com.marks.leetcode.grid_dfs;
+package com.marks.leetcode.grid_bfs;
 
 import java.util.Deque;
 import java.util.LinkedList;
