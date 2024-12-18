@@ -55,4 +55,12 @@ public class UnionF {
     public boolean isConnected(int x, int y) {
         return find(x) == find(y);
     }
+
+    public int[] getRoot() {
+        return root;
+    }
+
+    public int[] getRank() {
+        return rank;
+    }
 }
