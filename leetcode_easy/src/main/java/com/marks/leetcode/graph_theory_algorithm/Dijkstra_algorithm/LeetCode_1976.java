@@ -50,6 +50,16 @@ public class LeetCode_1976 {
      * @Description: [
      * 思路
      * <p> 1. 先求出0 -> n - 1最短的路径, 通过最短路径, 计算路径总数
+     * <p> Result: 16/55 存在问题, A -> B, A -> C, 然后 C -> B, 类似于这种, 我用的方式会漏算
+     * <p> 查看官解题解, 也是使用DP, 但是他使用的很巧妙, 直接在 求解最短路径时, 进行DP的计算
+     * <p> if (spend < dist[next_j]) {
+     * <p>   dist[next_j] = spend;
+     * <p>   dp[next_j] = dp[curr_i];
+     * <p>   listQueue.offer(new long[] {spend, next_j});
+     * <p>} else if (spend == dist[next_j]) {
+     * <p>    dp[next_j] = (dp[next_j] + dp[curr_i]) % MOD;
+     * <p>}
+     *
      * ]
      * @param n 
      * @param roads 
