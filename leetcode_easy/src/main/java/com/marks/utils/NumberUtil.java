@@ -1,0 +1,40 @@
+package com.marks.utils;
+
+/**
+ * <p>项目名称:  </p>
+ * <p>文件名称:  </p>
+ * <p>描述: [类型描述] </p>
+ *
+ * @author marks
+ * @version v1.0
+ * @date 2025/1/7 17:27
+ * @update [序号][日期YYYY-MM-DD] [更改人姓名][变更描述]
+ */
+public class NumberUtil {
+
+    /**
+     * @Description: 两数的最大公约数: Calculate the greatest common divisor of x and y
+     * @param x
+     * @param y
+     * @return int
+     * @author marks
+     * @CreateDate: 2025/1/7 17:31
+     * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
+     */
+    public static int gcd(int x, int y) {
+        return y == 0 ? y : gcd(y, x % y);
+    }
+
+    /**
+     * @Description: 最小公倍数: Calculate the least common multiple of x and y
+     * @param x
+     * @param y
+     * @return int
+     * @author marks
+     * @CreateDate: 2025/1/7 17:35
+     * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
+     */
+    public static int lcm(int x, int y) {
+        return x * y / gcd(x, y);
+    }
+}
