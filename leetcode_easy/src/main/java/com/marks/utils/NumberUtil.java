@@ -74,12 +74,37 @@ public class NumberUtil {
         return sum;
     }
 
-    public static int rev(int num) {
+    /**
+     * @Description: 通过字符串reverse()方法的反转int num, 并删除前导0
+     * @param num
+     * @return int
+     * @author marks
+     * @CreateDate: 2025/1/8 17:35
+     * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
+     */
+    public static int revByString(int num) {
         String str = Integer.toString(num);
         StringBuilder str_rev = new StringBuilder(str).reverse();
         while (str_rev.length() > 1 && str_rev.charAt(0) == '0') {
             str_rev.deleteCharAt(0);
         }
         return Integer.parseInt(String.valueOf(str_rev));
+    }
+
+    /**
+     * @Description: 反转int num
+     * @param num
+     * @return int
+     * @author marks
+     * @CreateDate: 2025/1/8 17:37
+     * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
+     */
+    private static int rev(int num) {
+        int rev = 0;
+        while (num > 0) {
+            rev = rev * 10 + num % 10;
+            num /= 10;
+        }
+        return rev;
     }
 }
