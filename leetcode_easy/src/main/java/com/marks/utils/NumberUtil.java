@@ -37,4 +37,40 @@ public class NumberUtil {
     public static int lcm(int x, int y) {
         return x * y / gcd(x, y);
     }
+
+    /**
+     * @Description: 获取数位最大值: Get digital maximum value
+     * @param num
+     * @return int
+     * @author marks
+     * @CreateDate: 2025/1/8 10:51
+     * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
+     */
+    public static int getMaxDigital(int num) {
+        int max = 0;
+        int mod = 10;
+        while (num > 0) {
+            max = Math.max(max, num % mod);
+            num = num / 10;
+        }
+        return max;
+    }
+
+    /**
+     * @Description: 获取数位和: Get digital sum
+     * @param num
+     * @return int
+     * @author marks
+     * @CreateDate: 2025/1/8 10:51
+     * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
+     */
+    public static int getDigitalSum(int num) {
+        int sum = 0;
+        int mod = 10;
+        while (num > 0) {
+            sum = sum += num % mod;
+            num = num / 10;
+        }
+        return sum;
+    }
 }
