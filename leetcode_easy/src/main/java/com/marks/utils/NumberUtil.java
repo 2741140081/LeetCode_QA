@@ -73,4 +73,13 @@ public class NumberUtil {
         }
         return sum;
     }
+
+    public static int rev(int num) {
+        String str = Integer.toString(num);
+        StringBuilder str_rev = new StringBuilder(str).reverse();
+        while (str_rev.length() > 1 && str_rev.charAt(0) == '0') {
+            str_rev.deleteCharAt(0);
+        }
+        return Integer.parseInt(String.valueOf(str_rev));
+    }
 }
