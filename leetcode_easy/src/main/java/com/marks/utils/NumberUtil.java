@@ -68,7 +68,7 @@ public class NumberUtil {
         int sum = 0;
         int mod = 10;
         while (num > 0) {
-            sum = sum += num % mod;
+            sum = num % mod;
             num = num / 10;
         }
         return sum;
