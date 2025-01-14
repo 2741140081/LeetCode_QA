@@ -28,8 +28,8 @@ public class LeetCode_1441 {
      * 题目数据保证目标数组严格递增，并且只包含 1 到 n 之间的数字。
      *
      * 请返回构建目标数组所用的操作序列。如果存在多个可行方案，返回任一即可。
-     * @param target
-     * @param n
+     * @param target 目标数组 target
+     * @param n 整数 n
      * @return java.util.List<java.lang.String>
      * @author marks
      * @CreateDate: 2025/1/14 17:32
@@ -44,8 +44,8 @@ public class LeetCode_1441 {
     /**
      * @Description:
      * AC:0ms/41.98MB
-     * @param target
-     * @param n
+     * @param target 目标数组 target
+     * @param n 整数 n
      * @return java.util.List<java.lang.String>
      * @author marks
      * @CreateDate: 2025/1/14 17:32
@@ -57,7 +57,7 @@ public class LeetCode_1441 {
         for (int i = 1, index = 0; i <= n && index < target.length; i++) {
             stack.push(i);
             ans.add("Push");
-            if (stack.peek() == target[index]) {
+            if (!stack.isEmpty() && stack.peek() == target[index]) {
                 index++;
             }else {
                 // stack.poll();
