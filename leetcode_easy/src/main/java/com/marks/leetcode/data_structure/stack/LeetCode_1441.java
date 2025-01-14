@@ -60,7 +60,7 @@ public class LeetCode_1441 {
             if (stack.peek() == target[index]) {
                 index++;
             }else {
-                stack.poll();
+                // stack.poll();
                 stack.pop();
                 ans.add("Poll");
             }
