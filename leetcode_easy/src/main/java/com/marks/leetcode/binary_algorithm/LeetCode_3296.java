@@ -1,6 +1,8 @@
 package com.marks.leetcode.binary_algorithm;
 
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.PriorityQueue;
 
 /**
  * <p>项目名称:  </p>
@@ -42,7 +44,34 @@ public class LeetCode_3296 {
     public long minNumberOfSeconds(int mountainHeight, int[] workerTimes) {
         long result;
         result = method_01(mountainHeight, workerTimes);
+        result = method_02(mountainHeight, workerTimes);
         return result;
+    }
+
+    /**
+     * @Description:
+     * 优先队列
+     * @param mountainHeight
+     * @param workerTimes
+     * @return long
+     * @author marks
+     * @CreateDate: 2025/2/8 11:11
+     * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
+     */
+    private long method_02(int mountainHeight, int[] workerTimes) {
+        PriorityQueue<long[]> pq = new PriorityQueue<>((a, b) -> Long.compare(a[0], b[0]));
+        for (int t : workerTimes) {
+            pq.offer(new long[]{t, t, t});
+        }
+        long ans = 0;
+        while (mountainHeight-- > 0) {
+            // 工作后总用时，当前工作（山高度降低 1）用时，workerTimes[i]
+            long[] w = pq.poll();
+            long nxt = w[0], delta = w[1], base = w[2];
+            ans = nxt; // 最后一个出堆的 nxt 即为答案
+            pq.offer(new long[]{nxt + delta + base, delta + base, base});
+        }
+        return ans;
     }
 
     /**
