@@ -25,6 +25,7 @@ class LeetCode_2848Test {
     void numberOfPoints() {
         int[][] array = {{3,6},{1,5},{4,7}};
         List<List<Integer>> nums = Arrays.stream(array).map(ints -> Arrays.stream(ints).boxed().collect(Collectors.toList())).collect(Collectors.toList());
+        nums.forEach(System.out::println);
         int result = new LeetCode_2848().numberOfPoints(nums);
         System.out.println(result);
     }

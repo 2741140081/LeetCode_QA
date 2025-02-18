@@ -1,5 +1,8 @@
 package com.marks.leetcode.data_structure.difference;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
 /**
  * <p>项目名称:  </p>
  * <p>文件名称:  </p>
@@ -37,7 +40,9 @@ public class LeetCode_1109 {
      * @CreateDate: 2025/2/17 17:30
      * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
      */
-    private int[] method_01(int[][] bookings, int n) {
+    @NotNull
+    @Contract(pure = true)
+    private int[] method_01(@NotNull int[][] bookings, int n) {
         int maxValue = 0;
         for (int[] booking : bookings) {
             maxValue = Math.max(maxValue, booking[1]);
