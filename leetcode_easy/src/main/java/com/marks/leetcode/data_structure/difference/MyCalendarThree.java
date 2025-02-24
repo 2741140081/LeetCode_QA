@@ -35,7 +35,7 @@ public class MyCalendarThree {
     public int book(int startTime, int endTime) {
         int k = 0;
         diff.merge(startTime, 1, Integer::sum);
-        diff.merge(startTime, -1, Integer::sum);
+        diff.merge(endTime, -1, Integer::sum);
 
         int count = 0;
         for (Map.Entry<Integer, Integer> entry : diff.entrySet()) {
