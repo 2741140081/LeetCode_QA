@@ -415,29 +415,298 @@ GROUP BY request_at
 
 
 
+-- LeetCode 570. 至少有5名直接下属的经理
+
+-- 描述: 编写一个解决方案，找出至少有五个直接下属的经理。
+
+-- E1:
+DROP TABLE IF EXISTS employee;
+
+CREATE TABLE IF NOT EXISTS Employee (id INT, NAME VARCHAR(255), department VARCHAR(255), managerId INT);
+-- Truncate table Employee
+INSERT INTO Employee (id, NAME, department, managerId) VALUES ('101', 'John', 'A', NULL);
+INSERT INTO Employee (id, NAME, department, managerId) VALUES ('102', 'Dan', 'A', '101');
+INSERT INTO Employee (id, NAME, department, managerId) VALUES ('103', 'James', 'A', '101');
+INSERT INTO Employee (id, NAME, department, managerId) VALUES ('104', 'Amy', 'A', '101');
+INSERT INTO Employee (id, NAME, department, managerId) VALUES ('105', 'Anne', 'A', '101');
+INSERT INTO Employee (id, NAME, department, managerId) VALUES ('106', 'Ron', 'B', '101');
+
+
+-- Result: AC 667ms(11.01%)
+SELECT emp.name 
+FROM employee AS emp
+JOIN (
+	SELECT COUNT(managerId) AS cnt, managerId
+	FROM employee
+	WHERE managerId IS NOT NULL
+	GROUP BY managerId
+) AS info ON emp.id = info.managerId
+WHERE info.cnt >= 5
+
+
+-- Result: AC 459ms(50.20%)
+SELECT Employee.Name AS NAME
+FROM (
+  SELECT ManagerId AS Id
+  FROM Employee
+  GROUP BY ManagerId
+  HAVING COUNT(Id) >= 5
+) AS Manager JOIN Employee
+ON Manager.Id = Employee.Id
+
+
+
+-- LeetCode 577. 员工奖金
+
+-- 描述: 编写解决方案，报告每个奖金 少于 1000 的员工的姓名和奖金数额。
+
+-- E1:
+DROP TABLE IF EXISTS employee;
+
+CREATE TABLE IF NOT EXISTS Employee (empId INT, NAME VARCHAR(255), supervisor INT, salary INT);
+CREATE TABLE IF NOT EXISTS Bonus (empId INT, bonus INT);
+-- Truncate table Employee
+INSERT INTO Employee (empId, NAME, supervisor, salary) VALUES ('3', 'Brad', NULL, '4000');
+INSERT INTO Employee (empId, NAME, supervisor, salary) VALUES ('1', 'John', '3', '1000');
+INSERT INTO Employee (empId, NAME, supervisor, salary) VALUES ('2', 'Dan', '3', '2000');
+INSERT INTO Employee (empId, NAME, supervisor, salary) VALUES ('4', 'Thomas', '3', '4000');
+-- Truncate table Bonus
+INSERT INTO Bonus (empId, bonus) VALUES ('2', '500');
+INSERT INTO Bonus (empId, bonus) VALUES ('4', '2000');
+
+
+-- Result: AC 1377ms(49.97%)
+SELECT emp.name, b.bonus
+FROM employee AS emp
+LEFT JOIN bonus AS b
+ON emp.empId = b.empId
+WHERE b.bonus < 1000 OR b.bonus IS NULL
+
+
+
+-- LeetCode 584. 寻找用户推荐人
+
+-- 描述: 找出那些 没有被 id = 2 的客户 推荐 的客户的姓名。
+
+-- E1
+DROP TABLE IF EXISTS customer;
+CREATE TABLE IF NOT EXISTS Customer (id INT, NAME VARCHAR(25), referee_id INT);
+-- Truncate table Customer
+INSERT INTO Customer (id, NAME, referee_id) VALUES ('1', 'Will', NULL);
+INSERT INTO Customer (id, NAME, referee_id) VALUES ('2', 'Jane', NULL);
+INSERT INTO Customer (id, NAME, referee_id) VALUES ('3', 'Alex', '2');
+INSERT INTO Customer (id, NAME, referee_id) VALUES ('4', 'Bill', NULL);
+INSERT INTO Customer (id, NAME, referee_id) VALUES ('5', 'Zack', '1');
+INSERT INTO Customer (id, NAME, referee_id) VALUES ('6', 'Mark', '2');
+
+
+-- Result: AC 659ms(53.83%)
+SELECT cust.name
+FROM customer AS cust
+WHERE cust.referee_id <> 2 OR cust.referee_id IS NULL;
+
+
+
+-- LeetCode 585. 2016年的投资
+
+-- 描述: 编写解决方案报告 2016 年 (tiv_2016) 所有满足下述条件的投保人的投保金额之和：
+-- 	 他在 2015 年的投保额 (tiv_2015) 至少跟一个其他投保人在 2015 年的投保额相同。
+--	 他所在的城市必须与其他投保人都不同（也就是说 (lat, lon) 不能跟其他任何一个投保人完全相同）。
+--	 tiv_2016 四舍五入的 两位小数 。
+
+-- E1:
+CREATE TABLE IF NOT EXISTS Insurance (pid INT, tiv_2015 FLOAT, tiv_2016 FLOAT, lat FLOAT, lon FLOAT);
+-- Truncate table Insurance
+INSERT INTO Insurance (pid, tiv_2015, tiv_2016, lat, lon) VALUES ('1', '10', '5', '10', '10');
+INSERT INTO Insurance (pid, tiv_2015, tiv_2016, lat, lon) VALUES ('2', '20', '20', '20', '20');
+INSERT INTO Insurance (pid, tiv_2015, tiv_2016, lat, lon) VALUES ('3', '10', '30', '20', '20');
+INSERT INTO Insurance (pid, tiv_2015, tiv_2016, lat, lon) VALUES ('4', '10', '40', '40', '40');
+
+/*
+pid 是投保人的投保编号。
+tiv_2015 是该投保人在 2015 年的总投保金额，tiv_2016 是该投保人在 2016 年的总投保金额。
+lat 是投保人所在城市的纬度。题目数据确保 lat 不为空。
+lon 是投保人所在城市的经度。题目数据确保 lon 不为空。
+*/
+-- SUM(b.tiv_2016) AS 'tiv_2016' 
+-- CAST(info_2.cnt / info_1.cnt AS DECIMAL(10,2)) AS 'Cancellation Rate'
+
+-- fail
+SELECT CAST(SUM(b.tiv_2016) AS DECIMAL(10,2)) AS 'tiv_2016'
+FROM Insurance AS b
+RIGHT JOIN (
+	SELECT info.pid, info.tiv_2015 
+	FROM (
+		SELECT a.pid, a.tiv_2015, CONCAT(a.lat, "_", a.lon) AS location
+		FROM Insurance AS a
+	) AS info
+	GROUP BY info.location
+	HAVING COUNT(info.location) < 2
+) AS c ON b.pid != c.pid AND b.tiv_2015 = c.tiv_2015
+WHERE b.pid IN (
+	SELECT info.pid
+	FROM (
+		SELECT a.pid, a.tiv_2015, CONCAT(a.lat, "_", a.lon) AS location
+		FROM Insurance AS a
+	) AS info
+	GROUP BY info.location
+	HAVING COUNT(info.location) < 2
+);
+
+-- Result: AC 944ms(18.63%)
+SELECT
+    CAST(SUM(insurance.TIV_2016) AS DECIMAL(10,2)) AS 'tiv_2016'
+FROM
+    insurance
+WHERE
+    insurance.TIV_2015 IN
+    (
+      SELECT
+        TIV_2015
+      FROM
+        insurance
+      GROUP BY TIV_2015
+      HAVING COUNT(*) > 1
+    )
+    AND CONCAT(LAT, LON) IN
+    (
+      SELECT
+        CONCAT(LAT, LON)
+      FROM
+        insurance
+      GROUP BY LAT , LON
+      HAVING COUNT(*) = 1
+    )
+;
+
+
+
+-- LeetCode 586. 订单最多的客户
+
+-- 描述: 查找下了 最多订单 的客户的 customer_number 。 测试用例生成后， 恰好有一个客户 比任何其他客户下了更多的订单。
+
+-- E1:
+DROP TABLE IF EXISTS orders;
+CREATE TABLE IF NOT EXISTS orders (order_number INT, customer_number INT);
+-- Truncate table orders
+INSERT INTO orders (order_number, customer_number) VALUES ('1', '1');
+INSERT INTO orders (order_number, customer_number) VALUES ('2', '2');
+INSERT INTO orders (order_number, customer_number) VALUES ('3', '3');
+INSERT INTO orders (order_number, customer_number) VALUES ('4', '3');
+
+
+-- Result: AC 807ms(22.51%)
+SELECT info.customer_number FROM (
+	SELECT a.customer_number, COUNT(a.customer_number) AS cnt
+	FROM orders AS a
+	GROUP BY a.customer_number
+) AS info 
+ORDER BY info.cnt DESC
+LIMIT 1
+
+-- Result: AC 754ms(29.79%)
+SELECT
+    customer_number
+FROM
+    orders
+GROUP BY customer_number
+ORDER BY COUNT(*) DESC
+LIMIT 1
+
+
+-- LeetCode 595. 大的国家
+
+-- 描述: 编写解决方案找出 大国 的国家名称、人口和面积。如果一个国家满足下述两个条件之一，则认为该国是 大国: 
+--	 面积至少为 300 万平方公里（即，3000000 km2），或者 人口至少为 2500 万（即 25000000）
+
+-- E1:
+
+CREATE TABLE IF NOT EXISTS World (NAME VARCHAR(255), continent VARCHAR(255), AREA INT, population INT, gdp BIGINT)
+-- Truncate table World
+INSERT INTO World (NAME, continent, AREA, population, gdp) VALUES ('Afghanistan', 'Asia', '652230', '25500100', '20343000000');
+INSERT INTO World (NAME, continent, AREA, population, gdp) VALUES ('Albania', 'Europe', '28748', '2831741', '12960000000');
+INSERT INTO World (NAME, continent, AREA, population, gdp) VALUES ('Algeria', 'Africa', '2381741', '37100000', '188681000000');
+INSERT INTO World (NAME, continent, AREA, population, gdp) VALUES ('Andorra', 'Europe', '468', '78115', '3712000000');
+INSERT INTO World (NAME, continent, AREA, population, gdp) VALUES ('Angola', 'Africa', '1246700', '20609294', '100990000000');
+
+-- Result: AC 454(16.60%)
+SELECT w.name,  w.population, w.area
+FROM world AS w
+WHERE w.area >= 3000000 OR w.population >= 25000000
 
 
 
 
+-- LeetCode 601. 体育馆的人流量
 
+-- 描述: 编写解决方案找出每行的人数大于或等于 100 且 id 连续的三行或更多行记录。
+-- 	 返回按 visit_date 升序排列 的结果表。
 
+-- E1:
 
+CREATE TABLE IF NOT EXISTS Stadium (id INT, visit_date DATE NULL, people INT);
+-- Truncate table Stadium
+INSERT INTO Stadium (id, visit_date, people) VALUES ('1', '2017-01-01', '10');
+INSERT INTO Stadium (id, visit_date, people) VALUES ('2', '2017-01-02', '109');
+INSERT INTO Stadium (id, visit_date, people) VALUES ('3', '2017-01-03', '150');
+INSERT INTO Stadium (id, visit_date, people) VALUES ('4', '2017-01-04', '99');
+INSERT INTO Stadium (id, visit_date, people) VALUES ('5', '2017-01-05', '145');
+INSERT INTO Stadium (id, visit_date, people) VALUES ('6', '2017-01-06', '1455');
+INSERT INTO Stadium (id, visit_date, people) VALUES ('7', '2017-01-07', '199');
+INSERT INTO Stadium (id, visit_date, people) VALUES ('8', '2017-01-09', '188');
 
+-- 每日人流量信息被记录在这三列信息中：序号 (id)、日期 (visit_date)、 人流量 (people)
 
+-- wrong
+SET @group = 0;
+SET @group_copy = 0;
+SET @cnt = 0;
+SET @prev_id = 0;
 
+SELECT b.id, b.visit_date, b.people
+FROM (
+	SELECT info.id, info.visit_date,info.people,
+	@cnt := IF(@prev_id = info.id - 1, @cnt + 1, 1) AS cnt,
+	@group_copy := IF(@cnt = 1, @group_copy + 1, @group_copy) AS g_id,
+	@prev_id := info.id
+	FROM (
+		SELECT sta.id, sta.visit_date, sta.people
+		FROM stadium AS sta
+		WHERE sta.people >= 100
+	) AS info
+) AS b
+WHERE b.g_id IN (
+SELECT a.g_id
+FROM (
+	SELECT info.id, info.visit_date,info.people,
+	@cnt := IF(@prev_id = info.id - 1, @cnt + 1, 1) AS cnt,
+	@group := IF(@cnt = 1, @group + 1, @group) AS g_id,
+	@prev_id := info.id
+	FROM (
+		SELECT sta.id, sta.visit_date, sta.people
+		FROM stadium AS sta
+		WHERE sta.people >= 100
+	) AS info
+) AS a
+GROUP BY a.g_id
+HAVING COUNT(g_id) >= 3
+)
 
+-- 知道为什么错误, mysql 版本需要8.0及其以上
+WITH t1 AS(
+    SELECT *,id - row_number() over(ORDER BY id) AS rk
+    FROM stadium
+    WHERE people >= 100
+)
 
-
-
-
-
-
-
-
-
-
-
-
+SELECT id,visit_date,people
+FROM t1
+WHERE rk IN(
+    SELECT rk
+    FROM t1
+    GROUP BY rk
+    HAVING COUNT(rk) >= 3
+)
 
 
 

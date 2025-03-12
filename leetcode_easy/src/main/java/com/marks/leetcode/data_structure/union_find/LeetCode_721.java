@@ -101,7 +101,7 @@ public class LeetCode_721 {
         return merged;
     }
 
-    static class UnionFind {
+    private static class UnionFind {
         private int[] parent;
 
         public UnionFind(int size) {
