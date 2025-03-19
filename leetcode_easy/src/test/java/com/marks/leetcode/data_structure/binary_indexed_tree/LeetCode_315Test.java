@@ -2,6 +2,8 @@ package com.marks.leetcode.data_structure.binary_indexed_tree;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -11,16 +13,14 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  * @author marks
  * @version v1.0
- * @date 2025/3/18 14:49
+ * @date 2025/3/19 16:09
  * @update [序号][日期YYYY-MM-DD] [更改人姓名][变更描述]
  */
-class LeetCode_3072Test {
+class LeetCode_315Test {
 
     @Test
-    void resultArray() {
-        // 5,14,3,1,2
-        int[] nums = {9,58,43,42,46,25,38,2,42,72,54,96,78,44,2,52,74,70,66,8};
-//        int[] nums = {5,14,3,1,2};
-        int[] result = new LeetCode_3072().resultArray(nums);
+    void countSmaller() {
+        int[] nums = {5,2,6,1};
+        List<Integer> result = new LeetCode_315().countSmaller(nums);
     }
 }
