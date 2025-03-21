@@ -27,7 +27,6 @@ public class LeetCode_3187 {
      * 请你返回一个数组 answer ，它依次包含每一个第一种操作的答案。
      *
      * 注意：
-     *
      * 子数组中 第一个 和 最后一个 元素都 不是 峰值元素。
      * @param nums 
      * @param queries
@@ -44,6 +43,7 @@ public class LeetCode_3187 {
 
     /**
      * @Description:
+     * 输入：nums = [4,1,4,2,1,5], queries = [[2,2,4],[1,0,2],[1,0,4]]
      *
      * 好像有点难, 后续 wait todo
      * @param nums
