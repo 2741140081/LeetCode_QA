@@ -27,8 +27,45 @@ public class LeetCode_493 {
      */
     public int reversePairs(int[] nums) {
         int result;
-        result = method_01(nums);
+//        result = method_01(nums);
+        result = method_02(nums);
         return result;
+    }
+
+    /**
+     * @Description:
+     * 查看官方题解, 感觉起来和之前写的差不多, 但是这个多一个
+     * 1. 去重 和 添加 2 * nums[i] 排序
+     *
+     * AC: 168ms/63.59MB
+     * @param nums
+     * @return int
+     * @author marks
+     * @CreateDate: 2025/3/21 11:24
+     * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
+     */
+    private int method_02(int[] nums) {
+        Set<Long> allNumbers = new TreeSet<Long>();
+        for (int x : nums) {
+            allNumbers.add((long) x);
+            allNumbers.add((long) x * 2);
+        }
+        // 利用哈希表进行离散化
+        Map<Long, Integer> values = new HashMap<Long, Integer>();
+        int idx = 0;
+        for (long x : allNumbers) {
+            values.put(x, idx);
+            idx++;
+        }
+
+        int ret = 0;
+        BinaryIndexedTree bit = new BinaryIndexedTree(values.size());
+        for (int i = 0; i < nums.length; i++) {
+            int left = values.get((long) nums[i] * 2), right = values.size() - 1;
+            ret += bit.get(right + 1) - bit.get(left + 1);
+            bit.add(values.get((long) nums[i]) + 1);
+        }
+        return ret;
     }
 
     /**

@@ -11,18 +11,17 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  * @author marks
  * @version v1.0
- * @date 2025/3/19 17:22
+ * @date 2025/3/24 15:46
  * @update [序号][日期YYYY-MM-DD] [更改人姓名][变更描述]
  */
-class LeetCode_493Test {
+class LeetCode_327Test {
 
     @Test
-    void reversePairs() {
-        int[] nums = {2,4,3,5,1};
-//        int[] nums = {1,2,1,2,1};
-//        int[] nums = {1,3,2,3,1};
-//        int[] nums = {2147483647,2147483647,2147483647,2147483647,2147483647,2147483647};
-        int result = new LeetCode_493().reversePairs(nums);
+    void countRangeSum() {
+        // nums = [-2,5,-1], lower = -2, upper = 2
+        int[] nums = {-2, 5, -1};
+        int lower = -2, upper = 2;
+        int result = new LeetCode_327().countRangeSum(nums, lower, upper);
         System.out.println(result);
     }
 }
