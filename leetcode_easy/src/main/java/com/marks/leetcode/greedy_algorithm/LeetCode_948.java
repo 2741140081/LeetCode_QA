@@ -1,5 +1,7 @@
 package com.marks.leetcode.greedy_algorithm;
 
+import java.util.Arrays;
+
 /**
  * <p>项目名称:  </p>
  * <p>文件名称:  </p>
@@ -45,6 +47,8 @@ public class LeetCode_948 {
      *
      * 2.1 p = 12 s = 3,
      * 2.2 p = 11, s = 3,
+     *
+     * AC: 2ms/41.92MB
      * @param tokens
      * @param power
      * @return int
@@ -53,6 +57,28 @@ public class LeetCode_948 {
      * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
      */
     private int method_01(int[] tokens, int power) {
-        return 0;
+        Arrays.sort(tokens);
+        int n = tokens.length;
+        int ans = 0;
+        int left = 0;
+        int right = n - 1;
+        int rank = 0;
+
+        while (left <= right) {
+            if (power >= tokens[left]) {
+                power -= tokens[left];
+                rank++;
+                left++;
+                ans = Math.max(ans, rank);
+            } else if (rank > 0){
+                power += tokens[right];
+                right--;
+                rank--;
+            } else {
+                break;
+            }
+        }
+
+        return ans;
     }
 }
