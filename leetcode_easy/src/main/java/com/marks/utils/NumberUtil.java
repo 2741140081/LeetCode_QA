@@ -22,7 +22,7 @@ public class NumberUtil {
      * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
      */
     public static int gcd(int x, int y) {
-        return y == 0 ? y : gcd(y, x % y);
+        return y != 0 ? gcd(y, x % y) : x;
     }
 
     /**
