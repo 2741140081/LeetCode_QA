@@ -711,9 +711,92 @@ WHERE rk IN(
 
 
 
+-- LeetCode 550. 游戏玩法分析 IV
+
+-- 描述: 编写解决方案，报告在首次登录的第二天再次登录的玩家的 比率，四舍五入到小数点后两位。
+-- 	 换句话说，你需要计算从首次登录日期开始至少连续两天登录的玩家的数量，然后除以玩家总数。
+
+DROP TABLE Activity;
+-- E1:
+CREATE TABLE IF NOT EXISTS Activity (player_id INT, device_id INT, event_date DATE, games_played INT)
+-- Truncate table Activity
+INSERT INTO Activity (player_id, device_id, event_date, games_played) VALUES ('1', NULL, '2016-03-01', '5');
+INSERT INTO Activity (player_id, device_id, event_date, games_played) VALUES ('1', NULL, '2016-03-02', '6');
+INSERT INTO Activity (player_id, device_id, event_date, games_played) VALUES ('2', NULL, '2017-06-25', '1');
+INSERT INTO Activity (player_id, device_id, event_date, games_played) VALUES ('3', NULL, '2016-03-02', '0');
+INSERT INTO Activity (player_id, device_id, event_date, games_played) VALUES ('3', NULL, '2018-07-03', '5');
+
+
+/*
+(SELECT COUNT(DISTINCT player_id) FROM activity) 需要括号的原因:
+
+一、语法规范要求
+‌标量子查询必须用括号‌
+当子查询作为表达式的一部分时（如分母计算），必须用括号明确界定子查询范围‌
+
+‌运算符优先级控制‌
+除法运算符/的优先级高于SELECT语句，括号确保先执行子查询再参与除法运算‌
+
+*/
+
+-- Result: AC 816ms(43.28%)
+SELECT  ROUND( COUNT(DISTINCT a1.player_id) / (SELECT COUNT(DISTINCT player_id) FROM activity), 2)AS fraction
+FROM activity AS a1
+WHERE (a1.player_id, a1.event_date) IN (
+	SELECT act.player_id, DATE_ADD(MIN(act.event_date), INTERVAL 1 DAY)
+	FROM activity AS act
+	GROUP BY act.player_id
+)
+
+SELECT COUNT(DISTINCT a1.player_id)
+FROM activity AS a1
+WHERE (a1.player_id, a1.event_date) IN (
+	SELECT act.player_id, DATE_ADD(MIN(act.event_date), INTERVAL 1 DAY)
+	FROM activity AS act
+	GROUP BY act.player_id
+)
 
 
 
+SELECT 
+	ROUND(
+        COUNT(DISTINCT player_id)/ 
+    	(SELECT COUNT(DISTINCT player_id) FROM activity)
+    ,2)
+    
+FROM activity 
+WHERE (player_id, event_date) IN
+(
+    SELECT player_id, DATE_ADD(MIN(event_date), INTERVAL 1 DAY)
+    FROM activity
+    GROUP BY player_id
+
+)
+
+
+
+-- LeetCode 602. 好友申请 II ：谁有最多的好友
+
+-- 描述: 编写解决方案，找出拥有最多的好友的人和他拥有的好友数目。
+-- 	 生成的测试用例保证拥有最多好友数目的只有 1 个人。查询结果格式如下例所示。
+
+CREATE TABLE IF NOT EXISTS RequestAccepted (requester_id INT NOT NULL, accepter_id INT NULL, accept_date DATE NULL);
+-- Truncate table RequestAccepted
+INSERT INTO RequestAccepted (requester_id, accepter_id, accept_date) VALUES ('1', '2', '2016/06/03');
+INSERT INTO RequestAccepted (requester_id, accepter_id, accept_date) VALUES ('1', '3', '2016/06/08');
+INSERT INTO RequestAccepted (requester_id, accepter_id, accept_date) VALUES ('2', '3', '2016/06/08');
+INSERT INTO RequestAccepted (requester_id, accepter_id, accept_date) VALUES ('3', '4', '2016/06/09');
+
+
+-- Result: AC 512(30.02%)
+SELECT a.ids, COUNT(a.ids) AS num FROM (
+SELECT requester_id AS ids FROM RequestAccepted
+UNION ALL
+SELECT accepter_id FROM RequestAccepted
+) AS a
+GROUP BY a.ids
+ORDER BY num DESC
+LIMIT 1
 
 
 
