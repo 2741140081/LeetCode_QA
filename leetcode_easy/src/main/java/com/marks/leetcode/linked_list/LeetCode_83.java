@@ -1,4 +1,4 @@
-package com.marks.leetcode.linkedList;
+package com.marks.leetcode.linked_list;
 
 import com.marks.utils.ListNode;
 
