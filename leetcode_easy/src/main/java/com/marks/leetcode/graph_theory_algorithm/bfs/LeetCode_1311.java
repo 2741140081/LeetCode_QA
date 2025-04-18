@@ -85,13 +85,7 @@ public class LeetCode_1311 {
             }
         }
         List<Map.Entry<String, Integer>> entryList = new ArrayList<>(map.entrySet());
-        Collections.sort(entryList, (o1, o2) -> {
-            int compareResult = Integer.compare(o1.getValue(), o2.getValue());
-            if (compareResult != 0) {
-                return compareResult;
-            }
-            return o1.getKey().compareTo(o2.getKey());
-        });
+        Collections.sort(entryList, Comparator.comparingInt((Map.Entry<String, Integer> o) -> o.getValue()).thenComparing(Map.Entry::getKey));
 
         List<String> ans = new ArrayList<>();
         for (Map.Entry<String, Integer> entry : entryList) {
