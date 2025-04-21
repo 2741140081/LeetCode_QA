@@ -10,6 +10,18 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>leetcode_easy</artifactId>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>9</source>
+                    <target>9</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
@@ -22,6 +34,38 @@
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
             <version>${junit.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <version>13.0</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <!--  添加 JNA Maven依赖 -->
+        <dependency>
+            <groupId>net.java.dev.jna</groupId>
+            <artifactId>jna</artifactId>
+            <version>5.13.0</version>
+        </dependency>
+        <dependency>
+            <groupId>net.java.dev.jna</groupId>
+            <artifactId>jna-platform</artifactId>
+            <version>5.13.0</version>
+        </dependency>
+
+        <!-- 全局快捷键依赖 -->
+        <dependency>
+            <groupId>com.github.kwhat</groupId>
+            <artifactId>jnativehook</artifactId>
+            <version>2.2.2</version>
+        </dependency>
+
+        <!-- 添加一个OpenCV依赖, opencv 用于处理图像和视频数据, 例如识别图像等功能 -->
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>opencv-platform</artifactId>
+            <version>4.10.0-1.5.11</version>
         </dependency>
     </dependencies>
 

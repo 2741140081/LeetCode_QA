@@ -36,6 +36,28 @@ public class Trie {
         return node != null && node.isFinished;
     }
 
+    /**
+     * @Description:
+     * Only call by LeetCode_720
+     * @param word
+     * @return boolean
+     * @author marks
+     * @CreateDate: 2025/3/3 16:16
+     * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
+     */
+    public boolean searchWord(String word) {
+        Trie node = this;
+        for (int i = 0; i < word.length(); i++) {
+            char ch = word.charAt(i);
+            int index = ch - 'a';
+            if (node.child[index] == null || !node.child[index].isFinished) {
+                return false;
+            }
+            node = node.child[index];
+        }
+        return node != null && node.isFinished;
+    }
+
     public boolean startsWith(String word) {
         return searchPrefix(word) != null;
     }

@@ -1,9 +1,9 @@
 package com.marks.utils;
 
 public class TreeNode {
-    int val;//数据
-    TreeNode left;//左孩子的引用，常常代表左孩子为根的整棵左子树
-    TreeNode right;//右孩子的引用，常常代表右孩子为根的整棵右子树
+    public int val;//数据
+    public TreeNode left;//左孩子的引用，常常代表左孩子为根的整棵左子树
+    public TreeNode right;//右孩子的引用，常常代表右孩子为根的整棵右子树
 
     public TreeNode() {
     }
