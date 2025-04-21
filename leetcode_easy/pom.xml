@@ -60,6 +60,13 @@
             <artifactId>jnativehook</artifactId>
             <version>2.2.2</version>
         </dependency>
+
+        <!-- 添加一个OpenCV依赖, opencv 用于处理图像和视频数据, 例如识别图像等功能 -->
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>opencv-platform</artifactId>
+            <version>4.10.0-1.5.11</version>
+        </dependency>
     </dependencies>
 
 
