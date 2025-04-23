@@ -45,31 +45,31 @@ public class RobotUtils {
 
     /**
      * @Description: 鼠标平滑移动函数, 每20ms移动一步
+     * 跟新平滑移动方法, 使其进行非线性加速移动, 相距越长, 移动速度越快
      * @param robot
      * @param targetX
      * @param targetY
-     * @param durationMs
      * @return void
      * @author marks
      * @CreateDate: 2025/4/22 16:18
      * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
      */
-    public void smoothMove(Robot robot, int targetX, int targetY, int durationMs) {
-        try {
-            java.awt.Point currentPos = MouseInfo.getPointerInfo().getLocation();
-            int startX = currentPos.x;
-            int startY = currentPos.y;
+    public void smoothMove(Robot robot, int targetX, int targetY) {
+        // 当前位置
+        java.awt.Point currentPos = MouseInfo.getPointerInfo().getLocation();
+        int startX = currentPos.x;
+        int startY = currentPos.y;
 
-            int steps = durationMs / 20;
-            for (int i = 0; i <= steps; i++) {
-                double ratio = (double) i / steps;
-                int x = (int) (startX + (targetX - startX) * ratio);
-                int y = (int) (startY + (targetY - startY) * ratio);
-                robot.mouseMove(x, y);
-                robot.delay(20);
-            }
-        } catch (Exception e) {
-            robot.mouseMove(targetX, targetY); // 出错时直接跳转
+        double distance = Math.sqrt(Math.pow(startX - targetX, 2) + Math.pow(startY - targetY, 2));
+        int steps = Math.max(10, (int)(distance / 50)); // 最小10步
+        double speedFactor = 1 + (distance / 800); // 动态加速系数
+
+        for (int i = 1; i <= steps; i++) {
+            double ratio = (double)i/steps;
+            int currX = (int)(startX + (targetX - startX)*ratio*speedFactor);
+            int currY = (int)(startY + (targetY - startY)*ratio*speedFactor);
+            robot.mouseMove(currX, currY);
+            robot.delay((int)(20 / speedFactor)); // 动态延迟
         }
     }
 
@@ -188,6 +188,10 @@ public class RobotUtils {
             ans[1] = (int) matchLoc.x;
             ans[2] = (int) matchLoc.y;
         }
+
+        // set the targetMat center position
+        ans[1] += targetImage.width() / 2;
+        ans[2] += targetImage.height() / 2;
 
         return ans;
     }
