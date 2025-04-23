@@ -42,8 +42,10 @@ public class KKDzPlatformLauncher {
     }
 
     public static void main(String[] args) throws Exception {
-        // 1. launcher the KK Dz platform
         Robot robot = new Robot();
+        Mat screenMat;
+
+        // 1. launcher the KK Dz platform start
 
         // 1.1 display the desktop
         robotUtils.displayDesktopByRobot(robot);
@@ -53,7 +55,7 @@ public class KKDzPlatformLauncher {
         Mat targetMat = Imgcodecs.imread(targetImagePath, Imgcodecs.IMREAD_COLOR);
 
         // 1.3 capture the current desktop, and save the png file, then load the png file
-        Mat screenMat = robotUtils.captureCurrScreenAndSave(robot);
+        screenMat = robotUtils.captureCurrScreenAndSave(robot);
 
         // 1.4 find the targetMat from the screenMat, and return the result[],
         // result[0] is match configuration reliability(匹配置信度), result[1] and result[2] is the targetMats position
@@ -92,6 +94,7 @@ public class KKDzPlatformLauncher {
             System.exit(SYSTEM_EXIST_STATUE_CODE);
         }
 
+        // 1. launcher the KK Dz platform end
 
         // 2. login KK Dz App (optional: because sometime user no need to click the login button)
 
@@ -122,7 +125,7 @@ public class KKDzPlatformLauncher {
         // need todo
 
 
-        // 4. click the target game, and start a new game
+        // 4. click the target game, and start a new game, record the game start time
 
         // 5. select the easy difficulty options
 
@@ -136,6 +139,14 @@ public class KKDzPlatformLauncher {
 
         // 6.4 find the Master building, click and select the Northern Europe Cards.
 
-        //
+        // 6.5 loop click the update button, capture the screen, find the "Saul(索尔)" Card, and select the card
+
+        // 6.6 update the weapon level, and select the specific event (execute every 3 minutes, and maxLoop is 10)
+
+        // 6.7 check whether the game time is more than 40 minutes. if yes, find and click the game over button(or quick exit)
+
+        // 7. play the game again. loop exec step 4 to step 6 before action.
+
+
     }
 }
