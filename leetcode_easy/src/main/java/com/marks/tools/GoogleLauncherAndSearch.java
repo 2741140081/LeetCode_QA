@@ -56,12 +56,9 @@ public class GoogleLauncherAndSearch {
         int[] position = robotUtils.getTargetImagePosition(targetMat, screenMat, rank);
 
         if (position[0] >= 80) {
-            // 成功找到对应的图标, 需要移动到图标的中心处
-            position[1] += targetMat.width() / 2;
-            position[2] += targetMat.height() / 2;
 
             // 双击启动应用
-            robotUtils.smoothMove(robot, position[1], position[2], 1000); // 1000ms完成移动
+            robotUtils.smoothMove(robot, position[1], position[2]); // 1000ms完成移动
             robot.delay(3000); // 让我更好看看效果
 
             robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
