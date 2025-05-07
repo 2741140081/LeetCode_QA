@@ -47,7 +47,6 @@ public class RobotUtils {
     /**
      * @Description: 鼠标平滑移动函数, 每20ms移动一步
      * 跟新平滑移动方法, 使其进行非线性加速移动, 相距越长, 移动速度越快
-     * @param robot
      * @param targetX
      * @param targetY
      * @return void
