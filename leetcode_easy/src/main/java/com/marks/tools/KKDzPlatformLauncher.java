@@ -65,7 +65,7 @@ public class KKDzPlatformLauncher {
             // default the app is not started
 
             // move the mouse to the target position, the position is x = result[1], y = result[2]
-            robotUtils.smoothMove(robot, result[1], result[2]);
+            robotUtils.smoothMove(result[1], result[2]);
             Thread.sleep(2000); // wait a minute
 
             // double click to launcher the app
@@ -109,7 +109,7 @@ public class KKDzPlatformLauncher {
 
         if (loginButtonResult[0] >= MATCH_CONF_RELIABILITY) {
             // move the mouse to the login button position.
-            robotUtils.smoothMove(robot, loginButtonResult[1], loginButtonResult[2]);
+            robotUtils.smoothMove(loginButtonResult[1], loginButtonResult[2]);
             Thread.sleep(2000); // wait a minute
 
             // click the login button

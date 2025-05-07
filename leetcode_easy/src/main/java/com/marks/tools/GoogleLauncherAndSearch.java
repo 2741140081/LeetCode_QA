@@ -58,7 +58,7 @@ public class GoogleLauncherAndSearch {
         if (position[0] >= 80) {
 
             // 双击启动应用
-            robotUtils.smoothMove(robot, position[1], position[2]); // 1000ms完成移动
+            robotUtils.smoothMove(position[1], position[2]); // 1000ms完成移动
             robot.delay(3000); // 让我更好看看效果
 
             robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
