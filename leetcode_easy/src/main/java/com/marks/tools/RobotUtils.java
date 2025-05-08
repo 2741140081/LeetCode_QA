@@ -6,6 +6,7 @@ import org.opencv.imgproc.Imgproc;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
@@ -46,7 +47,6 @@ public class RobotUtils {
     /**
      * @Description: 鼠标平滑移动函数, 每20ms移动一步
      * 跟新平滑移动方法, 使其进行非线性加速移动, 相距越长, 移动速度越快
-     * @param robot
      * @param targetX
      * @param targetY
      * @return void
@@ -54,22 +54,25 @@ public class RobotUtils {
      * @CreateDate: 2025/4/22 16:18
      * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
      */
-    public void smoothMove(Robot robot, int targetX, int targetY) {
-        // 当前位置
-        java.awt.Point currentPos = MouseInfo.getPointerInfo().getLocation();
-        int startX = currentPos.x;
-        int startY = currentPos.y;
+    public void smoothMove(int targetX, int targetY) {
+        try {
+            Robot robot = new Robot();
+            Point start = MouseInfo.getPointerInfo().getLocation();
+            int steps = 50;
+            int duration = 800;
 
-        double distance = Math.sqrt(Math.pow(startX - targetX, 2) + Math.pow(startY - targetY, 2));
-        int steps = Math.max(10, (int)(distance / 50)); // 最小10步
-        double speedFactor = 1 + (distance / 800); // 动态加速系数
+            for (int i = 1; i <= steps; i++) {
+                double ratio = Math.sin((i * Math.PI) / (2 * steps)); // 缓动函数
+                int x = (int) (start.getX() + (targetX - start.getX()) * ratio);
+                int y = (int) (start.getY() + (targetY - start.getY()) * ratio);
 
-        for (int i = 1; i <= steps; i++) {
-            double ratio = (double)i/steps;
-            int currX = (int)(startX + (targetX - startX)*ratio*speedFactor);
-            int currY = (int)(startY + (targetY - startY)*ratio*speedFactor);
-            robot.mouseMove(currX, currY);
-            robot.delay((int)(20 / speedFactor)); // 动态延迟
+                robot.mouseMove(x, y);
+                robot.delay(duration / steps);
+            }
+        } catch (AWTException e) {
+            System.err.println("Robot初始化失败: " + e.getMessage());
+        } catch (SecurityException e) {
+            System.err.println("权限不足: " + e.getMessage());
         }
     }
 

@@ -1,7 +1,8 @@
 ### Java template
 # Compiled class file
 *.class
-
+# ignore the bom package
+src/main/java/com/marks/bom
 # Log file
 *.log
 
