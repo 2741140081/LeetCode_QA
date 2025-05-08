@@ -25,5 +25,16 @@ class NumberUtilTest {
 
         System.out.println(NumberUtil.gcd(y, x));
 
+
+        int n = 15000;
+        int count = 0;
+        int i;
+        for (i = 105; n > 0; i += 5) {
+            n -= i;
+            count++;
+        }
+        System.out.println("n ==> " + n);
+        System.out.println("i ==>" + i);
+        System.out.println(" count ==> " + count);
     }
 }
