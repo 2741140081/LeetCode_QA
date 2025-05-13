@@ -2,8 +2,10 @@ package com.marks.leetcode.binary_tree;
 
 import com.marks.utils.TreeNode;
 
+import java.util.ArrayDeque;
 import java.util.Comparator;
 import java.util.PriorityQueue;
+import java.util.Queue;
 
 /**
  * <p>项目名称:  </p>
@@ -16,6 +18,7 @@ import java.util.PriorityQueue;
  * @update [序号][日期YYYY-MM-DD] [更改人姓名][变更描述]
  */
 public class LeetCode_1609 {
+    private boolean flag = true;
     
     /**
      * @Description:
@@ -35,11 +38,43 @@ public class LeetCode_1609 {
     public boolean isEvenOddTree(TreeNode root) {
         boolean result;
         result = method_01(root);
+        result = method_02(root);
         return result;
     }
 
+    private boolean method_02(TreeNode root) {
+        Queue<TreeNode> queue = new ArrayDeque<TreeNode>();
+        queue.offer(root);
+        int level = 0;
+        while (!queue.isEmpty()) {
+            int size = queue.size();
+            int prev = level % 2 == 0 ? Integer.MIN_VALUE : Integer.MAX_VALUE;
+            for (int i = 0; i < size; i++) {
+                TreeNode node = queue.poll();
+                int value = node.val;
+                if (level % 2 == value % 2) {
+                    return false;
+                }
+                if ((level % 2 == 0 && value <= prev) || (level % 2 == 1 && value >= prev)) {
+                    return false;
+                }
+                prev = value;
+                if (node.left != null) {
+                    queue.offer(node.left);
+                }
+                if (node.right != null) {
+                    queue.offer(node.right);
+                }
+            }
+            level++;
+        }
+        return true;
+    }
+
     /**
-     * @Description: [功能描述]
+     * @Description:
+     *
+     * AC: 38ms/64.75MB
      * @param root 
      * @return boolean
      * @author marks
@@ -47,33 +82,86 @@ public class LeetCode_1609 {
      * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
      */
     private boolean method_01(TreeNode root) {
-        int currLevel = 0;
-        int nextLevel = 0;
+        int nextLevel = 1;
         int id = 0;
-        PriorityQueue<Pair> queue = new PriorityQueue<>(new Comparator<Pair>() {
-            @Override
-            public int compare(Pair o1, Pair o2) {
-                if (o1.level == o2.level) {
-                    return o1.id - o2.id;
-                } else {
-                    return 0;
-                }
-
+        int lastValue = Integer.MIN_VALUE;
+        PriorityQueue<Pair> queue = new PriorityQueue<>((o1, o2) -> {
+            if (o1.level == o2.level) {
+                return o1.id - o2.id; // 升序排序
+            } else {
+                return o1.level - o2.level;
             }
         });
 
-        queue.add(new Pair(currLevel, id, root));
+        if (root.val % 2 == 0) {
+            // 根节点所在层为第0层, 所以root.val 必须为偶数, 否则返回 false
+            return false;
+        }
+        queue.add(new Pair(0, id, root));
         while (!queue.isEmpty()) {
             Pair p = queue.poll();
             int level = p.level;
+            TreeNode curr_node = p.node;
             if (level == nextLevel) {
-                currLevel = nextLevel;
+                // 下一层
                 nextLevel++;
                 id = 0;
+            } else {
+                // 当前这一层 后续按照顺序取出的值
+                if (level % 2 == 0) {
+                    // 偶数层 递增
+                    if ( lastValue >= curr_node.val) {
+                        return false;
+                    }
+                } else {
+                    // 奇数层 递减
+                    if ( lastValue <= curr_node.val) {
+                        return false;
+                    }
+                }
 
+            }
+            lastValue = curr_node.val; // 更新前一个值
+            id = addChildNodeToQueue(nextLevel, id, queue, curr_node);
+            if (!flag) {
+                return false;
             }
         }
         return true;
+    }
+
+    private int addChildNodeToQueue(int nextLevel, int id, PriorityQueue<Pair> queue, TreeNode curr_node) {
+
+        if (curr_node.left != null) {
+            if (nextLevel % 2 == 0) {
+                // 偶数层, 值全部为奇数
+                if (curr_node.left.val % 2 == 0) {
+                    flag = false;
+                }
+            } else {
+                // 奇数层, 值全部为偶数
+                if (curr_node.left.val % 2 != 0) {
+                    flag = false;
+                }
+            }
+            queue.offer(new Pair(nextLevel, id++, curr_node.left));
+        }
+
+        if (curr_node.right != null) {
+            if (nextLevel % 2 == 0) {
+                // 偶数层, 值全部为奇数
+                if (curr_node.right.val % 2 == 0) {
+                    flag = false;
+                }
+            } else {
+                // 奇数层, 值全部为偶数
+                if (curr_node.right.val % 2 != 0) {
+                    flag = false;
+                }
+            }
+            queue.offer(new Pair(nextLevel, id++, curr_node.right));
+        }
+        return id;
     }
 
     class Pair {
