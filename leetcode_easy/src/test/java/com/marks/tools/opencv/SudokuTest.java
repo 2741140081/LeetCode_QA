@@ -18,10 +18,14 @@ class SudokuTest {
 
     @Test
     void imgFrameDetection() {
-        String srcImgPath = "D:\\images\\tesseract\\sudoku.png";
+        String srcImgPath = "D:\\images\\opencv\\lena.png";
+        // '.' 在正则表达式中可以匹配任意字符, 会导致按照每个字符分割, 需要用\转义
+        String[] split = srcImgPath.split("\\.");
+//        String srcImgPath = "D:\\images\\tesseract\\sudoku.png";
         Sudoku sudoku = new Sudoku();
 //        String saveImgPath = sudoku.imgFrameDetection(srcImgPath);
-        String saveImgWithLinePath = sudoku.imgLineDrawing(srcImgPath);
+//        String saveImgWithLinePath = sudoku.imgLineDrawing(srcImgPath);
+        String saveImgWithLinePath = sudoku.personContourExtraction(srcImgPath);
     }
 
 }

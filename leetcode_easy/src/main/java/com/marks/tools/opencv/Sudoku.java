@@ -1,12 +1,14 @@
 package com.marks.tools.opencv;
 
 import org.opencv.core.*;
+import org.opencv.highgui.HighGui;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * <p>项目名称: 数独图像边框检测 </p>
@@ -142,8 +144,8 @@ public class Sudoku {
         Mat gray = new Mat();
         Imgproc.cvtColor(imgMat, gray, Imgproc.COLOR_BGR2GRAY);
 
-//        HighGui.imshow("灰度化效果", gray);
-//        HighGui.waitKey(0);
+        HighGui.imshow("灰度化效果", gray);
+        HighGui.waitKey(0);
 
         // 3. 噪声去除, 高斯模糊去噪, 听着很高大上, 实际谁也不知道有什么作用
         Mat blurred = new Mat();
@@ -212,10 +214,86 @@ public class Sudoku {
         }
 
         // 5. 保存结果图像
-        String outputPath = "D:\\images\\tesseract\\result\\sudoku_with_lines_"+ LocalDateTime.now().format(formatter) +".png";
+        String suffixName =  srcImgPath.split("\\.")[1];
+        String outputPath = "D:\\images\\tesseract\\result\\result_"+
+                LocalDateTime.now().format(formatter) +
+                "." +
+                suffixName;
+
         Imgcodecs.imwrite(outputPath, imgMat);
         System.out.println("结果已保存到: " + outputPath);
 
+        return outputPath;
+    }
+
+    /**
+     * @Description:
+     * 人物轮廓提取
+     * @param imgSrcPath
+     * @return java.lang.String
+     * @author marks
+     * @CreateDate: 2025/5/13 17:36
+     * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
+     */
+    public String personContourExtraction(String imgSrcPath) {
+        Mat src = Imgcodecs.imread(imgSrcPath);
+        if (src.empty()) {
+            System.out.println("无法加载图像: " + imgSrcPath);
+            return "";
+        }
+
+        // 2. 图像预处理
+        Mat gray = new Mat();
+        Imgproc.cvtColor(src, gray, Imgproc.COLOR_BGR2GRAY);
+
+        // 高斯模糊去噪
+        Mat blurred = new Mat();
+        Imgproc.GaussianBlur(gray, blurred, new Size(5, 5), 0);
+
+        // 3. 边缘检测
+        Mat edges = new Mat();
+        Imgproc.Canny(blurred, edges, 50, 150);
+
+        // 4. 形态学操作强化边缘
+        Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(3, 3));
+        Imgproc.dilate(edges, edges, kernel, new Point(-1, -1), 2);
+        Imgproc.erode(edges, edges, kernel, new Point(-1, -1), 1);
+
+        // 5. 查找轮廓
+        List<MatOfPoint> contours = new ArrayList<>();
+        Mat hierarchy = new Mat();
+        Imgproc.findContours(edges, contours, hierarchy,
+                Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+
+        // 6. 绘制轮廓（使用不同颜色）
+        Mat result = src.clone();
+        Scalar[] colors = {
+                new Scalar(0, 255, 0),    // 绿色
+                new Scalar(0, 0, 255),    // 红色
+                new Scalar(255, 0, 0),    // 蓝色
+                new Scalar(255, 255, 0),  // 青色
+                new Scalar(255, 0, 255),  // 紫色
+                new Scalar(0, 255, 255)   // 黄色
+        };
+
+        for (int i = 0; i < contours.size(); i++) {
+            // 计算轮廓面积，过滤掉太小的轮廓
+            double area = Imgproc.contourArea(contours.get(i));
+            if (area < 500) continue;  // 忽略面积小于500的轮廓
+
+            // 绘制轮廓（使用循环颜色）
+            Scalar color = colors[i % colors.length];
+            Imgproc.drawContours(result, contours, i, color, 2, Imgproc.LINE_8);
+        }
+
+        // 7. 保存结果图像
+        String suffixName =  imgSrcPath.split("\\.")[1];
+        String outputPath = "D:\\images\\tesseract\\result\\result_"+
+                LocalDateTime.now().format(formatter) +
+                "." +
+                suffixName;
+        Imgcodecs.imwrite(outputPath, result);
+        System.out.println("结果已保存到: " + outputPath);
         return outputPath;
     }
 
