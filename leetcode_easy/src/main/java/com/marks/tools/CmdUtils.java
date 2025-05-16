@@ -124,4 +124,22 @@ public class CmdUtils {
         }
         return true;
     }
+
+    /**
+     * @Description:
+     * 延迟 delayMs 关机
+     * @param delayMs
+     * @return void
+     * @author marks
+     * @CreateDate: 2025/5/16 17:46
+     * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
+     */
+    public void shutDownWindows(int delayMs) {
+        String command = "shutdown -s -t " + delayMs;
+        try {
+            rt.exec(command);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

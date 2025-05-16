@@ -50,7 +50,6 @@ public class KKDzPlatformLauncher {
         this.programName = programName;
     }
 
-
     /**
      * @Description:
      * 前置操作
@@ -189,7 +188,6 @@ public class KKDzPlatformLauncher {
         // 7. play the game again. loop exec step 4 to step 6 before action.
     }
 
-
     /**
      * @Description:
      * 1. 通过将platform.exe 添加到系统变量 Path 中
@@ -212,8 +210,13 @@ public class KKDzPlatformLauncher {
         // 休眠30s
         Thread.sleep(30000);
 
-
         cmdUtils.launchProgram(programName);
+
+        if (cmdUtils.isProcessRunning(programName)) {
+            System.out.println("启动成功!");
+        } else {
+            System.err.println("启动失败!");
+        }
 
         // 休眠30s
         Thread.sleep(30000);
