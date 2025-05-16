@@ -1,5 +1,8 @@
 package com.marks.tools;
 
+import com.sun.jna.platform.win32.User32;
+import com.sun.jna.platform.win32.WinDef;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -26,7 +29,13 @@ public class CmdUtils {
      * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
      */
     public boolean isProcessRunning(String processName) throws IOException {
-        Process process = Runtime.getRuntime().exec("tasklist /FI \"IMAGENAME eq " + processName + ".exe\"");
+        String command = "tasklist /FI \"IMAGENAME eq " + processName + "\"";
+
+        Process process = Runtime.getRuntime().exec(command);
+
+        String[] cmd = {"wmic", "process", "where", "name='" + processName + "'", "get", "processid"};
+        Process process1 = Runtime.getRuntime().exec(cmd);
+
         BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
         String line;
         while ((line = reader.readLine()) != null) {

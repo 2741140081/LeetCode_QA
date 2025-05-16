@@ -56,7 +56,7 @@ public class AppLauncher {
         robot.delay(3000);
 
         // 加载图标模板
-        String templatePath = "D:\\images\\Pulse_Sign_1.png";
+        String templatePath = "D:\\images\\KK_sign.png";
         Mat template = Imgcodecs.imread(templatePath, Imgcodecs.IMREAD_COLOR);
 
         // 截取当前屏幕

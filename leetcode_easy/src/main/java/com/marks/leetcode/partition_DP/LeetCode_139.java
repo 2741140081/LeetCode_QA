@@ -44,6 +44,7 @@ public class LeetCode_139 {
      * 输出: true
      * 解释: 返回 true 因为 "applepenapple" 可以由 "apple" "pen" "apple" 拼接成。注意，你可以重复使用字典中的单词。
      * 我是否可以采用LeetCode_2369中的方式来解决这个题目
+     * AC:9ms/43.40MB
      * ]
      * @param s
      * @param wordDict

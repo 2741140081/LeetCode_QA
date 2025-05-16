@@ -7,6 +7,8 @@ import org.opencv.imgcodecs.Imgcodecs;
 import java.awt.*;
 import java.awt.event.InputEvent;
 
+import static com.marks.tools.Constants.*;
+
 /**
  * <p>项目名称:  </p>
  * <p>文件名称:  </p>
@@ -35,7 +37,9 @@ public class KKDzPlatformLauncher {
     // cmd 操作工具类
     private static CmdUtils cmdUtils = new CmdUtils();
 
-    private static String appName = "KK.exe";
+    private static String appName = "Platform.exe";
+
+    private static String programName = "KK官方对战平台";
 
     static {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
