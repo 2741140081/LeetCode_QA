@@ -26,6 +26,8 @@ public final class Constants {
 
     public static final int SYSTEM_EXIT_STATUE_CODE = 0;
 
+    public static final String EXE_PROGRAM_NAME = ".exe";
+
     private Constants() {
         // 防止实例化
     }
