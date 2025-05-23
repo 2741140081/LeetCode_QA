@@ -127,15 +127,15 @@ public class CmdUtils {
 
     /**
      * @Description:
-     * 延迟 delayMs 关机
-     * @param delayMs
+     * 延迟 delaySs 关机
+     * @param delaySs
      * @return void
      * @author marks
      * @CreateDate: 2025/5/16 17:46
      * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
      */
-    public void shutDownWindows(int delayMs) {
-        String command = "shutdown -s -t " + delayMs;
+    public void shutDownWindows(int delaySs) {
+        String command = "shutdown -s -t " + delaySs;
         try {
             rt.exec(command);
         } catch (IOException e) {
