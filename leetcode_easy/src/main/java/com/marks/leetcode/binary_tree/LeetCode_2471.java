@@ -38,7 +38,9 @@ public class LeetCode_2471 {
     }
 
     /**
-     * @Description: [功能描述]
+     * @Description:
+     *
+     * AC: 67ms/58.84MB
      * @param root
      * @return int
      * @author marks
@@ -67,6 +69,60 @@ public class LeetCode_2471 {
             if (list.size() > 1) {
                 int count = minSwapsForStrictlyIncreasing(list);
                 ans += count;
+            }
+        }
+
+        return ans;
+    }
+
+
+    /**
+     * @Description:
+     * 通过排序对比 + HashMap来计算交换的最少次数
+     * [7, 6, 8, 5]
+     * [0, 1, 2, 3]
+     *
+     * [5, 6, 7, 8]
+     *
+     * =>
+     * [7, 6, 8, 7]
+     *
+     * i = 2,
+     * pos = 3,
+     *
+     * [7, 6, 8, 8]
+     *
+     *
+     * @param nums
+     * @return int
+     * @author marks
+     * @CreateDate: 2025/5/30 17:38
+     * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
+     */
+    private int getSwapsBySortArray(List<Integer> nums) {
+        Map<Integer, Integer> map = new HashMap<>();
+        int n = nums.size();
+        int[] array = new int[n];
+        for (int i = 0; i < nums.size(); i++) {
+            array[i] = nums.get(i);
+            map.put(nums.get(i), i);
+        }
+        // java 8 的stream api
+//         int[] array = nums.stream().mapToInt(Integer::intValue).toArray();
+
+        // get sort array
+        int[] sorted = Arrays.copyOf(array, n);
+        Arrays.sort(sorted);
+
+        int ans = 0;
+        for (int i = 0; i < sorted.length; i++) {
+            if (sorted[i] != array[i]) {
+                ans++;
+                int pos = map.get(sorted[i]);
+                map.put(array[i], pos);
+                map.put(sorted[i], i);
+
+                array[pos] = array[i];
             }
         }
 
