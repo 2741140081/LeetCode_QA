@@ -1,6 +1,8 @@
 package com.marks.tools;
 
 
+import com.sun.jna.platform.win32.User32;
+import com.sun.jna.platform.win32.WinDef;
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 
@@ -220,6 +222,11 @@ public class KKDzPlatformLauncher {
 
         // 休眠30s
         Thread.sleep(30000);
+    }
+
+    public void getForceForWindowsName(String titleName) {
+        WinDef.HWND hwnd = User32.INSTANCE.FindWindow(null, titleName);
+
     }
 
 }
