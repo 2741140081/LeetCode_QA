@@ -33,7 +33,7 @@ public class AutoClicker extends JFrame {
 
     public AutoClicker() {
         initUI();
-        initSystemTray();
+//        initSystemTray();
         initGlobalHotkeys();
         createRobot();
     }
@@ -45,16 +45,16 @@ public class AutoClicker extends JFrame {
         setLayout(new FlowLayout());
 
         // 控制按钮
-        startButton = new JButton("启动 (F5)");
-        stopButton = new JButton("暂停 (F12)");
+        startButton = new JButton("启动 (F8)");
+        stopButton = new JButton("暂停 (F9)");
         stopButton.setEnabled(false);
 
         // 本地快捷键
-        KeyStroke f5 = KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0);
-        KeyStroke f12 = KeyStroke.getKeyStroke(KeyEvent.VK_F12, 0);
+        KeyStroke f8 = KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0);
+        KeyStroke f9 = KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0);
 
-        getRootPane().getInputMap().put(f5, "startClicking");
-        getRootPane().getInputMap().put(f12, "stopClicking");
+        getRootPane().getInputMap().put(f8, "startClicking");
+        getRootPane().getInputMap().put(f9, "stopClicking");
         getRootPane().getActionMap().put("startClicking", new AbstractAction() {
             public void actionPerformed(ActionEvent e) { startClicking(); }
         });
