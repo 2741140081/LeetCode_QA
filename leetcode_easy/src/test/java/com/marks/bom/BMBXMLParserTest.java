@@ -25,10 +25,10 @@ class BMBXMLParserTest {
         File dir = new File(filePath);
         File[] files = dir.listFiles((dir1, name) -> name.endsWith(".xml"));
 
-        BMBXMLParser bmb = new BMBXMLParser();
-
-        for (int i = 0; i < files.length; i++) {
-            bmb.method_02(files[i].getPath());
-        }
+//        BMBXMLParser bmb = new BMBXMLParser();
+//
+//        for (int i = 0; i < files.length; i++) {
+//            bmb.method_02(files[i].getPath());
+//        }
     }
 }

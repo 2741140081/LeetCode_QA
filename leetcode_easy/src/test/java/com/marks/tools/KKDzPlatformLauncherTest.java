@@ -19,6 +19,6 @@ class KKDzPlatformLauncherTest {
     void launcherPlatform() {
         CmdUtils cmdUtils = new CmdUtils();
 //        cmdUtils.launchProgram("notepad++.exe");
-        cmdUtils.shutDownWindows(30);
+//        cmdUtils.shutDownWindows(30);
     }
 }
