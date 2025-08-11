@@ -1,5 +1,7 @@
 package com.marks.leetcode.binary_tree;
 
+import java.util.*;
+
 /**
  * <p>项目名称:  </p>
  * <p>文件名称:  </p>
@@ -37,7 +39,14 @@ public class LeetCode_582 {
     }
 
     /**
-     * @Description: [功能描述]
+     * @Description:
+     * 示例 1:
+     * 输入:
+     * pid =  [1, 3, 10, 5]
+     * ppid = [3, 0, 5, 3]
+     * kill = 5
+     * 输出: [5,10]
+     *
      * @param pid 
      * @param ppid 
      * @param kill 
@@ -47,7 +56,28 @@ public class LeetCode_582 {
      * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
      */
     private int[] method_01(int[] pid, int[] ppid, int kill) {
-        
-        return new int[0];
+        int n = pid.length;
+        int max = Math.max(Arrays.stream(ppid).max().getAsInt(), Arrays.stream(pid).max().getAsInt());
+        List<Integer>[] lists = new List[max + 1];
+
+        for (int i = 0; i < lists.length; i++) {
+            lists[i] = new ArrayList<>();
+        }
+
+        for (int i = 0; i < n; i++) {
+            lists[ppid[i]].add(pid[i]);
+        }
+        List<Integer> ans = new ArrayList<>();
+        Queue<Integer> queue = new LinkedList<>();
+        queue.add(kill);
+        ans.add(kill);
+        while (!queue.isEmpty()) {
+            int curr = queue.poll();
+            for (int next : lists[curr]) {
+                ans.add(next);
+                queue.add(next);
+            }
+        }
+        return ans.stream().mapToInt(Integer::intValue).toArray();
     }
 }
