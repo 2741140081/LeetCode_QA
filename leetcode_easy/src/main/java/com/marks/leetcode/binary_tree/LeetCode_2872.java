@@ -13,7 +13,7 @@ import java.util.List;
  * @date 2025/8/8 14:23
  * @update [序号][日期YYYY-MM-DD] [更改人姓名][变更描述]
  */
-public class LeetCode_2873 {
+public class LeetCode_2872 {
     private int ans = 0;
 
     /**
