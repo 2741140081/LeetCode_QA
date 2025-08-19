@@ -30,7 +30,39 @@ public class LeetCode_494 {
     public int findTargetSumWays(int[] nums, int target) {
         int result = 0;
         result = method_01(nums, target);
+        result = method_02(nums, target);
         return result;
+    }
+
+    /**
+     * @Description:
+     *
+     * AC: 1338ms(5.03%)/40.29MB(99.06%)
+     * @param nums
+     * @param target
+     * @return int
+     * @author marks
+     * @CreateDate: 2025/8/15 17:00
+     * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
+     */
+    private int n;
+    private int ans;
+    private int method_02(int[] nums, int target) {
+        n = nums.length;
+        ans = 0;
+        int sum = 0;
+        dfs(nums, 0, sum, target);
+        return ans;
+    }
+
+    private void dfs(int[] nums, int index, int sum, int target) {
+        if (index == n) {
+            if (sum == target) {
+                ans++;
+            }
+        }
+        dfs(nums, index + 1, sum + nums[index], target);
+        dfs(nums, index + 1, sum - nums[index], target);
     }
 
     /**
