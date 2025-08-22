@@ -45,7 +45,23 @@ public class LeetCode_1617 {
     public int[] countSubgraphsForEachDiameter(int n, int[][] edges) {
         int[] result;
         result = method_01(n, edges);
+        result = method_02(n, edges);
         return result;
+    }
+
+    /**
+     * @Description:
+     * 1. 用回溯法来试试看,
+     *
+     * @param n
+     * @param edges
+     * @return int[]
+     * @author marks
+     * @CreateDate: 2025/8/21 10:08
+     * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
+     */
+    private int[] method_02(int n, int[][] edges) {
+        return new int[0];
     }
 
     /**
