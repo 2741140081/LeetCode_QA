@@ -31,7 +31,7 @@ public class ImageCrawlerTwo {
     public static String SAVE_DIR = "D:\\spider\\data\\4173_56\\" + ID_OF_HTML +"\\";
     public static ExecutorService executor;
 
-    public static final int MAX_PAGES = 100;
+    public static final int MAX_PAGES = 1000;
     public static final int MAX_RETRY = 5;
     public static final long RETRY_INTERVAL = 20000; // 30秒
 
@@ -104,7 +104,7 @@ public class ImageCrawlerTwo {
 
                 // 提取下一页链接
                 String nextPageUrl = extractNextPage(doc);
-                Thread.sleep(200);
+//                Thread.sleep(100);
                 if (nextPageUrl != null) {
                     crawledPages++;
                     crawlImages(BASE_URL + nextPageUrl);

@@ -1,11 +1,11 @@
 package com.marks.tools.spider;
 
+import com.marks.tools.video.TextToCsvProcessor;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 import java.io.*;
+import java.net.URL;
 import java.sql.*;
 import java.util.*;
 import java.util.concurrent.*;
@@ -24,23 +24,26 @@ import java.util.regex.Pattern;
  */
 public class ImageCrawlerPlus {
     // 数据库连接配置
-    private static final String DB_URL = "jdbc:mysql://localhost:3306/image_crawler?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true";
+    private static final String DB_URL = "jdbc:mysql://localhost:3306/image_3D?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true";
     private static final String DB_USER = "root";
-    private static final String DB_PASSWORD = "root";
-    
+    private static final String DB_PASSWORD = "123456";
+
+    private static String SAVE_DIR = "D:\\spider\\data\\4173_56\\result\\";
     // 线程池配置
     private static final int THREAD_POOL_SIZE = 10;
     private static ExecutorService executor;
     
     // 网站基础URL
-    private static final String BASE_URL = "https://www.images.com";
+    private static final String BASE_URL = "https://www.toupaimh.com";
     
     // 重试配置
-    private static final int MAX_RETRY = 3;
-    private static final long RETRY_INTERVAL = 5000; // 5秒
+    private static final int MAX_RETRY = 5;
+    private static final long RETRY_INTERVAL = 10000; // 10秒
     
     // 图片索引计数器
     private static int index = 1;
+
+    private static long startTime;
     
     // 静态代码块，用于加载MySQL驱动类
     static {
@@ -53,29 +56,32 @@ public class ImageCrawlerPlus {
     }
     
     public static void main(String[] args) {
-        if (args.length < 1) {
-            System.err.println("请提供CSV文件路径作为参数");
-            return;
-        }
-        
-        String csvFilePath = args[0];
+        TextToCsvProcessor csvProcessor = new TextToCsvProcessor();
+        csvProcessor.solution();
+
+        String csvFilePath = csvProcessor.outputPath;
         
         // 初始化线程池
         executor = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
         
         try {
+            // 获取当前时间
+            startTime = System.currentTimeMillis();
             // 1. 读取CSV文件数据
-            String[] datas = readCsvFile(csvFilePath);
+            List<String> datas = readCsvFile(csvFilePath);
             
             // 2. 初始化数据库
             initDatabase();
             
             // 3. 遍历数据并处理网页
             for (String data : datas) {
-                String currWebUrl = BASE_URL + "/" + data + ".html";
+                String currWebUrl = BASE_URL + "/chapter/" + data + ".html";
                 processWebPage(currWebUrl, data);
             }
-            
+            // 获取当前时间
+            long midTime = System.currentTimeMillis();
+            long processTime = midTime - startTime;
+            System.out.println("处理完成，耗时: " + processTime + "ms");
             // 4. 开始下载图片
             downloadImages();
             
@@ -84,6 +90,8 @@ public class ImageCrawlerPlus {
         } finally {
             // 5. 关闭线程池
             shutdownExecutor();
+            long endTime = System.currentTimeMillis();
+            System.out.println("下载完成，耗时: " + (endTime - startTime) + "ms");
         }
     }
     
@@ -110,11 +118,16 @@ public class ImageCrawlerPlus {
      * @return 数据数组
      * @throws IOException 读取文件异常
      */
-    private static String[] readCsvFile(String filePath) throws IOException {
+    private static List<String> readCsvFile(String filePath) throws IOException {
         List<String> dataList = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
             String line;
+            boolean isFirstLine = true; // 标记是否为首行
             while ((line = br.readLine()) != null) {
+                if (isFirstLine) {
+                    isFirstLine = false; // 跳过首行
+                    continue;
+                }
                 String[] values = line.split(",");
                 for (String value : values) {
                     value = value.trim().replaceAll("^\"|\"$", ""); // 去除引号和空格
@@ -124,7 +137,7 @@ public class ImageCrawlerPlus {
                 }
             }
         }
-        return dataList.toArray(new String[0]);
+        return dataList;
     }
     
     /**
@@ -164,7 +177,11 @@ public class ImageCrawlerPlus {
                 
                 // 使用Jsoup连接网页
                 Document doc = Jsoup.connect(webUrl)
-                        .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+                        .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 Edg/138.0.0.0")
+                        .header("Accept", "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8")
+                        .header("Accept-encoding", "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8")
+                        .header("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6")
+                        .header("Referer", "https://www.toupaimh.com/")
                         .timeout(30000)
                         .get();
                 
@@ -174,7 +191,7 @@ public class ImageCrawlerPlus {
                 // 查找下一页链接
                 String nextWebUrl = findNextPageUrl(doc);
                 if (nextWebUrl != null && !nextWebUrl.isEmpty()) {
-                    processWebPage(nextWebUrl, parentPageUrl); // 递归处理下一页
+                    processWebPage(BASE_URL + nextWebUrl, parentPageUrl); // 递归处理下一页
                 }
                 
                 break; // 成功则退出重试循环
@@ -203,15 +220,16 @@ public class ImageCrawlerPlus {
     private static void parseAndSaveImages(Document doc, String parentPageUrl) {
         // 使用Map存储数据，key为index，value为imageUrl
         Map<Integer, String> imageMap = new LinkedHashMap<>();
-        
-        // 查找所有图片元素
-        Elements images = doc.select("img");
-        
-        for (Element img : images) {
-            String imageUrl = img.absUrl("src");
-            if (imageUrl != null && !imageUrl.isEmpty()) {
-                imageMap.put(index++, imageUrl);
-            }
+
+        // 3. 提取图片地址（正则匹配id属性）
+        Pattern imgPattern = Pattern.compile("<img\\s+[^>]*data-original=[\"']([^\"']+)[\"'][^>]*id=[\"']([^\"']+)[\"'][^>]*>");
+        Matcher imgMatcher = imgPattern.matcher(doc.html());
+
+        while (imgMatcher.find()) {
+            String imageAddress = imgMatcher.group(1);
+            String imageId = imgMatcher.group(2);
+            imageMap.put(index++, imageAddress);
+            // System.out.println(imgMatcher.group(1) + ": " + imgMatcher.group(2));
         }
         
         // 批量插入到数据库
@@ -255,30 +273,14 @@ public class ImageCrawlerPlus {
      * @return 下一页URL
      */
     private static String findNextPageUrl(Document doc) {
-        // 尝试多种方式查找下一页链接
-        Elements nextLinks = doc.select("a:contains(下一页)");
-        if (!nextLinks.isEmpty()) {
-            return nextLinks.first().absUrl("href");
-        }
-        
-        nextLinks = doc.select("a[title=下一页]");
-        if (!nextLinks.isEmpty()) {
-            return nextLinks.first().absUrl("href");
-        }
-        
-        // 使用正则表达式查找下一页链接
-        Pattern pattern = Pattern.compile("<a[^>]*href=[\"']([^\"']*)[\"'][^>]*>下一页</a>", Pattern.CASE_INSENSITIVE);
-        Matcher matcher = pattern.matcher(doc.html());
+        // 2. 提取下一页地址（正则匹配）
+        Pattern nextPagePattern = Pattern.compile("<a href=\"([^\"]*)\" class=\"down-page\"[^>]*>下一页</a>");
+        Matcher matcher = nextPagePattern.matcher(doc.html());
         if (matcher.find()) {
-            String relativeUrl = matcher.group(1);
-            if (relativeUrl.startsWith("http")) {
-                return relativeUrl;
-            } else {
-                // 处理相对URL
-                return BASE_URL + (relativeUrl.startsWith("/") ? "" : "/") + relativeUrl;
-            }
+
+            System.out.println("下一页地址: " + matcher.group(1));
+            return matcher.group(1);
         }
-        
         return null;
     }
     
@@ -288,7 +290,7 @@ public class ImageCrawlerPlus {
     private static void downloadImages() {
         System.out.println("开始下载图片...");
         
-        String selectSQL = "SELECT id, image_web_url FROM image_download_info WHERE status = 0";
+        String selectSQL = "SELECT id, image_index, image_web_url FROM image_download_info WHERE status = 0";
         String updateStatusSQL = "UPDATE image_download_info SET status = ? WHERE id = ?";
         
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
@@ -300,8 +302,9 @@ public class ImageCrawlerPlus {
             
             while (rs.next()) {
                 int id = rs.getInt("id");
+                int imgId = rs.getInt("image_index");
                 String imageUrl = rs.getString("image_web_url");
-                tasks.add(new DownloadTask(id, imageUrl, updateStmt));
+                tasks.add(new DownloadTask(id, imgId, imageUrl, updateStmt));
             }
             
             // 提交下载任务到线程池
@@ -331,11 +334,13 @@ public class ImageCrawlerPlus {
      */
     static class DownloadTask implements Callable<String> {
         private final int id;
+        private final int imgId;
         private final String imageUrl;
         private final PreparedStatement updateStmt;
         
-        public DownloadTask(int id, String imageUrl, PreparedStatement updateStmt) {
+        public DownloadTask(int id, int imgId, String imageUrl, PreparedStatement updateStmt) {
             this.id = id;
+            this.imgId = imgId;
             this.imageUrl = imageUrl;
             this.updateStmt = updateStmt;
         }
@@ -354,7 +359,7 @@ public class ImageCrawlerPlus {
                 }
                 
                 // 下载图片
-                downloadSingleImage(imageUrl);
+                downloadSingleImage(imgId, imageUrl);
                 
             } catch (Exception e) {
                 result = "图片下载失败: " + imageUrl + ", 错误: " + e.getMessage();
@@ -373,31 +378,31 @@ public class ImageCrawlerPlus {
         
         /**
          * 下载单个图片
+         *
+         * @param imageId
          * @param imageUrl 图片URL
          * @throws IOException 下载异常
          */
-        private void downloadSingleImage(String imageUrl) throws IOException {
+        private void downloadSingleImage(int imageId, String imageUrl) throws IOException {
             // 创建下载目录
-            File downloadDir = new File("downloaded_images");
+            File downloadDir = new File(SAVE_DIR);
             if (!downloadDir.exists()) {
                 downloadDir.mkdirs();
             }
-            
-            // 获取文件名
-            String fileName = imageUrl.substring(imageUrl.lastIndexOf('/') + 1);
-            if (fileName.indexOf('?') > 0) {
-                fileName = fileName.substring(0, fileName.indexOf('?'));
-            }
-            
-            // 下载文件
-            try (InputStream in = new java.net.URL(imageUrl).openStream();
-                 FileOutputStream out = new FileOutputStream(new File(downloadDir, fileName))) {
-                
-                byte[] buffer = new byte[4096];
-                int bytesRead;
-                while ((bytesRead = in.read(buffer)) != -1) {
-                    out.write(buffer, 0, bytesRead);
+
+            try {
+                URL url = new URL(imageUrl);
+                try (InputStream in = url.openStream();
+                     FileOutputStream out = new FileOutputStream(SAVE_DIR +  "img" +imageId + ".webp")) {
+
+                    byte[] buffer = new byte[4096];
+                    int bytesRead;
+                    while ((bytesRead = in.read(buffer)) != -1) {
+                        out.write(buffer, 0, bytesRead);
+                    }
                 }
+            } catch (Exception e) {
+                System.err.println("下载失败: " + imageId + ", 错误: " + e.getMessage());
             }
         }
     }
