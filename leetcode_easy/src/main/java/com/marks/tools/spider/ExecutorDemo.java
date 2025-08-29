@@ -27,7 +27,7 @@ public class ExecutorDemo {
             numbers[i] = i;
         }
         try {
-            method_01(numbers);
+            function(numbers);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -43,7 +43,7 @@ public class ExecutorDemo {
 
     }
 
-    private static void method_01(int[] numbers) {
+    private static void function(int[] numbers) {
         // 获取当前系统时间
         long startTime = System.currentTimeMillis();
         List<DownloadTaskDemo> tasks = new ArrayList<>();

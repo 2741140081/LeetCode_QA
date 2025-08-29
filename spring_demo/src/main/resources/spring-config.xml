@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
-    <!--定义bean scope 设置bean是单例模式(singleton)还是原型模式(prototype: 调用多少次bean, 就实例化多少次)-->
-    <bean id="user" class="com.marks.spring.entity.User" scope="prototype"></bean>
-    <bean id="myBean" class="com.marks.spring.factory.MyBean" scope="singleton"></bean>
-
-</beans>
