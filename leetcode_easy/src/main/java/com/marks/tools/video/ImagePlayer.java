@@ -108,21 +108,19 @@ public class ImagePlayer extends JFrame {
 
         add(controlPanel, BorderLayout.NORTH);
 
-
-        // 创建显示面板
-        imageLabel = new JLabel();
-        imageLabel.setHorizontalAlignment(JLabel.CENTER);
-
-        scrollPane = new JScrollPane(imageLabel);
-        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        add(scrollPane);
-
         // 添加下拉框选择监听
         folderComboBox.addActionListener(e -> {
             currentImageType = (String) folderComboBox.getSelectedItem();
             loadImageTypeInfo(currentImageType);
             IMAGE_DIR = "D:\\spider\\data\\" + currentImageType + "\\result\\";
             startIndex = getLastIndexFromDB(currentImageType);
+            // 创建显示面板
+            imageLabel = new JLabel();
+            imageLabel.setHorizontalAlignment(JLabel.CENTER);
+
+            scrollPane = new JScrollPane(imageLabel);
+            scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+            add(scrollPane);
 
             loadInitialImages();
 

@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class ImageMerger {
-    private static final String SOURCE_DIR = "D:\\spider\\data\\捕捉大师\\";
+    private static final String SOURCE_DIR = "D:\\spider\\data\\侍奉女神\\";
     private static final String TARGET_DIR =  SOURCE_DIR + "result\\";
 
     private static final Pattern IMG_PATTERN = Pattern.compile("img(\\d+)\\.webp");
