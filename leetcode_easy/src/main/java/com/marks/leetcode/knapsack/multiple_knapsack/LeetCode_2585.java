@@ -56,7 +56,7 @@ public class LeetCode_2585 {
      * - 解决 2 道第 2 种类型的题目：3 + 3 = 6
      *
      * 1. 我先假设这是一个完全背包问题, 即有3中类型的硬币 coins[1, 2, 3], 数量不限
-     * 2. 与LeetCode_518.java 类似求解方案数
+     * 2. 与 LeetCode_518.java 类似求解方案数
      * 3. 会存在一个中间变量 int num = j / temp; // 可以拿取的最大数量 temp = coins[i - 1] = types[i - 1][1]
      * 4. 答案就很明显 int num = Math.min(j / temp, types[i - 1][0]), 这两者的最小值即为我可以拿的改硬币的最大数量
      * 5.
