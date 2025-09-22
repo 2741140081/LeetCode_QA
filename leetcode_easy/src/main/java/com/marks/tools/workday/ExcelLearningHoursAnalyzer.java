@@ -20,6 +20,7 @@ import java.util.*;
  * 用于读取Excel文件，统计特定用户在指定月份的学习时长，并将结果输出到Excel文件
  */
 public class ExcelLearningHoursAnalyzer {
+    private static String currentMonth;
 
     /**
      * 主方法，用于测试
@@ -31,11 +32,14 @@ public class ExcelLearningHoursAnalyzer {
             // 示例用法
             String dataExcelFilePath = "D:\\excel\\data.xlsx";  // 数据文件路径
             String userExcelFilePath = "D:\\excel\\user.xlsx";  // 用户文件路径
-            String targetMonth = args[0];                       // 目标月份
+            currentMonth = args[0];                       // 目标月份 "2025-09"
             String outputExcelPath = "D:\\excel\\output.xlsx";  // 输出Excel文件路径
             // 获取当前系统时间
             long currentTimeMillis = System.currentTimeMillis();
-            analyzeLearningHours(dataExcelFilePath, userExcelFilePath, targetMonth, outputExcelPath);
+            // 输出当前月份
+            System.out.println("目标月份: " + currentMonth);
+
+            analyzeLearningHours(dataExcelFilePath, userExcelFilePath, outputExcelPath);
             // 获取结束时间
             long endTime = System.currentTimeMillis();
             System.out.println("耗时: " + (endTime - currentTimeMillis) + "ms");
@@ -51,23 +55,27 @@ public class ExcelLearningHoursAnalyzer {
      * 
      * @param dataExcelFilePath 数据Excel文件路径 (包含学习记录)
      * @param userExcelFilePath 用户Excel文件路径 (包含要查询的员工ID)
-     * @param targetMonth 目标月份，格式为"yyyy-MM"
      * @param outputExcelPath 输出Excel文件路径
      * @throws IOException 当文件读写出现问题时抛出
      */
-    public static void analyzeLearningHours(String dataExcelFilePath, String userExcelFilePath, 
-                                          String targetMonth, String outputExcelPath) throws IOException {
-        // 从user.xlsx读取员工ID
-        String[] targetStaffIds = readStaffIdsFromExcel(userExcelFilePath);
-        Set<String> targetStaffIdSet = new HashSet<>(Arrays.asList(targetStaffIds));
+    public static void analyzeLearningHours(String dataExcelFilePath, String userExcelFilePath,
+                                            String outputExcelPath) throws IOException {
+        // 从user.xlsx读取员工信息
+        UserLearningData[] targetUserInfos = readStaffIdsFromExcel(userExcelFilePath);
+        Set<String> targetStaffIdSet = new HashSet<>();
+        
+        // 填充targetStaffIdSet和userInfoMap
+        for (UserLearningData userInfo : targetUserInfos) {
+            targetStaffIdSet.add(userInfo.staffId);
+        }
         
         // 解析目标月份
-        YearMonth yearMonth = YearMonth.parse(targetMonth, DateTimeFormatter.ofPattern("yyyy-MM"));
+        YearMonth yearMonth = YearMonth.parse(currentMonth, DateTimeFormatter.ofPattern("yyyy-MM"));
         LocalDate firstDayOfMonth = yearMonth.atDay(1);
         LocalDate lastDayOfMonth = yearMonth.atEndOfMonth();
 
         // 存储结果的列表
-        List<UserLearningData> results = new ArrayList<>();
+        List<UserLearningData> results;
         List<UserCourseDetail> courseDetails = new ArrayList<>(); // 新增：存储详细课程信息
         List<CourseDetail> allTimeCourseDetails = new ArrayList<>(); // 新增：存储所有时间下的课程信息
         Map<String, Integer> staffIdSummary = new HashMap<>();
@@ -85,19 +93,9 @@ public class ExcelLearningHoursAnalyzer {
             // 获取表头行，确定各列的索引
             Row headerRow = sheet.getRow(0);
             Map<String, Integer> columnIndices = getColumnIndices(headerRow);
-            
-            // 检查必要的列是否存在
-            if (!columnIndices.containsKey("Staff ID") || 
-                !columnIndices.containsKey("IT Code") || 
-                !columnIndices.containsKey("Name") || 
-                !columnIndices.containsKey("Total Course Hours") || 
-                !columnIndices.containsKey("Grow Course ID") ||
-                !columnIndices.containsKey("StartDate") ||
-                !columnIndices.containsKey("Month-enddate/") ||
-                !columnIndices.containsKey("Course Title")) {
-                throw new IllegalArgumentException("Excel文件缺少必要的列");
-            }
-            
+
+            checkColumnValid(columnIndices);
+
             // 获取各列索引
             int staffIdCol = columnIndices.get("Staff ID");
             int itCodeCol = columnIndices.get("IT Code");
@@ -214,7 +212,7 @@ public class ExcelLearningHoursAnalyzer {
             }
             
             // 将结果添加到列表中
-            results.addAll(userDataMap.values());
+            results = new ArrayList<>(userDataMap.values());
         }
         // 变量 staffSummary 用于记录员工ID出现的次数
         int sum = 0;
@@ -223,23 +221,40 @@ public class ExcelLearningHoursAnalyzer {
             sum += entry.getValue();
         }
         System.out.println("员工ID总数：" + sum);
+
+        // 添加没有学习记录的用户，默认学习时长为0
+        addMissingUsersWithZeroHours(targetUserInfos, results);
         
         // 将结果写入Excel文件
         writeResultsToExcel(results, courseDetails, outputExcelPath);
 
-        String longestCourseInfoPath = outputExcelPath.replace(".xlsx", "_longestCourseInfo.xlsx");
+//        String longestCourseInfoPath = outputExcelPath.replace(".xlsx", "_longestCourseInfo.xlsx");
 //        writeTopCoursesToExcel(allTimeCourseDetails, longestCourseInfoPath, 200);
     }
-    
+
+    private static void checkColumnValid(Map<String, Integer> columnIndices) {
+        // 检查必要的列是否存在
+        if (!columnIndices.containsKey("Staff ID") ||
+            !columnIndices.containsKey("IT Code") ||
+            !columnIndices.containsKey("Name") ||
+            !columnIndices.containsKey("Total Course Hours") ||
+            !columnIndices.containsKey("Grow Course ID") ||
+            !columnIndices.containsKey("StartDate") ||
+            !columnIndices.containsKey("Month-enddate/") ||
+            !columnIndices.containsKey("Course Title")) {
+            throw new IllegalArgumentException("Excel文件缺少必要的列");
+        }
+    }
+
     /**
-     * 从Excel文件中读取员工ID
+     * 从Excel文件中读取员工信息（包括Staff ID、IT Code和Name）
      * 
      * @param excelFilePath Excel文件路径
-     * @return 员工ID数组
+     * @return 员工信息数组
      * @throws IOException 当文件读取出现问题时抛出
      */
-    private static String[] readStaffIdsFromExcel(String excelFilePath) throws IOException {
-        List<String> staffIds = new ArrayList<>();
+    private static UserLearningData[] readStaffIdsFromExcel(String excelFilePath) throws IOException {
+        List<UserLearningData> userInfos = new ArrayList<>();
         
         try (FileInputStream fis = new FileInputStream(excelFilePath);
              Workbook workbook = new XSSFWorkbook(fis)) {
@@ -247,9 +262,11 @@ public class ExcelLearningHoursAnalyzer {
             // 获取第一个工作表
             Sheet sheet = workbook.getSheetAt(0);
             
-            // 查找"Staff ID"列
+            // 查找"Staff ID"、"IT Code"和"Name"列
             Row headerRow = sheet.getRow(0);
             Integer staffIdColIndex = null;
+            Integer itCodeColIndex = null;
+            Integer nameColIndex = null;
             
             if (headerRow != null) {
                 for (int i = 0; i < headerRow.getLastCellNum(); i++) {
@@ -258,7 +275,10 @@ public class ExcelLearningHoursAnalyzer {
                         String columnName = getCellValueAsString(cell);
                         if ("Staff ID".equals(columnName)) {
                             staffIdColIndex = i;
-                            break;
+                        } else if ("IT Code".equals(columnName)) {
+                            itCodeColIndex = i;
+                        } else if ("Name".equals(columnName)) {
+                            nameColIndex = i;
                         }
                     }
                 }
@@ -269,22 +289,41 @@ public class ExcelLearningHoursAnalyzer {
                 staffIdColIndex = 0;
             }
             
-            // 从第二行开始读取员工ID（跳过表头）
+            // 从第二行开始读取员工信息（跳过表头）
             for (int i = 1; i <= sheet.getLastRowNum(); i++) {
                 Row row = sheet.getRow(i);
                 if (row != null) {
-                    Cell cell = row.getCell(staffIdColIndex);
-                    if (cell != null) {
-                        String staffId = getCellValueAsString(cell);
+                    Cell staffIdCell = row.getCell(staffIdColIndex);
+                    if (staffIdCell != null) {
+                        String staffId = getCellValueAsString(staffIdCell);
                         if (staffId != null && !staffId.trim().isEmpty()) {
-                            staffIds.add(staffId.trim());
+                            String itCode = "";
+                            String name = "";
+                            
+                            // 获取IT Code
+                            if (itCodeColIndex != null) {
+                                Cell itCodeCell = row.getCell(itCodeColIndex);
+                                if (itCodeCell != null) {
+                                    itCode = getCellValueAsString(itCodeCell);
+                                }
+                            }
+                            
+                            // 获取Name
+                            if (nameColIndex != null) {
+                                Cell nameCell = row.getCell(nameColIndex);
+                                if (nameCell != null) {
+                                    name = getCellValueAsString(nameCell);
+                                }
+                            }
+                            
+                            userInfos.add(new UserLearningData(staffId.trim(), itCode, name, 0.0));
                         }
                     }
                 }
             }
         }
         
-        return staffIds.toArray(new String[0]);
+        return userInfos.toArray(new UserLearningData[0]);
     }
     
     /**
@@ -402,7 +441,7 @@ public class ExcelLearningHoursAnalyzer {
      * 将结果写入Excel文件
      *
      * @param results         结果数据列表
-     * @param detailResults
+     * @param detailResults   user详细数据
      * @param outputExcelPath 输出Excel文件路径
      * @throws IOException 当文件写入出现问题时抛出
      */
@@ -427,8 +466,7 @@ public class ExcelLearningHoursAnalyzer {
         // 对详细结果进行排序：首先按员工ID排序
         detailResults.sort((detail1, detail2) -> {
             // 首先按员工ID排序
-            int staffIdCompare = compareStaffId(detail1.staffId, detail2.staffId);
-            return staffIdCompare;
+            return compareStaffId(detail1.staffId, detail2.staffId);
         });
 
         try (Workbook workbook = new XSSFWorkbook()) {
@@ -439,7 +477,14 @@ public class ExcelLearningHoursAnalyzer {
             headerRow.createCell(0).setCellValue("Staff ID");
             headerRow.createCell(1).setCellValue("IT Code");
             headerRow.createCell(2).setCellValue("Name");
-            headerRow.createCell(3).setCellValue("Total Course Hours");
+
+            Cell totalHoursCell = headerRow.createCell(3);
+            totalHoursCell.setCellValue("Total Course Hours\n" + currentMonth);
+
+            // 设置单元格样式以启用自动换行
+            CellStyle headerStyle = workbook.createCellStyle();
+            headerStyle.setWrapText(true); // 启用自动换行
+            totalHoursCell.setCellStyle(headerStyle);
 
             // 创建红色字体样式
             CellStyle redStyle = workbook.createCellStyle();
@@ -616,5 +661,27 @@ public class ExcelLearningHoursAnalyzer {
         // _(enus|zhcn)$  第四部分：下划线后接_enus或_zhcn结尾
         String regex = "^[a-zA-Z0-9]+_[a-zA-Z0-9]+_[a-zA-Z0-9]+_(enus|zhcn)$";
         return str.matches(regex);
+    }
+
+
+    /**
+     * 为没有学习记录的用户添加默认0小时记录
+     * 
+     * @param targetUserInfos 目标用户信息数组
+     * @param results 结果列表
+     */
+    private static void addMissingUsersWithZeroHours(UserLearningData[] targetUserInfos, List<UserLearningData> results) {
+        // 创建已存在的员工ID集合
+        Set<String> existingStaffIds = new HashSet<>();
+        for (UserLearningData result : results) {
+            existingStaffIds.add(result.staffId);
+        }
+
+        // 为缺失的员工添加0小时记录
+        for (UserLearningData userInfo : targetUserInfos) {
+            if (!existingStaffIds.contains(userInfo.staffId)) {
+                results.add(userInfo);
+            }
+        }
     }
 }
