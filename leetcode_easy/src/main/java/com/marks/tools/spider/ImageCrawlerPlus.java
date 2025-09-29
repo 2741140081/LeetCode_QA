@@ -26,7 +26,12 @@ import java.util.regex.Pattern;
  * @update [序号][日期YYYY-MM-DD] [更改人姓名][变更描述]
  */
 public class ImageCrawlerPlus {
-    private static String SAVE_DIR = "D:\\spider\\data\\4173_56\\result\\";
+    // 数据库连接配置
+    private static final String DB_URL = "jdbc:mysql://localhost:3306/image_3D?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true";
+    private static final String DB_USER = "root";
+    private static final String DB_PASSWORD = "123456";
+
+    private static String SAVE_DIR = "D:\\spider\\data\\妈妈攻略\\result\\";
     // 线程池配置
     private static final int THREAD_POOL_SIZE = 10;
     private static ExecutorService executor;
@@ -42,16 +47,16 @@ public class ImageCrawlerPlus {
     private static int index = 1;
 
     private static long startTime;
-
-    // 缓存正则表达式编译结果
-    private static final Pattern IMG_PATTERN = Pattern.compile(
-            "<img\\s+[^>]*data-original=[\"']([^\"']+)[\"'][^>]*id=[\"']([^\"']+)[\"'][^>]*>",
-            Pattern.CASE_INSENSITIVE
-    );
-
-    //
-    private static String insertSQL = "INSERT INTO image_download_info (image_web_url, parent_page_url, image_index, status) VALUES (?, ?, ?, ?)";
-
+    
+    // 静态代码块，用于加载MySQL驱动类
+    static {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            System.err.println("MySQL JDBC驱动加载失败: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
     
     public static void main(String[] args) {
         TextToCsvProcessor csvProcessor = new TextToCsvProcessor();
@@ -84,7 +89,7 @@ public class ImageCrawlerPlus {
             downloadImages();
             // 5. 清理数据库下载表, 因为这个表相当于是一张临时表, 不希望这个表过大
             clearDownloadTable();
-            
+
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -96,9 +101,7 @@ public class ImageCrawlerPlus {
             System.out.println("下载完成，耗时: " + (endTime - startTime) + "ms");
         }
     }
-
-
-
+    
     /**
      * 关闭线程池
      */

@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ImageLoader {
+    // 保留原有方法，但可以标记为deprecated或者删除
+    @Deprecated
     public static List<BufferedImage> loadImages(String dir, int start, int end, int width, int height) {
         List<BufferedImage> batch = new ArrayList<>();
         for (int i = start; i <= end; i++) {
@@ -16,6 +18,8 @@ public class ImageLoader {
                 BufferedImage original = ImageIO.read(new File(path));
                 BufferedImage resized = resizeImage(original, width, height);
                 batch.add(resized);
+                // 及时释放原始图片引用
+                original.flush();
             } catch (Exception e) {
                 System.err.println("Error loading image " + i + ": " + e.getMessage());
             }
@@ -37,11 +41,11 @@ public class ImageLoader {
         int newHeight = (int)(original.getHeight() * ratio);
 
         // 执行缩放
-        Image scaled = original.getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH);
+        // Image scaled = original.getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH);
         BufferedImage resized = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_RGB);
         Graphics2D g2d = resized.createGraphics();
         g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-        g2d.drawImage(scaled, 0, 0, null);
+        g2d.drawImage(original, 0, 0, newWidth, newHeight, null);
         g2d.dispose();
         return resized;
     }
