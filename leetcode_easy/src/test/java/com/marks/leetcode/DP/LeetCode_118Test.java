@@ -22,6 +22,9 @@ class LeetCode_118Test {
     void generate() {
         LeetCode_118 leetCode_118 = new LeetCode_118();
         List<List<Integer>> result = leetCode_118.generate(5);
+
+        LeetCode_119 leetCode_119 = new LeetCode_119();
+        List<Integer> result1 = leetCode_119.getRow(5);
         System.out.println(result);
     }
 }
