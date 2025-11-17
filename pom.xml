@@ -18,6 +18,7 @@
     <modules>
         <module>leetcode_easy</module>
         <module>SpringAI_Demo</module>
+        <module>schedule_task</module>
     </modules>
 
     <properties>
