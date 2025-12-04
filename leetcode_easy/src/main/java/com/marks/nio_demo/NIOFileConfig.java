@@ -13,4 +13,5 @@ package com.marks.nio_demo;
 public class NIOFileConfig {
     public static final String FILE_RESOURCE_SRC_PATH = "D:\\work_edms\\test\\test.txt";
     public static final String FILE_RESOURCE_DEST_PATH = "D:\\work_edms\\test\\DestTest.txt";
+    public static final String RECEIVE_PATH = "D:\\work_edms\\test\\";
 }
