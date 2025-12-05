@@ -1,6 +1,6 @@
 package com.marks.nio_demo;
 
-import com.marks.utils.Logger;
+import com.marks.nio_common.util.Logger;
 
 import java.nio.IntBuffer;
 

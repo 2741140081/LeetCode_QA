@@ -1,5 +1,7 @@
 package com.marks.nio_demo;
 
+import com.marks.nio_common.util.NioDemoConfig;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -24,8 +26,8 @@ public class FileNIOCopyDemo {
     }
 
     private static void nioCopyFile() {
-        String sourceFile = NIOFileConfig.FILE_RESOURCE_SRC_PATH;
-        String destFile = NIOFileConfig.FILE_RESOURCE_DEST_PATH;
+        String sourceFile = NioDemoConfig.FILE_RESOURCE_SRC_PATH;
+        String destFile = NioDemoConfig.FILE_RESOURCE_DEST_PATH;
 
         File source = new File(sourceFile);
         File dest = new File(destFile);

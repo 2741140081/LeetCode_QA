@@ -1,9 +1,10 @@
 package com.marks.nio_demo;
 
+import com.marks.nio_common.util.NioDemoConfig;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.nio.ByteBuffer;
@@ -30,7 +31,7 @@ public class NIOReceiveServer {
         server.startServer();
     }
     private Charset charset = StandardCharsets.UTF_8;
-    private final String RECEIVE_PATH = NIOFileConfig.RECEIVE_PATH;
+    private final String RECEIVE_PATH = NioDemoConfig.SOCKET_RECEIVE_PATH;
 
     private ByteBuffer buffer = ByteBuffer.allocate(1024);
 

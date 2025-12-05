@@ -1,5 +1,7 @@
 package com.marks.nio_demo;
 
+import com.marks.nio_common.util.NioDemoConfig;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -30,7 +32,7 @@ public class NIOSendClient {
     }
 
     private void sendFile() {
-        String sourceFile = NIOFileConfig.FILE_RESOURCE_SRC_PATH;
+        String sourceFile = NioDemoConfig.FILE_SRC_PATH;
         String destFileName = "SendTest.txt";
         System.out.println("sourceFile:" + sourceFile);
         File file = new File(sourceFile);
