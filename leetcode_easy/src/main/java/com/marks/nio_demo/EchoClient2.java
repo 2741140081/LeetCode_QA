@@ -28,7 +28,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @date 2025/12/5 17:40
  * @update [序号][日期YYYY-MM-DD] [更改人姓名][变更描述]
  */
-public class EchoClient {
+public class EchoClient2 {
     public void start() throws IOException {
 
         InetSocketAddress address =
@@ -181,6 +181,6 @@ public class EchoClient {
     }
 
     public static void main(String[] args) throws IOException {
-        new EchoClient().start();
+        new EchoClient2().start();
     }
 }

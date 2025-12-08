@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.nio.charset.StandardCharsets;
 
 /**
  * <p>项目名称: LeetCode_QA </p>
@@ -52,7 +53,9 @@ public class EchoHandler implements Runnable {
                 // 接收数据
                 int len = 0;
                 while ((len = channel.read(byteBuffer)) > 0) {
-                    System.out.println("接收到数据:" + new String(byteBuffer.array(), 0, len));
+                    // 打印接收的数据
+                    String msg = new String(byteBuffer.array(), 0, len, StandardCharsets.UTF_8);
+                    System.out.println("接收到数据:" + msg);
                 }
                 // 注册写事件
                 byteBuffer.flip();
