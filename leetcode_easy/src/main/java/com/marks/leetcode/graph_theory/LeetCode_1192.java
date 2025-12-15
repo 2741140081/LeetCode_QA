@@ -43,7 +43,7 @@ public class LeetCode_1192 {
      */
     public List<List<Integer>> criticalConnections(int n, List<List<Integer>> connections) {
         List<List<Integer>> result;
-        result = method_01(n, connections);
+//        result = method_01(n, connections);
         result = method_02(n, connections);
         return result;
     }

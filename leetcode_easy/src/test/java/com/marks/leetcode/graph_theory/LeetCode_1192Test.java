@@ -31,4 +31,16 @@ class LeetCode_1192Test {
         LeetCode_1192 leetCode_1192 = new LeetCode_1192();
         List<List<Integer>> ans = leetCode_1192.criticalConnections(n, connectionList);
     }
+
+    @Test
+    void criticalConnections2() {
+        int n = 7;
+        int[][] connections = {{0, 1}, {1, 2}, {2, 3}, {3, 4}, {4, 5}, {5, 0}, {3, 6}};
+        // 将connections转换为List<List<Integer>>
+        List<List<Integer>> connectionList = Arrays.stream(connections)
+                .map(conn -> Arrays.stream(conn).boxed().collect(Collectors.toList()))
+                .toList();
+        LeetCode_1192 leetCode_1192 = new LeetCode_1192();
+        List<List<Integer>> ans = leetCode_1192.criticalConnections(n, connectionList);
+    }
 }
