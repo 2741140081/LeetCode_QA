@@ -1,12 +1,11 @@
 package com.marks.netty_demo;
 
+import com.marks.netty.netty_demo.InHandlerDemo;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * <p>项目名称: LeetCode_QA </p>
