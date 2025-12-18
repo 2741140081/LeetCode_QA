@@ -16,10 +16,8 @@ public class LeetCode_721 {
     /**
      * @Description:
      * 给定一个列表 accounts，每个元素 accounts[i] 是一个字符串列表，其中第一个元素 accounts[i][0] 是 名称 (name)，其余元素是 emails 表示该账户的邮箱地址。
-     *
      * 现在，我们想合并这些账户。如果两个账户都有一些共同的邮箱地址，则两个账户必定属于同一个人。
      * 请注意，即使两个账户具有相同的名称，它们也可能属于不同的人，因为人们可能具有相同的名称。一个人最初可以拥有任意数量的账户，但其所有账户都具有相同的名称。
-     *
      * 合并账户后，按以下格式返回账户：每个账户的第一个元素是名称，其余元素是 按字符 ASCII 顺序排列 的邮箱地址。账户本身可以以 任意顺序 返回。
      *
      * tips:
@@ -50,6 +48,8 @@ public class LeetCode_721 {
      * 1. 这是一个并查集, 但是改怎么存储数据?
      * 2. 怎么判断是否属于同一个账号, 也就是如何合并账号? 看看数据范围? Map<String, String> map
      * 3. 直接一点, 判断 i , j 是否是同一个账号,
+     *
+     * AC: 150ms/48.75MB
      * @param accounts 
      * @return java.util.List<java.util.List<java.lang.String>>
      * @author marks
@@ -66,7 +66,7 @@ public class LeetCode_721 {
             for (int i = 1; i < size; i++) {
                 String email = account.get(i);
                 if (!emailToIndex.containsKey(email)) {
-                    emailToIndex.put(email, emailsCount++);
+                    emailToIndex.put(email, emailsCount++); // 更新相同的邮箱的索引
                     emailToName.put(email, name);
                 }
             }
@@ -82,6 +82,7 @@ public class LeetCode_721 {
                 uf.union(firstIndex, nextIndex);
             }
         }
+        // 将并查集的结果, 如果索引相同, 则属于同一个账号, 将这些账号放入到一个集合中
         Map<Integer, List<String>> indexToEmails = new HashMap<Integer, List<String>>();
         for (String email : emailToIndex.keySet()) {
             int index = uf.find(emailToIndex.get(email));
@@ -101,7 +102,7 @@ public class LeetCode_721 {
         return merged;
     }
 
-    private static class UnionFind {
+    class UnionFind {
         private int[] parent;
 
         public UnionFind(int size) {
