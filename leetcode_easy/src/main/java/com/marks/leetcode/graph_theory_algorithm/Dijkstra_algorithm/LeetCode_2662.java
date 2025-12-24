@@ -17,10 +17,11 @@ public class LeetCode_2662 {
      * @Description: [
      * 给你一个数组 start ，其中 start = [startX, startY] 表示你的初始位置位于二维空间上的 (startX, startY) 。
      * 另给你一个数组 target ，其中 target = [targetX, targetY] 表示你的目标位置 (targetX, targetY) 。
-     *
      * 从位置 (x1, y1) 到空间中任一其他位置 (x2, y2) 的 代价 是 |x2 - x1| + |y2 - y1| 。
      *
-     * 给你一个二维数组 specialRoads ，表示空间中存在的一些 特殊路径。其中 specialRoads[i] = [x1i, y1i, x2i, y2i, costi] 表示第 i 条特殊路径可以从 (x1i, y1i) 到 (x2i, y2i) ，但成本等于 costi 。你可以使用每条特殊路径任意次数。
+     * 给你一个二维数组 specialRoads ，表示空间中存在的一些 特殊路径。
+     * 其中 specialRoads[i] = [x1i, y1i, x2i, y2i, costi] 表示第 i 条特殊路径可以从 (x1i, y1i) 到 (x2i, y2i) ，但成本等于 costi 。
+     * 你可以使用每条特殊路径任意次数。
      *
      * 返回从 (startX, startY) 到 (targetX, targetY) 所需的 最小 代价。
      *
@@ -45,7 +46,30 @@ public class LeetCode_2662 {
     public int minimumCost(int[] start, int[] target, int[][] specialRoads) {
         int result;
         result = method_01(start, target, specialRoads);
+        result = method_02(start, target, specialRoads);
         return result;
+    }
+
+    /**
+     * @Description:
+     * 1. 从新思考, 先看看题目
+     * 2. map<Integer, int[]>, 记录节点
+     * @param: start
+     * @param: target
+     * @param: specialRoads
+     * @return int
+     * @author marks
+     * @CreateDate: 2025/12/24 16:22
+     * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
+     */
+    private int method_02(int[] start, int[] target, int[][] specialRoads) {
+        int m = target[0] + 1;
+        int n = target[1] + 1;
+        Map<Integer, int[]> map = new HashMap<>();
+        int index = 0;
+        map.put(index++, start);
+
+        return 0;
     }
 
     /**

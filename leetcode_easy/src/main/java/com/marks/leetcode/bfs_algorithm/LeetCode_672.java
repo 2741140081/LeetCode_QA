@@ -1,6 +1,8 @@
 package com.marks.leetcode.bfs_algorithm;
 
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * <p>项目名称: LeetCode_QA </p>
@@ -40,15 +42,49 @@ public class LeetCode_672 {
     public int flipLights(int n, int presses) {
         int result;
         result = method_01(n, presses);
+        result = method_02(n, presses);
         return result;
+    }
+
+    private int method_02(int n, int presses) {
+        Set<Integer> seen = new HashSet<Integer>();
+        for (int i = 0; i < 1 << 4; i++) {
+            int[] pressArr = new int[4];
+            for (int j = 0; j < 4; j++) {
+                pressArr[j] = (i >> j) & 1;
+            }
+            int sum = Arrays.stream(pressArr).sum();
+            if (sum % 2 == presses % 2 && sum <= presses) {
+                int status = pressArr[0] ^ pressArr[2] ^ pressArr[3];
+                if (n >= 2) {
+                    status |= (pressArr[0] ^ pressArr[1]) << 1;
+                }
+                if (n >= 3) {
+                    status |= (pressArr[0] ^ pressArr[2]) << 2;
+                }
+                if (n >= 4) {
+                    status |= (pressArr[0] ^ pressArr[1] ^ pressArr[3]) << 3;
+                }
+                seen.add(status);
+            }
+        }
+        return seen.size();
     }
 
     /**
      * @Description:
      * 1. 什么情况下才会有不同的状态, 需要整理出 灯泡与各个开关之间的联系
-     * 2. 0001 表示开关1, 0010 表示开关2, 0100 表示开关3, 1000 表示开关4
-     * 3. 灯泡1: 1101, 灯泡2: 0011
-     * need todo
+     * [1,1,1,1,1] => 执行开关4
+     * [0,1,1,0,1] => 执行开关3
+     * [0,0,1,1,1] => 执行开关4
+     * [1,0,1,0,1] => 执行开关3
+     * [1,1,1,1,1] => 执行k2
+     * [0,1,0,1,0] => 执行k4
+     * [0,0,0,0,0] => 执行k3
+     * [0,1,1,0,1] => 执行k4
+     * [1,1,1,1,1]
+     * 当执行k2,k3,k4,k1时, 状态会还原为初始状态, 可以进行抵消操作
+     * 1. 假设开关1执行了k1次, 开关2执行了k2次, 开关3执行了k3次, 开关4执行了k4次, k1 + k2 + k3 + k4 = presses
      * @param: n
      * @param: presses
      * @return int
@@ -63,22 +99,15 @@ public class LeetCode_672 {
         if (n == 1) {
             return 2;
         }
-        int[] st = new int[n + 1];
-        // 开关1
-        Arrays.fill(st, 1);
-        // 开关2
-        for (int i = 2; i <= n; i += 2) {
-            st[i] ^= 2;
+        for (int k1 = presses; k1 >= 0; k1--) {
+            for (int k2 = presses - k1; k2 >= 0; k2--) {
+                for (int k3 = presses - k1 - k2; k3 >= 0; k3--) {
+                    for (int k4 = presses - k1 - k2 - k3; k4 >= 0; k4--) {
+
+                    }
+                }
+            }
         }
-        // 开关3
-        for (int i = 1; i <= n; i += 2) {
-            st[i] ^= 4;
-        }
-        // 开关4
-        for (int i = 1; i <= n; i += 3) {
-            st[i] ^= 8;
-        }
-        int[] ans = new int[n + 1]; //
 
         return 0;
     }
