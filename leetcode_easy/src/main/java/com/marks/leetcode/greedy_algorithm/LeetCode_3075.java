@@ -59,6 +59,7 @@ public class LeetCode_3075 {
             ans += (happiness[index] >= decrease ? (long)happiness[index] - decrease : 0);
             index--;
             decrease++;
+            k--;
         }
         return ans;
     }
