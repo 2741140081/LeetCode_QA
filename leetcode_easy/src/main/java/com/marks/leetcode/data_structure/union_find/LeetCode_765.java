@@ -42,6 +42,8 @@ public class LeetCode_765 {
      * @Description:
      * E1:
      * row = [0,2,1,3]
+     * 1. 既然是并查集, 那么创建并查集
+     * AC: 0ms/41.94MB
      * @param row 
      * @return int
      * @author marks
@@ -49,6 +51,61 @@ public class LeetCode_765 {
      * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
      */
     private int method_01(int[] row) {
-        return 0;
+        int n = row.length;
+        int N = n / 2;
+        UnionFind uf = new UnionFind(N);
+        for (int i = 0; i < n; i += 2) {
+            // 计算的是不同对的数量, 即情侣之间交错首尾排列, A1 B3, B4 C5, D7 C6, D9 A2;
+            // 如果是情侣, 例如 E10, E11; row[10] / 2 = 5, row[11] / 2 = 5; 即不会影响uf的 count 值
+            uf.union(row[i] / 2, row[i + 1] / 2);
+        }
+        return N - uf.getCount();
+    }
+
+    class UnionFind {
+        private int[] root;
+        private int[] rank;
+        private int count;
+
+        public UnionFind(int size) {
+            root = new int[size];
+            rank = new int[size];
+            for (int i = 0; i < size; i++) {
+                root[i] = i;
+                rank[i] = 1;
+            }
+            this.count = size;
+        }
+
+        public int find(int x) {
+            if (root[x] == x) {
+                return x;
+            }
+            return root[x] = find(root[x]);
+        }
+
+        public void union(int x, int y) {
+            int rootX = find(x);
+            int rootY = find(y);
+            if (rootX != rootY) {
+                if (rank[rootX] > rank[rootY]) {
+                    root[rootY] = rootX;
+                } else if (rank[rootX] < rank[rootY]) {
+                    root[rootX] = rootY;
+                } else {
+                    root[rootY] = rootX;
+                    rank[rootX] += 1;
+                }
+                count--;
+            }
+        }
+
+        public boolean isConnected(int x, int y) {
+            return find(x) == find(y);
+        }
+
+        public int getCount() {
+            return count;
+        }
     }
 }

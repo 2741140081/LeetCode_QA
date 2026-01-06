@@ -130,7 +130,6 @@ public class LeetCode_1192 {
      * 9. 还存在一个问题, 我可能会重复删除边, 需要用Set<Integer> 来判断, int key = Math.min(curr, next) * 10^6 + Math.max(curr, next);
      * 10. 存在问题, 无法解决以下案例, 存在两个环, 环之间通过一条线连接, 这条线可以被删除, 但是线两端的节点入度都不是1. 看看官解吧
      * 11. 题解使用了Tarjan算法, 见method_02
-
      * @param: n
      * @param: connections
      * @return java.util.List<java.util.List<java.lang.Integer>>

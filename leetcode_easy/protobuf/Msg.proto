@@ -1,0 +1,27 @@
+// [开始声明]
+syntax = "proto3";
+// 定义protobuf的包名
+package com.marks.netty.protocol;
+// [结束声明]
+
+// [开始 java 选项配置]
+option java_package = "com.marks.netty.protocol";
+option java_outer_classname = "MsgProto";
+// [结束 java 选项配置]
+
+// [开始 定义消息]
+message Msg {
+    uint32 id = 1; // Unique Id for this message
+    string content = 2;
+}
+
+message Msg2 {
+    uint32 id = 1; // Unique Id for this message
+    string content = 2;
+}
+
+message Msg3 {
+    uint32 id = 1; // Unique Id for this message
+    string content = 2;
+}
+// [结束 定义消息]
