@@ -56,6 +56,13 @@ public class LeetCode_131 {
         int left = 0;
         List<String> list = new ArrayList<>();
         backtrack(s, left, list);
+        // 如果需要返回 string[][]
+        // LCR_086 返回 string[][]
+        int m = ans.size();
+        String[][] res = new String[m][];
+        for (int i = 0; i < m; i++) {
+            res[i] = ans.get(i).toArray(new String[0]);
+        }
         return ans;
     }
 
