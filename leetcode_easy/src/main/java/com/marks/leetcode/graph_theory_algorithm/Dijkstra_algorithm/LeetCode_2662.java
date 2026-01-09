@@ -46,36 +46,14 @@ public class LeetCode_2662 {
     public int minimumCost(int[] start, int[] target, int[][] specialRoads) {
         int result;
         result = method_01(start, target, specialRoads);
-        result = method_02(start, target, specialRoads);
         return result;
-    }
-
-    /**
-     * @Description:
-     * 1. 从新思考, 先看看题目
-     * 2. map<Integer, int[]>, 记录节点
-     * @param: start
-     * @param: target
-     * @param: specialRoads
-     * @return int
-     * @author marks
-     * @CreateDate: 2025/12/24 16:22
-     * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
-     */
-    private int method_02(int[] start, int[] target, int[][] specialRoads) {
-        int m = target[0] + 1;
-        int n = target[1] + 1;
-        Map<Integer, int[]> map = new HashMap<>();
-        int index = 0;
-        map.put(index++, start);
-
-        return 0;
     }
 
     /**
      * @Description: [
      * 想到一个点
      * 1. 我们可以将 "x_y" 合并为一个key, 相当于节点 0, [sx_sy, x_y, ....xn_yn , tx_ty]
+     * AC: 36ms/46.29MB
      * ]
      * @param start
      * @param target
