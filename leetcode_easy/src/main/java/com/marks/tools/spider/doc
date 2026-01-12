@@ -1,0 +1,16 @@
+
+1. 假设150 个章节, 每章有6个子页面 => 需要爬取 150 * 6 = 900次
+2. 每次爬行1个页面需要耗时 2s, 需要30分钟, 这个时间太长了
+3. 这一步需要通过多线程进行优化, 当前现在是一个单线程执行的
+4. 每个页面爬取了 30 张图片, 900 * 30 = 27000 <Pair> 对象
+
+class Pair {
+	private int parentId; // 章节 id, 14225_5 => parentId = 14225, parentSubId = 5
+	private int parentSubId; // 每章节的子id, 默认值为0.
+	private int currId; // 如 "img0", currId = 0, 当前章节的子页面中截取的数字
+	private String pictureName; // 如 "img0"
+	private String downloadPath; // 下载地址
+}
+
+5. 查看代码 ImageCrawlerPlus.java 后, 当前代码是将 <Pair> 类的信息存储到数据库中
+6. 如果对 parseAndSaveImages(doc, parentPageUrl); 方法进行修改, 即将它变成为一个异步方法进行处理(当前这个方法的耗时太高了, 待优化)

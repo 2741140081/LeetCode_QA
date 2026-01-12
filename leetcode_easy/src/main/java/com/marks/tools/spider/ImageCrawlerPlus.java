@@ -1,8 +1,11 @@
 package com.marks.tools.spider;
 
+import com.marks.tools.dbUtil.DatabasePool;
 import com.marks.tools.video.TextToCsvProcessor;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import java.io.*;
 import java.net.URL;
@@ -23,11 +26,6 @@ import java.util.regex.Pattern;
  * @update [序号][日期YYYY-MM-DD] [更改人姓名][变更描述]
  */
 public class ImageCrawlerPlus {
-    // 数据库连接配置
-    private static final String DB_URL = "jdbc:mysql://localhost:3306/image_3D?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true";
-    private static final String DB_USER = "root";
-    private static final String DB_PASSWORD = "123456";
-
     private static String SAVE_DIR = "D:\\spider\\data\\4173_56\\result\\";
     // 线程池配置
     private static final int THREAD_POOL_SIZE = 10;
@@ -44,16 +42,16 @@ public class ImageCrawlerPlus {
     private static int index = 1;
 
     private static long startTime;
-    
-    // 静态代码块，用于加载MySQL驱动类
-    static {
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            System.err.println("MySQL JDBC驱动加载失败: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
+
+    // 缓存正则表达式编译结果
+    private static final Pattern IMG_PATTERN = Pattern.compile(
+            "<img\\s+[^>]*data-original=[\"']([^\"']+)[\"'][^>]*id=[\"']([^\"']+)[\"'][^>]*>",
+            Pattern.CASE_INSENSITIVE
+    );
+
+    //
+    private static String insertSQL = "INSERT INTO image_download_info (image_web_url, parent_page_url, image_index, status) VALUES (?, ?, ?, ?)";
+
     
     public static void main(String[] args) {
         TextToCsvProcessor csvProcessor = new TextToCsvProcessor();
@@ -84,17 +82,23 @@ public class ImageCrawlerPlus {
             System.out.println("处理完成，耗时: " + processTime + "ms");
             // 4. 开始下载图片
             downloadImages();
+            // 5. 清理数据库下载表, 因为这个表相当于是一张临时表, 不希望这个表过大
+            clearDownloadTable();
             
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
             // 5. 关闭线程池
             shutdownExecutor();
+            // 6. 关闭数据库连接池
+            DatabasePool.closeDataSource();
             long endTime = System.currentTimeMillis();
             System.out.println("下载完成，耗时: " + (endTime - startTime) + "ms");
         }
     }
-    
+
+
+
     /**
      * 关闭线程池
      */
@@ -153,13 +157,14 @@ public class ImageCrawlerPlus {
                 "status INT DEFAULT 0" +
                 ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
         
-        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-             Statement stmt = conn.createStatement()) {
+        try {
+            // 从连接池获取连接
+            Connection conn = DatabasePool.getConnection();
+            PreparedStatement stmt = conn.prepareStatement(createTableSQL);
             stmt.execute(createTableSQL);
             System.out.println("数据库初始化完成");
-        } catch (SQLException e) {
+        } catch (Exception e) {
             System.err.println("数据库初始化失败: " + e.getMessage());
-            e.printStackTrace();
         }
     }
     
@@ -186,8 +191,8 @@ public class ImageCrawlerPlus {
                         .get();
                 
                 // 解析图片信息并保存到数据库
-                parseAndSaveImages(doc, parentPageUrl);
-                
+                // parseAndSaveImages(doc, parentPageUrl);
+                parseAndSaveImagesPlus(doc, parentPageUrl);
                 // 查找下一页链接
                 String nextWebUrl = findNextPageUrl(doc);
                 if (nextWebUrl != null && !nextWebUrl.isEmpty()) {
@@ -211,7 +216,48 @@ public class ImageCrawlerPlus {
             }
         }
     }
-    
+
+    private static void parseAndSaveImagesPlus(Document doc, String parentPageUrl) {
+        // 使用List替代Map，提高遍历效率
+        List<ImageInfo> imageList = new ArrayList<>();
+        long startTime = System.currentTimeMillis();
+
+        // 使用Jsoup的CSS选择器替代正则表达式，效率更高
+        Elements imgElements = doc.select("img[data-original][id]");
+
+        for (Element img : imgElements) {
+            String imageAddress = img.attr("data-original");
+            String imageId = img.attr("id");
+            if (!imageAddress.isEmpty()) {  // 确保图片地址不为空
+                imageList.add(new ImageInfo(index++, imageAddress));
+            }
+        }
+        if (!imageList.isEmpty()) {
+            // 从数据库连接池获取连接
+            try {
+                Connection conn = DatabasePool.getConnection();
+                // 开启事务
+                conn.setAutoCommit(false);
+                PreparedStatement pstmt = conn.prepareStatement(insertSQL);
+                for (ImageInfo imageInfo : imageList) {
+                    pstmt.setString(1, imageInfo.url);
+                    pstmt.setString(2, parentPageUrl);
+                    pstmt.setInt(3, imageInfo.index);
+                    pstmt.setInt(4, 0); // 0:未进行下载
+                    pstmt.addBatch();
+                }
+                pstmt.executeBatch(); // 执行批处理
+                conn.commit(); // 提交事务
+                long endTime = System.currentTimeMillis();
+                System.out.println("从页面 " + parentPageUrl + " 解析并保存了 " + imageList.size() + " 张图片信息, " +
+                        "当前方法 parseAndSaveImages() 耗时: " + (endTime - startTime) / 1000 + "秒");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
     /**
      * 解析并保存图片信息到数据库
      * @param doc 网页文档
@@ -220,7 +266,8 @@ public class ImageCrawlerPlus {
     private static void parseAndSaveImages(Document doc, String parentPageUrl) {
         // 使用Map存储数据，key为index，value为imageUrl
         Map<Integer, String> imageMap = new LinkedHashMap<>();
-
+        // 查看当前方法的耗时
+        long startTime = System.currentTimeMillis();
         // 3. 提取图片地址（正则匹配id属性）
         Pattern imgPattern = Pattern.compile("<img\\s+[^>]*data-original=[\"']([^\"']+)[\"'][^>]*id=[\"']([^\"']+)[\"'][^>]*>");
         Matcher imgMatcher = imgPattern.matcher(doc.html());
@@ -234,9 +281,9 @@ public class ImageCrawlerPlus {
         
         // 批量插入到数据库
         if (!imageMap.isEmpty()) {
-            try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
-                String insertSQL = "INSERT INTO image_download_info (image_web_url, parent_page_url, image_index, status) VALUES (?, ?, ?, ?)";
-                
+            try {
+                Connection conn = DatabasePool.getConnection();
+
                 // 使用批处理插入数据
                 try (PreparedStatement pstmt = conn.prepareStatement(insertSQL)) {
                     conn.setAutoCommit(false); // 开启事务
@@ -251,16 +298,17 @@ public class ImageCrawlerPlus {
                     
                     pstmt.executeBatch(); // 执行批处理
                     conn.commit(); // 提交事务
-                    
-                    System.out.println("从页面 " + parentPageUrl + " 解析并保存了 " + imageMap.size() + " 张图片信息");
-                } catch (SQLException e) {
+                    long endTime = System.currentTimeMillis();
+                    System.out.println("从页面 " + parentPageUrl + " 解析并保存了 " + imageMap.size() + " 张图片信息, " +
+                            "当前方法 parseAndSaveImages() 耗时: " + (endTime - startTime) / 1000 + "秒");
+                } catch (Exception e) {
                     conn.rollback(); // 回滚事务
                     System.err.println("批量插入图片信息到数据库时出错: " + e.getMessage());
                     e.printStackTrace();
                 } finally {
                     conn.setAutoCommit(true); // 恢复自动提交
                 }
-            } catch (SQLException e) {
+            } catch (Exception e) {
                 System.err.println("保存图片信息到数据库时出错: " + e.getMessage());
                 e.printStackTrace();
             }
@@ -283,7 +331,27 @@ public class ImageCrawlerPlus {
         }
         return null;
     }
-    
+
+    /**
+     * @Description:
+     * 批量删除下载表中的图片信息
+     * @return void
+     * @author marks
+     * @CreateDate: 2026/01/12 16:08
+     * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
+     */
+    private static void clearDownloadTable() {
+        // 删除 表 image_download_info 中 status == 2 的数据, 为2表示已下载完成
+        try {
+            Connection conn = DatabasePool.getConnection();
+            PreparedStatement pstmt = conn.prepareStatement("DELETE FROM image_download_info WHERE status = 2");
+            pstmt.executeUpdate();
+            System.out.println("已删除 " + pstmt.getUpdateCount() + " 条数据");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * 下载图片
      */
@@ -293,9 +361,10 @@ public class ImageCrawlerPlus {
         String selectSQL = "SELECT id, image_index, image_web_url FROM image_download_info WHERE status = 0";
         String updateStatusSQL = "UPDATE image_download_info SET status = ? WHERE id = ?";
         
-        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-             PreparedStatement selectStmt = conn.prepareStatement(selectSQL);
-             PreparedStatement updateStmt = conn.prepareStatement(updateStatusSQL)) {
+        try {
+            Connection conn = DatabasePool.getConnection();
+            PreparedStatement selectStmt = conn.prepareStatement(selectSQL);
+            PreparedStatement updateStmt = conn.prepareStatement(updateStatusSQL);
             
             ResultSet rs = selectStmt.executeQuery();
             List<DownloadTask> tasks = new ArrayList<>();
@@ -323,7 +392,7 @@ public class ImageCrawlerPlus {
                 }
             }
             
-        } catch (SQLException | InterruptedException e) {
+        } catch (Exception e) {
             System.err.println("下载图片时出错: " + e.getMessage());
             e.printStackTrace();
         }
@@ -404,6 +473,17 @@ public class ImageCrawlerPlus {
             } catch (Exception e) {
                 System.err.println("下载失败: " + imageId + ", 错误: " + e.getMessage());
             }
+        }
+    }
+
+    // 内部类
+    private static class ImageInfo {
+        final int index;
+        final String url;
+
+        ImageInfo(int index, String url) {
+            this.index = index;
+            this.url = url;
         }
     }
 }

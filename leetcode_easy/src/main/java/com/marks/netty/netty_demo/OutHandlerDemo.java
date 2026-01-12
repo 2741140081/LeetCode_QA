@@ -39,7 +39,7 @@ public class OutHandlerDemo extends ChannelOutboundHandlerAdapter {
 
     @Override
     public void close(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {
-        Logger.info("close() 被调用");
+        Logger.info("closeDataSource() 被调用");
         super.close(ctx, promise);
     }
 

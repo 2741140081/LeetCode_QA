@@ -148,7 +148,7 @@ public class KKDzPlatformLauncher {
             // 或许有其他方法可以进行错误的检测, 待完善
             System.out.println("program was not successfully closed!");
         }
-        // wait program close
+        // wait program closeDataSource
         Thread.sleep(3000);
 
         // 3.2 restart the application
