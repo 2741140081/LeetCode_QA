@@ -27,11 +27,12 @@ public class DatabasePool {
         config.setPassword(ConfigCommon.DB_PASSWORD);
 
         // 连接池设置
-        config.setMaximumPoolSize(20); // 最大连接数
-        config.setMinimumIdle(5); // 最小空闲连接数
-        config.setConnectionTimeout(30000); // 连接超时时间
-        config.setIdleTimeout(60000); // 空闲连接超时时间
-        config.setMaxLifetime(1800000); // 连接最大生命周期
+        config.setMaximumPoolSize(50); // 最大连接数 - 提高以应对高并发
+        config.setMinimumIdle(10); // 最小空闲连接数 - 保持更多空闲连接
+        config.setConnectionTimeout(60000); // 连接超时时间 - 增加到60秒
+        config.setIdleTimeout(300000); // 空闲连接超时时间 - 5分钟
+        config.setMaxLifetime(1800000); // 连接最大生命周期 - 30分钟
+        config.setLeakDetectionThreshold(60000); // 启用连接泄漏检测 - 1分钟
 
         dataSource = new HikariDataSource(config);
     }
