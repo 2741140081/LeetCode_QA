@@ -13,9 +13,13 @@ public class DBInitializer {
     private static final Pattern IMG_PATTERN = Pattern.compile("img(\\d+)\\.webp");
 
     public static void main(String[] args) {
+        long startTime = System.currentTimeMillis();
         System.out.println("开始初始化数据库...");
         DBInitializer.initialize();
+        long endTime = System.currentTimeMillis();
         System.out.println("数据库初始化完成");
+        // 输出总时间, 耗时分钟数量
+        System.out.println("总耗时: " + ((endTime - startTime) / 60000) + "minute");
     }
     public static void initialize() {
         File dataDir = new File("D:\\spider\\data");
@@ -279,10 +283,12 @@ public class DBInitializer {
     private static int getImageCount(File folder) {
         File resultDir = new File(folder, "result");
         if (!resultDir.exists()) return 0;
-
+        // 查看用时多少
+        long startTime = System.currentTimeMillis();
         File[] files = resultDir.listFiles((dir, name) ->
                 name.toLowerCase().matches("img\\d+\\.(webp|jpg|jpeg|png)"));
-
+        long endTime = System.currentTimeMillis();
+        System.out.println(folder.getName() +  "文件夹的 getImageCount() 用时：" + (endTime - startTime) + "ms");
         return files != null ? files.length : 0;
     }
 
