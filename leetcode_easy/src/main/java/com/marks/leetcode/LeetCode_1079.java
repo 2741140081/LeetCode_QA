@@ -7,11 +7,12 @@ import java.util.Set;
 
 public class LeetCode_1079 {
     public static void main(String[] args) {
+        LeetCode_1079 leetCode_1079 = new LeetCode_1079();
         String tiles = "AAB";
-        numTilePossibilities(tiles);
+        int i = leetCode_1079.numTilePossibilities(tiles);
     }
 
-    private static int numTilePossibilities(String tiles) {
+    private int numTilePossibilities(String tiles) {
         Map<Character, Integer> count = new HashMap<>();
         for (char t : tiles.toCharArray()) {
             count.put(t, count.getOrDefault(t, 0) + 1);
@@ -21,7 +22,7 @@ public class LeetCode_1079 {
 
     }
 
-    private static int dfs(int i, Map<Character, Integer> count, Set<Character> tile) {
+    private int dfs(int i, Map<Character, Integer> count, Set<Character> tile) {
         if (i == 0) {
             return 1;
         }
