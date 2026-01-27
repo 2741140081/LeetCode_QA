@@ -57,6 +57,8 @@ public class LeetCode_3530 {
      * 2. int index = 1; 编号索引
      * 3. 贪心不正确, 需要用动态规划来求解, 数据范围不是很大, 但是应该也不支持回溯, 那么能用的就是状态压缩了
      * 4. 然后怎么处理? dp[i + 1][mask] = Math.max(dp[i][mask_i0])
+     * need todo, 当前只是CV 题解的代码, 需要自行实现
+     * AC: 44ms/134.74MB
      * @param: n
      * @param: edges
      * @param: score
