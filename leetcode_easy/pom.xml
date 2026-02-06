@@ -18,6 +18,27 @@
 
 
     <dependencies>
+
+        <!-- Selenium Java 绑定 -->
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-java</artifactId>
+            <version>4.40.0</version> <!-- 使用最新稳定版本 -->
+        </dependency>
+
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-devtools-v144</artifactId>
+            <version>4.40.0</version> <!-- 确保版本与 Selenium 主版本一致 -->
+        </dependency>
+
+        <!-- WebDriverManager（可选，用于自动管理浏览器驱动） -->
+        <dependency>
+            <groupId>io.github.bonigarcia</groupId>
+            <artifactId>webdrivermanager</artifactId>
+            <version>5.6.2</version> <!-- 使用最新稳定版本 -->
+        </dependency>
+
         <!-- 添加 Netty 依赖 -->
         <dependency>
             <groupId>io.netty</groupId>

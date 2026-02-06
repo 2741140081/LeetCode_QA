@@ -1,0 +1,282 @@
+C:\Users\wwang44\.jdks\ms-17.0.16\bin\java.exe "-javaagent:C:\Program Files\JetBrains\IntelliJ IDEA Community Edition 2025.2.4\lib\idea_rt.jar=49901" -Dfile.encoding=UTF-8 -classpath D:\gitProject\LeetCode_QA\leetcode_easy\target\classes;D:\maven-repository\org\seleniumhq\selenium\selenium-java\4.40.0\selenium-java-4.40.0.jar;D:\maven-repository\org\seleniumhq\selenium\selenium-api\4.25.0\selenium-api-4.25.0.jar;D:\maven-repository\org\jspecify\jspecify\1.0.0\jspecify-1.0.0.jar;D:\maven-repository\org\seleniumhq\selenium\selenium-chrome-driver\4.25.0\selenium-chrome-driver-4.25.0.jar;D:\maven-repository\org\seleniumhq\selenium\selenium-chromium-driver\4.25.0\selenium-chromium-driver-4.25.0.jar;D:\maven-repository\org\seleniumhq\selenium\selenium-manager\4.25.0\selenium-manager-4.25.0.jar;D:\maven-repository\org\seleniumhq\selenium\selenium-devtools-v142\4.40.0\selenium-devtools-v142-4.40.0.jar;D:\maven-repository\org\seleniumhq\selenium\selenium-devtools-v143\4.40.0\selenium-devtools-v143-4.40.0.jar;D:\maven-repository\org\seleniumhq\selenium\selenium-edge-driver\4.25.0\selenium-edge-driver-4.25.0.jar;D:\maven-repository\org\seleniumhq\selenium\selenium-firefox-driver\4.25.0\selenium-firefox-driver-4.25.0.jar;D:\maven-repository\org\seleniumhq\selenium\selenium-devtools-v85\4.25.0\selenium-devtools-v85-4.25.0.jar;D:\maven-repository\org\seleniumhq\selenium\selenium-http\4.25.0\selenium-http-4.25.0.jar;D:\maven-repository\dev\failsafe\failsafe\3.3.2\failsafe-3.3.2.jar;D:\maven-repository\org\seleniumhq\selenium\selenium-ie-driver\4.25.0\selenium-ie-driver-4.25.0.jar;D:\maven-repository\org\seleniumhq\selenium\selenium-remote-driver\4.25.0\selenium-remote-driver-4.25.0.jar;D:\maven-repository\com\google\guava\guava\33.3.0-jre\guava-33.3.0-jre.jar;D:\maven-repository\com\google\guava\failureaccess\1.0.2\failureaccess-1.0.2.jar;D:\maven-repository\com\google\guava\listenablefuture\9999.0-empty-to-avoid-conflict-with-guava\listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar;D:\maven-repository\com\google\code\findbugs\jsr305\3.0.2\jsr305-3.0.2.jar;D:\maven-repository\org\checkerframework\checker-qual\3.43.0\checker-qual-3.43.0.jar;D:\maven-repository\com\google\j2objc\j2objc-annotations\3.0.0\j2objc-annotations-3.0.0.jar;D:\maven-repository\io\opentelemetry\semconv\opentelemetry-semconv\1.25.0-alpha\opentelemetry-semconv-1.25.0-alpha.jar;D:\maven-repository\io\opentelemetry\opentelemetry-api\1.43.0\opentelemetry-api-1.43.0.jar;D:\maven-repository\io\opentelemetry\opentelemetry-context\1.43.0\opentelemetry-context-1.43.0.jar;D:\maven-repository\io\opentelemetry\opentelemetry-exporter-logging\1.43.0\opentelemetry-exporter-logging-1.43.0.jar;D:\maven-repository\io\opentelemetry\opentelemetry-sdk-common\1.43.0\opentelemetry-sdk-common-1.43.0.jar;D:\maven-repository\io\opentelemetry\opentelemetry-sdk-extension-autoconfigure-spi\1.43.0\opentelemetry-sdk-extension-autoconfigure-spi-1.43.0.jar;D:\maven-repository\io\opentelemetry\opentelemetry-sdk-extension-autoconfigure\1.43.0\opentelemetry-sdk-extension-autoconfigure-1.43.0.jar;D:\maven-repository\io\opentelemetry\opentelemetry-api-incubator\1.43.0-alpha\opentelemetry-api-incubator-1.43.0-alpha.jar;D:\maven-repository\io\opentelemetry\opentelemetry-sdk-trace\1.43.0\opentelemetry-sdk-trace-1.43.0.jar;D:\maven-repository\io\opentelemetry\opentelemetry-sdk\1.43.0\opentelemetry-sdk-1.43.0.jar;D:\maven-repository\io\opentelemetry\opentelemetry-sdk-metrics\1.43.0\opentelemetry-sdk-metrics-1.43.0.jar;D:\maven-repository\io\opentelemetry\opentelemetry-sdk-logs\1.43.0\opentelemetry-sdk-logs-1.43.0.jar;D:\maven-repository\net\bytebuddy\byte-buddy\1.15.11\byte-buddy-1.15.11.jar;D:\maven-repository\org\seleniumhq\selenium\selenium-os\4.25.0\selenium-os-4.25.0.jar;D:\maven-repository\org\apache\commons\commons-exec\1.4.0\commons-exec-1.4.0.jar;D:\maven-repository\org\seleniumhq\selenium\selenium-safari-driver\4.25.0\selenium-safari-driver-4.25.0.jar;D:\maven-repository\org\seleniumhq\selenium\selenium-support\4.25.0\selenium-support-4.25.0.jar;D:\maven-repository\org\seleniumhq\selenium\selenium-devtools-v144\4.40.0\selenium-devtools-v144-4.40.0.jar;D:\maven-repository\com\google\auto\service\auto-service-annotations\1.1.1\auto-service-annotations-1.1.1.jar;D:\maven-repository\org\seleniumhq\selenium\selenium-json\4.25.0\selenium-json-4.25.0.jar;D:\maven-repository\io\github\bonigarcia\webdrivermanager\5.6.2\webdrivermanager-5.6.2.jar;D:\maven-repository\org\slf4j\slf4j-api\2.0.17\slf4j-api-2.0.17.jar;D:\maven-repository\com\google\code\gson\gson\2.11.0\gson-2.11.0.jar;D:\maven-repository\com\google\errorprone\error_prone_annotations\2.27.0\error_prone_annotations-2.27.0.jar;D:\maven-repository\com\github\docker-java\docker-java\3.3.4\docker-java-3.3.4.jar;D:\maven-repository\com\github\docker-java\docker-java-core\3.3.4\docker-java-core-3.3.4.jar;D:\maven-repository\com\github\docker-java\docker-java-api\3.3.4\docker-java-api-3.3.4.jar;D:\maven-repository\org\bouncycastle\bcpkix-jdk18on\1.76\bcpkix-jdk18on-1.76.jar;D:\maven-repository\org\bouncycastle\bcutil-jdk18on\1.76\bcutil-jdk18on-1.76.jar;D:\maven-repository\org\slf4j\jcl-over-slf4j\2.0.17\jcl-over-slf4j-2.0.17.jar;D:\maven-repository\com\github\docker-java\docker-java-transport-httpclient5\3.3.4\docker-java-transport-httpclient5-3.3.4.jar;D:\maven-repository\com\github\docker-java\docker-java-transport\3.3.4\docker-java-transport-3.3.4.jar;D:\maven-repository\org\brotli\dec\0.1.2\dec-0.1.2.jar;D:\maven-repository\org\apache\commons\commons-lang3\3.17.0\commons-lang3-3.17.0.jar;D:\maven-repository\org\apache\commons\commons-compress\1.24.0\commons-compress-1.24.0.jar;D:\maven-repository\org\apache\httpcomponents\client5\httpclient5\5.4.3\httpclient5-5.4.3.jar;D:\maven-repository\org\apache\httpcomponents\core5\httpcore5\5.3.4\httpcore5-5.3.4.jar;D:\maven-repository\org\apache\httpcomponents\core5\httpcore5-h2\5.3.4\httpcore5-h2-5.3.4.jar;D:\maven-repository\io\netty\netty-all\4.2.5.Final\netty-all-4.2.5.Final.jar;D:\maven-repository\io\netty\netty-buffer\4.1.119.Final\netty-buffer-4.1.119.Final.jar;D:\maven-repository\io\netty\netty-codec-base\4.2.5.Final\netty-codec-base-4.2.5.Final.jar;D:\maven-repository\io\netty\netty-codec\4.1.119.Final\netty-codec-4.1.119.Final.jar;D:\maven-repository\io\netty\netty-codec-dns\4.1.119.Final\netty-codec-dns-4.1.119.Final.jar;D:\maven-repository\io\netty\netty-codec-haproxy\4.1.119.Final\netty-codec-haproxy-4.1.119.Final.jar;D:\maven-repository\io\netty\netty-codec-compression\4.2.5.Final\netty-codec-compression-4.2.5.Final.jar;D:\maven-repository\io\netty\netty-codec-http\4.1.119.Final\netty-codec-http-4.1.119.Final.jar;D:\maven-repository\io\netty\netty-codec-http2\4.1.119.Final\netty-codec-http2-4.1.119.Final.jar;D:\maven-repository\io\netty\netty-codec-http3\4.2.5.Final\netty-codec-http3-4.2.5.Final.jar;D:\maven-repository\org\jctools\jctools-core\4.0.5\jctools-core-4.0.5.jar;D:\maven-repository\io\netty\netty-transport-native-unix-common\4.1.119.Final\netty-transport-native-unix-common-4.1.119.Final.jar;D:\maven-repository\org\bouncycastle\bcprov-jdk18on\1.80\bcprov-jdk18on-1.80.jar;D:\maven-repository\io\netty\netty-codec-memcache\4.1.119.Final\netty-codec-memcache-4.1.119.Final.jar;D:\maven-repository\io\netty\netty-codec-mqtt\4.1.119.Final\netty-codec-mqtt-4.1.119.Final.jar;D:\maven-repository\io\netty\netty-codec-redis\4.1.119.Final\netty-codec-redis-4.1.119.Final.jar;D:\maven-repository\io\netty\netty-codec-smtp\4.1.119.Final\netty-codec-smtp-4.1.119.Final.jar;D:\maven-repository\io\netty\netty-codec-socks\4.1.119.Final\netty-codec-socks-4.1.119.Final.jar;D:\maven-repository\io\netty\netty-codec-stomp\4.1.119.Final\netty-codec-stomp-4.1.119.Final.jar;D:\maven-repository\io\netty\netty-codec-xml\4.1.119.Final\netty-codec-xml-4.1.119.Final.jar;D:\maven-repository\io\netty\netty-codec-protobuf\4.2.5.Final\netty-codec-protobuf-4.2.5.Final.jar;D:\maven-repository\io\netty\netty-codec-marshalling\4.2.5.Final\netty-codec-marshalling-4.2.5.Final.jar;D:\maven-repository\io\netty\netty-common\4.1.119.Final\netty-common-4.1.119.Final.jar;D:\maven-repository\io\netty\netty-handler\4.1.119.Final\netty-handler-4.1.119.Final.jar;D:\maven-repository\io\netty\netty-handler-proxy\4.1.119.Final\netty-handler-proxy-4.1.119.Final.jar;D:\maven-repository\io\netty\netty-handler-ssl-ocsp\4.1.119.Final\netty-handler-ssl-ocsp-4.1.119.Final.jar;D:\maven-repository\io\netty\netty-resolver\4.1.119.Final\netty-resolver-4.1.119.Final.jar;D:\maven-repository\io\netty\netty-resolver-dns\4.1.119.Final\netty-resolver-dns-4.1.119.Final.jar;D:\maven-repository\io\netty\netty-transport\4.1.119.Final\netty-transport-4.1.119.Final.jar;D:\maven-repository\io\netty\netty-transport-rxtx\4.1.119.Final\netty-transport-rxtx-4.1.119.Final.jar;D:\maven-repository\io\netty\netty-transport-sctp\4.1.119.Final\netty-transport-sctp-4.1.119.Final.jar;D:\maven-repository\io\netty\netty-transport-udt\4.1.119.Final\netty-transport-udt-4.1.119.Final.jar;D:\maven-repository\io\netty\netty-transport-classes-epoll\4.1.119.Final\netty-transport-classes-epoll-4.1.119.Final.jar;D:\maven-repository\io\netty\netty-transport-classes-kqueue\4.1.119.Final\netty-transport-classes-kqueue-4.1.119.Final.jar;D:\maven-repository\io\netty\netty-resolver-dns-classes-macos\4.1.119.Final\netty-resolver-dns-classes-macos-4.1.119.Final.jar;D:\maven-repository\io\netty\netty-transport-classes-io_uring\4.2.5.Final\netty-transport-classes-io_uring-4.2.5.Final.jar;D:\maven-repository\io\netty\netty-codec-classes-quic\4.2.5.Final\netty-codec-classes-quic-4.2.5.Final.jar;D:\maven-repository\io\netty\netty-transport-native-epoll\4.1.119.Final\netty-transport-native-epoll-4.1.119.Final-linux-x86_64.jar;D:\maven-repository\io\netty\netty-transport-native-epoll\4.1.119.Final\netty-transport-native-epoll-4.1.119.Final-linux-aarch_64.jar;D:\maven-repository\io\netty\netty-transport-native-epoll\4.1.119.Final\netty-transport-native-epoll-4.1.119.Final-linux-riscv64.jar;D:\maven-repository\io\netty\netty-transport-native-io_uring\4.2.5.Final\netty-transport-native-io_uring-4.2.5.Final-linux-x86_64.jar;D:\maven-repository\io\netty\netty-transport-native-io_uring\4.2.5.Final\netty-transport-native-io_uring-4.2.5.Final-linux-aarch_64.jar;D:\maven-repository\io\netty\netty-transport-native-io_uring\4.2.5.Final\netty-transport-native-io_uring-4.2.5.Final-linux-riscv64.jar;D:\maven-repository\io\netty\netty-transport-native-kqueue\4.1.119.Final\netty-transport-native-kqueue-4.1.119.Final-osx-x86_64.jar;D:\maven-repository\io\netty\netty-transport-native-kqueue\4.1.119.Final\netty-transport-native-kqueue-4.1.119.Final-osx-aarch_64.jar;D:\maven-repository\io\netty\netty-resolver-dns-native-macos\4.1.119.Final\netty-resolver-dns-native-macos-4.1.119.Final-osx-x86_64.jar;D:\maven-repository\io\netty\netty-resolver-dns-native-macos\4.1.119.Final\netty-resolver-dns-native-macos-4.1.119.Final-osx-aarch_64.jar;D:\maven-repository\io\netty\netty-codec-native-quic\4.2.5.Final\netty-codec-native-quic-4.2.5.Final-linux-x86_64.jar;D:\maven-repository\io\netty\netty-codec-native-quic\4.2.5.Final\netty-codec-native-quic-4.2.5.Final-linux-aarch_64.jar;D:\maven-repository\io\netty\netty-codec-native-quic\4.2.5.Final\netty-codec-native-quic-4.2.5.Final-osx-x86_64.jar;D:\maven-repository\io\netty\netty-codec-native-quic\4.2.5.Final\netty-codec-native-quic-4.2.5.Final-osx-aarch_64.jar;D:\maven-repository\io\netty\netty-codec-native-quic\4.2.5.Final\netty-codec-native-quic-4.2.5.Final-windows-x86_64.jar;D:\maven-repository\mysql\mysql-connector-java\8.0.26\mysql-connector-java-8.0.26.jar;D:\maven-repository\org\junit\jupiter\junit-jupiter\5.7.2\junit-jupiter-5.7.2.jar;D:\maven-repository\org\junit\jupiter\junit-jupiter-api\5.11.4\junit-jupiter-api-5.11.4.jar;D:\maven-repository\org\opentest4j\opentest4j\1.3.0\opentest4j-1.3.0.jar;D:\maven-repository\org\junit\platform\junit-platform-commons\1.11.4\junit-platform-commons-1.11.4.jar;D:\maven-repository\org\apiguardian\apiguardian-api\1.1.2\apiguardian-api-1.1.2.jar;D:\maven-repository\org\junit\jupiter\junit-jupiter-params\5.11.4\junit-jupiter-params-5.11.4.jar;D:\maven-repository\org\junit\jupiter\junit-jupiter-engine\5.11.4\junit-jupiter-engine-5.11.4.jar;D:\maven-repository\org\junit\platform\junit-platform-engine\1.11.4\junit-platform-engine-1.11.4.jar;D:\maven-repository\org\jetbrains\annotations\13.0\annotations-13.0.jar;D:\maven-repository\net\java\dev\jna\jna\5.13.0\jna-5.13.0.jar;D:\maven-repository\net\java\dev\jna\jna-platform\5.13.0\jna-platform-5.13.0.jar;D:\maven-repository\com\github\kwhat\jnativehook\2.2.2\jnativehook-2.2.2.jar;D:\maven-repository\org\bytedeco\opencv-platform\4.10.0-1.5.11\opencv-platform-4.10.0-1.5.11.jar;D:\maven-repository\org\bytedeco\openblas-platform\0.3.28-1.5.11\openblas-platform-0.3.28-1.5.11.jar;D:\maven-repository\org\bytedeco\javacpp-platform\1.5.11\javacpp-platform-1.5.11.jar;D:\maven-repository\org\bytedeco\javacpp\1.5.11\javacpp-1.5.11-android-arm64.jar;D:\maven-repository\org\bytedeco\javacpp\1.5.11\javacpp-1.5.11-android-x86_64.jar;D:\maven-repository\org\bytedeco\javacpp\1.5.11\javacpp-1.5.11-ios-arm64.jar;D:\maven-repository\org\bytedeco\javacpp\1.5.11\javacpp-1.5.11-ios-x86_64.jar;D:\maven-repository\org\bytedeco\javacpp\1.5.11\javacpp-1.5.11-linux-arm64.jar;D:\maven-repository\org\bytedeco\javacpp\1.5.11\javacpp-1.5.11-linux-ppc64le.jar;D:\maven-repository\org\bytedeco\javacpp\1.5.11\javacpp-1.5.11-linux-x86_64.jar;D:\maven-repository\org\bytedeco\javacpp\1.5.11\javacpp-1.5.11-macosx-arm64.jar;D:\maven-repository\org\bytedeco\javacpp\1.5.11\javacpp-1.5.11-macosx-x86_64.jar;D:\maven-repository\org\bytedeco\javacpp\1.5.11\javacpp-1.5.11-windows-x86_64.jar;D:\maven-repository\org\bytedeco\openblas\0.3.28-1.5.11\openblas-0.3.28-1.5.11.jar;D:\maven-repository\org\bytedeco\openblas\0.3.28-1.5.11\openblas-0.3.28-1.5.11-android-arm64.jar;D:\maven-repository\org\bytedeco\openblas\0.3.28-1.5.11\openblas-0.3.28-1.5.11-android-x86_64.jar;D:\maven-repository\org\bytedeco\openblas\0.3.28-1.5.11\openblas-0.3.28-1.5.11-ios-arm64.jar;D:\maven-repository\org\bytedeco\openblas\0.3.28-1.5.11\openblas-0.3.28-1.5.11-ios-x86_64.jar;D:\maven-repository\org\bytedeco\openblas\0.3.28-1.5.11\openblas-0.3.28-1.5.11-linux-x86_64.jar;D:\maven-repository\org\bytedeco\openblas\0.3.28-1.5.11\openblas-0.3.28-1.5.11-linux-arm64.jar;D:\maven-repository\org\bytedeco\openblas\0.3.28-1.5.11\openblas-0.3.28-1.5.11-macosx-arm64.jar;D:\maven-repository\org\bytedeco\openblas\0.3.28-1.5.11\openblas-0.3.28-1.5.11-macosx-x86_64.jar;D:\maven-repository\org\bytedeco\openblas\0.3.28-1.5.11\openblas-0.3.28-1.5.11-windows-x86_64.jar;D:\maven-repository\org\bytedeco\opencv\4.10.0-1.5.11\opencv-4.10.0-1.5.11.jar;D:\maven-repository\org\bytedeco\javacpp\1.5.11\javacpp-1.5.11.jar;D:\maven-repository\org\bytedeco\opencv\4.10.0-1.5.11\opencv-4.10.0-1.5.11-android-arm64.jar;D:\maven-repository\org\bytedeco\opencv\4.10.0-1.5.11\opencv-4.10.0-1.5.11-android-x86_64.jar;D:\maven-repository\org\bytedeco\opencv\4.10.0-1.5.11\opencv-4.10.0-1.5.11-ios-arm64.jar;D:\maven-repository\org\bytedeco\opencv\4.10.0-1.5.11\opencv-4.10.0-1.5.11-ios-x86_64.jar;D:\maven-repository\org\bytedeco\opencv\4.10.0-1.5.11\opencv-4.10.0-1.5.11-linux-x86_64.jar;D:\maven-repository\org\bytedeco\opencv\4.10.0-1.5.11\opencv-4.10.0-1.5.11-linux-arm64.jar;D:\maven-repository\org\bytedeco\opencv\4.10.0-1.5.11\opencv-4.10.0-1.5.11-macosx-arm64.jar;D:\maven-repository\org\bytedeco\opencv\4.10.0-1.5.11\opencv-4.10.0-1.5.11-macosx-x86_64.jar;D:\maven-repository\org\bytedeco\opencv\4.10.0-1.5.11\opencv-4.10.0-1.5.11-windows-x86_64.jar;D:\maven-repository\org\apache\logging\log4j\log4j-api\2.17.2\log4j-api-2.17.2.jar;D:\maven-repository\org\apache\logging\log4j\log4j-core\2.17.2\log4j-core-2.17.2.jar;D:\maven-repository\com\zaxxer\HikariCP\4.0.3\HikariCP-4.0.3.jar;D:\maven-repository\com\oracle\database\jdbc\ojdbc6\11.2.0.4\ojdbc6-11.2.0.4.jar;D:\maven-repository\com\oracle\database\jdbc\ucp\23.5.0.24.07\ucp-23.5.0.24.07.jar;D:\maven-repository\com\oracle\database\security\oraclepki\23.5.0.24.07\oraclepki-23.5.0.24.07.jar;D:\maven-repository\com\oracle\database\security\osdt_cert\11.2.0.4\osdt_cert-11.2.0.4.jar;D:\maven-repository\com\oracle\database\security\osdt_core\11.2.0.4\osdt_core-11.2.0.4.jar;D:\maven-repository\com\oracle\database\ha\simplefan\23.5.0.24.07\simplefan-23.5.0.24.07.jar;D:\maven-repository\com\oracle\database\ha\ons\23.5.0.24.07\ons-23.5.0.24.07.jar;D:\maven-repository\net\sourceforge\tess4j\tess4j\4.5.4\tess4j-4.5.4.jar;D:\maven-repository\com\github\jai-imageio\jai-imageio-core\1.4.0\jai-imageio-core-1.4.0.jar;D:\maven-repository\org\ghost4j\ghost4j\1.0.1\ghost4j-1.0.1.jar;D:\maven-repository\log4j\log4j\1.2.17\log4j-1.2.17.jar;D:\maven-repository\commons-beanutils\commons-beanutils\1.9.2\commons-beanutils-1.9.2.jar;D:\maven-repository\commons-collections\commons-collections\3.2.1\commons-collections-3.2.1.jar;D:\maven-repository\org\apache\xmlgraphics\xmlgraphics-commons\1.4\xmlgraphics-commons-1.4.jar;D:\maven-repository\com\lowagie\itext\2.1.7\itext-2.1.7.jar;D:\maven-repository\org\apache\pdfbox\pdfbox\2.0.21\pdfbox-2.0.21.jar;D:\maven-repository\org\apache\pdfbox\fontbox\2.0.21\fontbox-2.0.21.jar;D:\maven-repository\org\apache\pdfbox\pdfbox-tools\2.0.21\pdfbox-tools-2.0.21.jar;D:\maven-repository\org\apache\pdfbox\pdfbox-debugger\2.0.21\pdfbox-debugger-2.0.21.jar;D:\maven-repository\org\apache\pdfbox\jbig2-imageio\3.0.3\jbig2-imageio-3.0.3.jar;D:\maven-repository\net\sourceforge\lept4j\lept4j\1.13.2\lept4j-1.13.2.jar;D:\maven-repository\org\jboss\jboss-vfs\3.2.15.Final\jboss-vfs-3.2.15.Final.jar;D:\maven-repository\org\jboss\logging\jboss-logging\3.6.1.Final\jboss-logging-3.6.1.Final.jar;D:\maven-repository\org\jsoup\jsoup\1.17.2\jsoup-1.17.2.jar;D:\maven-repository\org\apache\httpcomponents\httpclient\4.5.13\httpclient-4.5.13.jar;D:\maven-repository\org\apache\httpcomponents\httpcore\4.4.16\httpcore-4.4.16.jar;D:\maven-repository\commons-logging\commons-logging\1.2\commons-logging-1.2.jar;D:\maven-repository\commons-codec\commons-codec\1.17.2\commons-codec-1.17.2.jar;D:\maven-repository\commons-io\commons-io\2.16.1\commons-io-2.16.1.jar;D:\maven-repository\org\sejda\imageio\webp-imageio\0.1.6\webp-imageio-0.1.6.jar;D:\maven-repository\com\ibm\icu\icu4j\70.1\icu4j-70.1.jar;D:\maven-repository\org\apache\poi\poi\5.2.3\poi-5.2.3.jar;D:\maven-repository\org\apache\commons\commons-collections4\4.4\commons-collections4-4.4.jar;D:\maven-repository\org\apache\commons\commons-math3\3.6.1\commons-math3-3.6.1.jar;D:\maven-repository\com\zaxxer\SparseBitSet\1.2\SparseBitSet-1.2.jar;D:\maven-repository\org\apache\poi\poi-ooxml\5.2.3\poi-ooxml-5.2.3.jar;D:\maven-repository\org\apache\poi\poi-ooxml-lite\5.2.3\poi-ooxml-lite-5.2.3.jar;D:\maven-repository\org\apache\xmlbeans\xmlbeans\5.1.1\xmlbeans-5.1.1.jar;D:\maven-repository\com\github\virtuald\curvesapi\1.07\curvesapi-1.07.jar;D:\maven-repository\com\google\protobuf\protobuf-java\4.33.2\protobuf-java-4.33.2.jar;D:\maven-repository\org\springframework\boot\spring-boot-starter-data-jpa\3.4.5\spring-boot-starter-data-jpa-3.4.5.jar;D:\maven-repository\org\springframework\boot\spring-boot-starter\3.4.5\spring-boot-starter-3.4.5.jar;D:\maven-repository\org\springframework\boot\spring-boot\3.4.5\spring-boot-3.4.5.jar;D:\maven-repository\org\springframework\boot\spring-boot-autoconfigure\3.4.5\spring-boot-autoconfigure-3.4.5.jar;D:\maven-repository\org\springframework\boot\spring-boot-starter-logging\3.4.5\spring-boot-starter-logging-3.4.5.jar;D:\maven-repository\ch\qos\logback\logback-classic\1.5.18\logback-classic-1.5.18.jar;D:\maven-repository\ch\qos\logback\logback-core\1.5.18\logback-core-1.5.18.jar;D:\maven-repository\org\apache\logging\log4j\log4j-to-slf4j\2.24.3\log4j-to-slf4j-2.24.3.jar;D:\maven-repository\org\slf4j\jul-to-slf4j\2.0.17\jul-to-slf4j-2.0.17.jar;D:\maven-repository\jakarta\annotation\jakarta.annotation-api\2.1.1\jakarta.annotation-api-2.1.1.jar;D:\maven-repository\org\springframework\spring-core\6.2.6\spring-core-6.2.6.jar;D:\maven-repository\org\springframework\spring-jcl\6.2.6\spring-jcl-6.2.6.jar;D:\maven-repository\org\yaml\snakeyaml\2.3\snakeyaml-2.3.jar;D:\maven-repository\org\springframework\boot\spring-boot-starter-jdbc\3.4.5\spring-boot-starter-jdbc-3.4.5.jar;D:\maven-repository\org\springframework\spring-jdbc\6.2.6\spring-jdbc-6.2.6.jar;D:\maven-repository\org\hibernate\orm\hibernate-core\6.6.13.Final\hibernate-core-6.6.13.Final.jar;D:\maven-repository\jakarta\persistence\jakarta.persistence-api\3.1.0\jakarta.persistence-api-3.1.0.jar;D:\maven-repository\jakarta\transaction\jakarta.transaction-api\2.0.1\jakarta.transaction-api-2.0.1.jar;D:\maven-repository\org\hibernate\common\hibernate-commons-annotations\7.0.3.Final\hibernate-commons-annotations-7.0.3.Final.jar;D:\maven-repository\io\smallrye\jandex\3.2.0\jandex-3.2.0.jar;D:\maven-repository\com\fasterxml\classmate\1.7.0\classmate-1.7.0.jar;D:\maven-repository\jakarta\xml\bind\jakarta.xml.bind-api\4.0.2\jakarta.xml.bind-api-4.0.2.jar;D:\maven-repository\jakarta\activation\jakarta.activation-api\2.1.3\jakarta.activation-api-2.1.3.jar;D:\maven-repository\org\glassfish\jaxb\jaxb-runtime\4.0.5\jaxb-runtime-4.0.5.jar;D:\maven-repository\org\glassfish\jaxb\jaxb-core\4.0.5\jaxb-core-4.0.5.jar;D:\maven-repository\org\eclipse\angus\angus-activation\2.0.2\angus-activation-2.0.2.jar;D:\maven-repository\org\glassfish\jaxb\txw2\4.0.5\txw2-4.0.5.jar;D:\maven-repository\com\sun\istack\istack-commons-runtime\4.1.2\istack-commons-runtime-4.1.2.jar;D:\maven-repository\jakarta\inject\jakarta.inject-api\2.0.1\jakarta.inject-api-2.0.1.jar;D:\maven-repository\org\antlr\antlr4-runtime\4.13.0\antlr4-runtime-4.13.0.jar;D:\maven-repository\org\springframework\data\spring-data-jpa\3.4.5\spring-data-jpa-3.4.5.jar;D:\maven-repository\org\springframework\data\spring-data-commons\3.4.5\spring-data-commons-3.4.5.jar;D:\maven-repository\org\springframework\spring-orm\6.2.6\spring-orm-6.2.6.jar;D:\maven-repository\org\springframework\spring-context\6.2.6\spring-context-6.2.6.jar;D:\maven-repository\org\springframework\spring-tx\6.2.6\spring-tx-6.2.6.jar;D:\maven-repository\org\springframework\spring-beans\6.2.6\spring-beans-6.2.6.jar;D:\maven-repository\org\springframework\spring-aspects\6.2.6\spring-aspects-6.2.6.jar;D:\maven-repository\org\aspectj\aspectjweaver\1.9.24\aspectjweaver-1.9.24.jar;D:\maven-repository\org\springframework\boot\spring-boot-starter-security\3.4.5\spring-boot-starter-security-3.4.5.jar;D:\maven-repository\org\springframework\spring-aop\6.2.6\spring-aop-6.2.6.jar;D:\maven-repository\org\springframework\security\spring-security-config\6.4.5\spring-security-config-6.4.5.jar;D:\maven-repository\org\springframework\security\spring-security-core\6.4.5\spring-security-core-6.4.5.jar;D:\maven-repository\org\springframework\security\spring-security-crypto\6.4.5\spring-security-crypto-6.4.5.jar;D:\maven-repository\org\springframework\security\spring-security-web\6.4.5\spring-security-web-6.4.5.jar;D:\maven-repository\org\springframework\spring-expression\6.2.6\spring-expression-6.2.6.jar;D:\maven-repository\org\springframework\boot\spring-boot-starter-web\3.4.5\spring-boot-starter-web-3.4.5.jar;D:\maven-repository\org\springframework\boot\spring-boot-starter-json\3.4.5\spring-boot-starter-json-3.4.5.jar;D:\maven-repository\com\fasterxml\jackson\core\jackson-databind\2.18.3\jackson-databind-2.18.3.jar;D:\maven-repository\com\fasterxml\jackson\core\jackson-annotations\2.18.3\jackson-annotations-2.18.3.jar;D:\maven-repository\com\fasterxml\jackson\core\jackson-core\2.18.3\jackson-core-2.18.3.jar;D:\maven-repository\com\fasterxml\jackson\datatype\jackson-datatype-jdk8\2.18.3\jackson-datatype-jdk8-2.18.3.jar;D:\maven-repository\com\fasterxml\jackson\datatype\jackson-datatype-jsr310\2.18.3\jackson-datatype-jsr310-2.18.3.jar;D:\maven-repository\com\fasterxml\jackson\module\jackson-module-parameter-names\2.18.3\jackson-module-parameter-names-2.18.3.jar;D:\maven-repository\org\springframework\boot\spring-boot-starter-tomcat\3.4.5\spring-boot-starter-tomcat-3.4.5.jar;D:\maven-repository\org\apache\tomcat\embed\tomcat-embed-core\10.1.40\tomcat-embed-core-10.1.40.jar;D:\maven-repository\org\apache\tomcat\embed\tomcat-embed-el\10.1.40\tomcat-embed-el-10.1.40.jar;D:\maven-repository\org\apache\tomcat\embed\tomcat-embed-websocket\10.1.40\tomcat-embed-websocket-10.1.40.jar;D:\maven-repository\org\springframework\spring-web\6.2.6\spring-web-6.2.6.jar;D:\maven-repository\io\micrometer\micrometer-observation\1.14.6\micrometer-observation-1.14.6.jar;D:\maven-repository\io\micrometer\micrometer-commons\1.14.6\micrometer-commons-1.14.6.jar;D:\maven-repository\org\springframework\spring-webmvc\6.2.6\spring-webmvc-6.2.6.jar;D:\maven-repository\org\mybatis\spring\boot\mybatis-spring-boot-starter\3.0.5\mybatis-spring-boot-starter-3.0.5.jar;D:\maven-repository\org\mybatis\spring\boot\mybatis-spring-boot-autoconfigure\3.0.5\mybatis-spring-boot-autoconfigure-3.0.5.jar;D:\maven-repository\org\mybatis\mybatis\3.5.19\mybatis-3.5.19.jar;D:\maven-repository\org\mybatis\mybatis-spring\3.0.5\mybatis-spring-3.0.5.jar;D:\maven-repository\javax\validation\validation-api\2.0.1.Final\validation-api-2.0.1.Final.jar;D:\maven-repository\com\alibaba\druid\1.2.6\druid-1.2.6.jar com.marks.tools.spider.txt.TxtCrawler
+<html xmlns="http://www.w3.org/1999/xhtml">
+ <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta name="mobile-agent" content="format=html5;url=//h5.17k.com/list/1075763.html">
+  <title>炼神领域内容介绍_作品目录_最新章节列表-17K小说网</title>
+  <meta name="Keywords" content="炼神领域内容介绍,炼神领域作品目录,炼神领域最新章节列表">
+  <meta name="Description" content="炼神领域由作家失落叶所著的异界大陆小说，小说，您可以在17K小说网免费试读">
+  <meta property="og:title" content="《炼神领域》失落叶著-17K小说网">
+  <meta property="og:description" content="当岁月走到了尽头，苍龙的朽骨化为了大地的碎片，罪恶的妖獠吞噬了生灵的血肉，暴戾的异族踏碎了民族的脊梁。
+一位年轻人来到这个陌生的世界，他应当何去何从？
+林沐雨选择了自己的天道，用铮铮铁骨谱写出一曲异世狂歌，剑荡九霄，马踏星河，轻我欺我者必杀之。
+铸仙剑，炼神魔，唯我称王。
+——————————————————————
+叶子公众微信：shiluoye2014">
+  <meta property="og:type" content="book">
+  <meta property="og:url" content="https://www.17k.com/book/1075763.html">
+  <meta property="og:image" content="https://cdn.static.17k.com/book/189x272/63/57/1075763.jpg-189x272?v=1565765826000">
+  <meta itemprop="name" content="《炼神领域》失落叶著-17K小说网">
+  <meta itemprop="description" content="当岁月走到了尽头，苍龙的朽骨化为了大地的碎片，罪恶的妖獠吞噬了生灵的血肉，暴戾的异族踏碎了民族的脊梁。
+一位年轻人来到这个陌生的世界，他应当何去何从？
+林沐雨选择了自己的天道，用铮铮铁骨谱写出一曲异世狂歌，剑荡九霄，马踏星河，轻我欺我者必杀之。
+铸仙剑，炼神魔，唯我称王。
+——————————————————————
+叶子公众微信：shiluoye2014">
+  <meta itemprop="image" content="https://cdn.static.17k.com/book/189x272/63/57/1075763.jpg-189x272?v=1565765826000">
+  <script type="text/javascript" async src="https://pos.baidu.com/icwm?di=978006&amp;uuid=0b38bf0adf3a31cb&amp;dri=0&amp;dis=0&amp;dai=0&amp;ps=14684x118&amp;enu=encoding&amp;exps=110011&amp;ant=0&amp;psi=ab66be9f5a87dc7f&amp;dcb=___adblockplus_&amp;dtm=SSP_JSONP&amp;dvi=0.0&amp;dci=-1&amp;dpt=none&amp;tpr=1770369110098&amp;ti=%E7%82%BC%E7%A5%9E%E9%A2%86%E5%9F%9F%E5%86%85%E5%AE%B9%E4%BB%8B%E7%BB%8D_%E4%BD%9C%E5%93%81%E7%9B%AE%E5%BD%95_%E6%9C%80%E6%96%B0%E7%AB%A0%E8%8A%82%E5%88%97%E8%A1%A8-17K%E5%B0%8F%E8%AF%B4%E7%BD%91&amp;ari=2&amp;ver=0620&amp;vc=%E5%85%B3%E4%BA%8E17k.com&amp;dbv=2&amp;drs=1&amp;pcs=1236x1226&amp;pss=1236x15035&amp;cfv=0&amp;cpl=5&amp;chi=2&amp;cce=true&amp;cec=UTF-8&amp;tlm=1770369110&amp;prot=2&amp;rw=1226&amp;ltu=https%3A%2F%2Fwww.17k.com%2Flist%2F1075763.html&amp;ltr=https%3A%2F%2Fwww.17k.com%2Flist%2F1075763.html&amp;ecd=1&amp;dft=0&amp;uc=2560x1392&amp;pis=-1x-1&amp;sr=2560x1440&amp;tcn=1770369110"></script>
+  <script type="text/javascript" async src="https://pos.baidu.com/icwm?di=4074845&amp;uuid=d171a01f70485afe&amp;dri=0&amp;dis=0&amp;dai=0&amp;ps=179x118&amp;enu=encoding&amp;exps=110011&amp;ant=0&amp;psi=ab66be9f5a87dc7f&amp;dcb=___adblockplus_&amp;dtm=SSP_JSONP&amp;dvi=0.0&amp;dci=-1&amp;dpt=none&amp;tpr=1770369110098&amp;ti=%E7%82%BC%E7%A5%9E%E9%A2%86%E5%9F%9F%E5%86%85%E5%AE%B9%E4%BB%8B%E7%BB%8D_%E4%BD%9C%E5%93%81%E7%9B%AE%E5%BD%95_%E6%9C%80%E6%96%B0%E7%AB%A0%E8%8A%82%E5%88%97%E8%A1%A8-17K%E5%B0%8F%E8%AF%B4%E7%BD%91&amp;ari=2&amp;ver=0620&amp;vc=17K%E5%B0%8F%E8%AF%B4%E7%BD%91&amp;dbv=2&amp;drs=1&amp;pcs=1236x1226&amp;pss=1236x15035&amp;cfv=0&amp;cpl=5&amp;chi=2&amp;cce=true&amp;cec=UTF-8&amp;tlm=1770369110&amp;prot=2&amp;rw=1226&amp;ltu=https%3A%2F%2Fwww.17k.com%2Flist%2F1075763.html&amp;ltr=https%3A%2F%2Fwww.17k.com%2Flist%2F1075763.html&amp;ecd=1&amp;dft=0&amp;uc=2560x1392&amp;pis=-1x-1&amp;sr=2560x1440&amp;tcn=1770369110"></script>
+  <script async src="https://static.17k.com/lib/sa-sdk/sensorsdata.min.js" charset="UTF-8"></script>
+  <script src="https://hm.baidu.com/hm.js?9793f42b498361373512340937deb2a0"></script>
+  <script src="//g.alicdn.com/frontend-lib/frontend-lib/2.3.74/antidom.js"></script>
+  <script src="//o.alicdn.com/frontend-lib/common-lib/jquery.min.js"></script>
+  <script type="text/javascript">
+		window.$__BOOK = {
+			type: 'list',
+			bookId: 1075763,
+			bookName: '炼神领域',
+			authorName: '失落叶',
+			authorId: 540405,
+			chapterId: 0,
+			chapterName: '',
+			vip: 1
+		}
+	</script>
+  <link rel="stylesheet" href="//static.17k.com/skin/main.css?v=0925">
+  <script type="text/javascript" src="//static.17k.com/lib/vConsole/vconsole.min.js?v=0925"></script>
+
+</style>
+  <script type="text/javascript" src="//static.17k.com/js/main.js?v=0925"></script>
+  <script type="text/javascript" src="//static.17k.com/www/Q/Q.js"></script><!--<link href="//static.17k.com/www/skin/main_old.css" rel="stylesheet" type="text/css"/>--> <!--重构-->
+  <link rel="stylesheet" href="//static.17k.com/www/skin/main.css?v=0922">
+  <script type="text/javascript" src="//static.17k.com/www/js/main.js?v=0922"></script>
+  <link href="//static.17k.com/www/skin/booklist.css?v=092218" rel="stylesheet" type="text/css">
+  <script src="https://api.17k.com/pv/log.php?Platform=Web&amp;Guid=091e3c86-6d70-446c-b34a-21684cc2d2ef&amp;Uid=0&amp;Nickname=&amp;cpsSource=&amp;Channel=&amp;novelID=1075763&amp;novelName=炼神领域内容介绍&amp;chapterID=0&amp;chapterName=最新章节列表&amp;authorByname=作品目录&amp;callback=Q_jsonp_86515695"></script>
+  <link rel="stylesheet" href="//static.17k.com/www/skin/helpBartool.css">
+  <script src="//static.17k.com/lib/baidu/share.js"></script>
+  <script src="//static.17k.com/lib/baidu/share.js"></script>
+  <link rel="stylesheet" href="//static.17k.com/lib/baidu/static/api/css/share_style1_16.css">
+ </head>
+ <body>
+  <link rel="stylesheet" href="//static.17k.com/www/skin/17k_header.css">
+  <div class="Header">
+   <div class="head_nav">
+    <div class="head_box">
+     <a class="now" href="//www.17k.com">17K小说</a> <a target="_blank" href="//www.4yt.net/">四月天女生</a>
+    </div>
+   </div>
+   <div class="cont_box">
+    <dl class="nav">
+     <dd class="login" id="header_login_user">
+      <span class="icon"></span> <a href="javascript:k.login('login')">登录</a> &nbsp;&nbsp;|&nbsp;&nbsp; <a href="javascript:k.login('register')">注册</a>
+     </dd>
+     <dd class="histroy">
+      <div class="tit">
+       <span class="icon"></span> <a target="_blank" href="//user.17k.com/www/bookshelf/read.html">看过</a>
+      </div>
+     </dd>
+     <dd class="booklib">
+      <div class="tit">
+       <span class="icon"></span> <a target="_blank" href="//user.17k.com/www/bookshelf">书架</a>
+      </div>
+     </dd>
+     <dd class="message" id="header_17k_message">
+      <div class="tit">
+       <span class="icon"></span> <a href="javascript:k.userMessage()">消息</a>
+      </div>
+     </dd>
+     <dd class="write">
+      <span class="icon"></span> <a href="javascript:k.login(function(){location.href='//author.17k.com/information/index.html'})">写书</a>
+     </dd>
+     <dd class="recharge">
+      <span class="icon"></span> <a target="_blank" href="//pay.17k.com/">充值</a>
+     </dd>
+    </dl><a class="logo" href="//www.17k.com/"></a>
+    <form class="so" target="_blank" action="//search.17k.com/search.xhtml">
+     <input type="hidden" name="c.st" value="0"> <input value="近战狂兵" class="q" type="text" name="c.q" onfocus="this.value==this.defaultValue&amp;&amp;this.select()"> <input class="m" type="submit" value="搜索">
+    </form>
+   </div>
+  </div>
+  <script type="text/javascript" src="//static.17k.com/www/js/17k_header.js?v=22"></script>
+  <link href="//static.17k.com/www/skin/17k_nav.css" rel="stylesheet">
+  <div class="Nav">
+   <div>
+    <a href="//www.17k.com/" target="_blank" class="now"><span>首页</span></a> <a href="//www.17k.com/top/" target="_blank"><span>排行榜</span></a> <a href="//www.17k.com/all" target="_blank"><span>分类</span></a> <a href="//www.17k.com/man/" target="_blank"><span>17K男生</span></a> <a href="//www.17k.com/mm/" target="_blank"><span>17K女生</span></a> <a href="//www.17k.com/ip/" target="_blank"><span>IP改编</span></a> <a href="//www.17k.com/meta/" target="_blank"><span>元宇宙</span></a> <a href="//www.17k.com/mianfei/" target="_blank"><span>免费小说</span></a> <a href="//www.17k.com/quanben/" target="_blank"><span>完本小说</span></a> <a class="mobile" href="//www.17k.com/download/"><span>APP端</span> <img alt="微信二维码" class="hover" src="//static.17k.com/www/pic/erweima2.png" srcset="//static.17k.com/www/pic/erweima2_2x.png 2x"> </a> <!--<a href="//wan.17k.com/jump/nyfpl71" target="_blank"><span>游戏中心</span></a>--> <a class="write_book" href="//author.17k.com/information/index.html" target="_blank" style="background: rgb(227, 100, 17);"> <span>我要写书</span> </a> <!--<a class="mobile" href="https://author.17k.com/ck/author/article/content/217.html"><span>官方书友群</span>--> <!--	<img alt="官方书友群"--> <!--		 class="hover"--> <!--		 src="//static.17k.com/www/pic/erweima_commu.jpg"--> <!--		 srcset="//static.17k.com/www/pic/erweima_commu.jpg 2x">--> <!--</a>-->
+    <script type="text/javascript">
+			k('div.Nav div a').forEach(function (a) {
+				if (location.href.indexOf(a.href) === 0) {
+					this.item(0).className = '';
+					a.className = 'now'
+				}
+			})
+			k('div.Nav div a.write_book').style({
+				background: (function (path) {
+					if (path.indexOf('/man') === 0) {
+						return '#025995'
+					} else if (path.indexOf('/mm') === 0) {
+						return '#75A462'
+					} else {
+						return '#E36411'
+					}
+
+				}(location.pathname))
+			})
+		</script>
+   </div>
+  </div>
+  <div class="Banner_ad" id="BAIDU_banner"></div>
+  <div class="infoPath">
+   <div>
+    <a href="/" target="_blank">17K小说网</a> &gt; <a href="/man" target="_blank">男生</a> &gt; <a href="/all/book/2_21_0______1.html" target="_blank">玄幻奇幻</a> &gt; <a class="red" href="/book/1075763.html">炼神领域</a> <span>[书号1075763]</span>
+   </div>
+  </div>
+  <div class="Main List">
+   <h1 class="Title">炼神领域</h1>
+   <div class="Author">
+    作者： <a target="_blank" href="//user.17k.com/see/www/540405.html">失落叶</a>
+   </div>
+   <div class="ToolBar">
+    <a class="home" href="/book/1075763.html" target="_blank">&lt;返回</a>
+    <div class="fenxiang bdsharebuttonbox bdshare-button-style1-16" data-bd-bind="1770369110375">
+     <a class="bds_more" href="#" data-cmd="more">分享...</a>
+    </div><a class="shuqian" href="javascript:k.book(1075763).mark()">+书架</a>
+   </div>
+   <dl class="Volume">
+    <dt>
+     <a class="folding" href="javascript:">- 收起</a> <span class="tit">作品相关</span><span class="info">已更新6章</span>
+    </dt>
+    <dd>
+更新日期:2019-12-02 23:07:00"> <span class="ellipsis "> 新书斩月！ </span> </a>
+    </dd>
+   </dl>
+   <dl class="Volume">
+    <dt>
+     <a class="folding" href="javascript:">- 收起</a> <span class="tit">第一卷 坠茵落溷</span><span class="info">已更新307章</span>
+    </dt>
+    <dd>
+更新日期:2015-04-14 00:00:00"> <span class="ellipsis vip"> 第三百零六章 以身殉国 </span> </a>
+    </dd>
+   </dl>
+   <dl class="Volume">
+    <dt>
+     <a class="folding" href="javascript:">- 收起</a> <span class="tit">第二卷 火树银花</span><span class="info">已更新305章</span>
+    </dt>
+    <dd>
+更新日期:2015-08-12 12:00:00"> <span class="ellipsis vip"> 第六百一十一章 永不辜负 </span> </a>
+    </dd>
+   </dl>
+   <dl class="Volume">
+    <dt>
+     <a class="folding" href="javascript:">- 收起</a> <span class="tit">第三卷 三王治世</span><span class="info">已更新278章</span>
+    </dt>
+    <dd>
+更新日期:2015-12-06 12:00:00"> <span class="ellipsis vip"> 第八百八十九章 自食恶果 </span> </a>
+    </dd>
+   </dl>
+   <dl class="Volume">
+    <dt>
+     <a class="folding" href="javascript:">- 收起</a> <span class="tit">第四卷 女王至上</span><span class="info">已更新207章</span>
+    </dt>
+    <dd>
+更新日期:2016-03-27 12:00:00"> <span class="ellipsis vip"> 第一千零九十六章 流浪之神 </span> </a>
+    </dd>
+   </dl>
+   <dl class="Volume">
+    <dt>
+     <a class="folding" href="javascript:">- 收起</a> <span class="tit">第五卷 六界之乱</span><span class="info">已更新98章</span>
+    </dt>
+    <dd>
+更新日期:2016-05-15 12:00:00"> <span class="ellipsis vip"> 第一千一百九十四章 圈套 </span> </a>
+    </dd>
+   </dl>
+   <dl class="Volume">
+    <dt>
+     <a class="folding" href="javascript:">- 收起</a> <span class="tit">第六卷 舍我其谁</span><span class="info">已更新97章</span>
+    </dt>
+    <dd>
+更新日期:2016-07-20 12:00:00"> <span class="ellipsis vip"> 第一千二百九十一章 大结局 </span> </a>
+    </dd>
+   </dl>
+   <dl class="Volume">
+    <dt>
+     <a class="folding" href="javascript:">- 收起</a> <span class="tit">外传</span><span class="info">已更新2章</span>
+    </dt>
+    <dd>
+更新日期:2016-07-22 12:00:00"> <span class="ellipsis "> 番外 打猎-2 </span> </a>
+    </dd>
+   </dl>
+   <div class="ToolBar">
+    <a class="home" href="/book/1075763.html" target="_blank">&lt;返回</a>
+    <div class="fenxiang bdsharebuttonbox bdshare-button-style1-16" data-bd-bind="1770369110375">
+     <a class="bds_more" href="#" data-cmd="more">分享...</a>
+    </div><a class="shuqian" href="javascript:Book.mark(0, '540405')">+书架</a>
+   </div>
+  </div>
+  <div class="Banner_ad" id="BAIDU_banner_bottom"></div>
+  <link rel="stylesheet" href="//static.17k.com/www/skin/17k_footer.css?v=0922">
+  <div class="Footer">
+   <div class="footer_nav">
+    <a rel="nofollow" target="_blank" href="//www.17k.com/aboutus/">关于17k.com</a>　|　 <a rel="nofollow" target="_blank" href="//www.17k.com/aboutus/Cooperation.html">商务合作</a>　|　 <a target="_blank" href="//www.17k.com/aboutus/link.html">友情链接</a>　|　 <a rel="nofollow" target="_blank" href="//www.17k.com/Simple/contents/helpCenter/index.html">帮助中心</a>　|　 <a rel="nofollow" target="_blank" href="//www.17k.com/Simple/contents/login/Rdme.html">用户守则</a>　|　 <a target="_blank" href="//www.17k.com/aboutus/sitemap.html">网站地图</a>　|　 <a target="_blank" href="//www.17k.com/tags">小说标签</a>　|　 <a target="_blank" href="//www.17k.com/Simple/contents/helpCenter/index.html?typeId=39">动漫专栏</a>　|　 <a rel="nofollow" target="_blank" href="//www.17k.com/inc/agreement/pc/protectionuserinfo.html">隐私政策</a>　|　 <a rel="nofollow" target="_blank" href="//www.17k.com/inc/agreement/users.html">用户协议</a>
+   </div>
+   <p>Copyright (C) 2006-2022 www.17k.com All Rights Reserved 中文在线版权所有，未经许可不得擅自转载本站内容。<br>
+     17K小说网所收录免费小说作品、社区话题、书友评论、用户上传文字、图片等其他一切内容均属用户个人行为，与17K小说网无关。--17K权利声明。<br>
+     京ICP证010590号　<a target="_blank" href="https://beian.miit.gov.cn">京ICP备09030667号-5</a>　　　京网文（2023)4750-133号　　 （署）网出证（京）字第400号 　　<a target="_blank" href="https://cdn.static.17k.com/material_picture/2025/1756716975537.png">营业执照</a> 　　<a target="_blank" href="https://cdn.static.17k.com/material_picture/2024/1715161246348.png">出版物经营许可证</a> <br><img src="//cdn.static.17k.com/material_picture/2022/1654841315108.png" style="vertical-align: middle"><a target="_blank" href="http://www.beian.gov.cn/portal/registerSystemInfo" style="vertical-align: middle">京公安网备：11010102000012号</a><br>
+     违法和不良信息举报电话： 400 6175 217 侵权内容及未成年信息举报邮箱：17Kjubao@col.com <br>
+     公司名称：中文在线集团股份有限公司 地址：北京市东城区安定门东大街28号雍和大厦2号楼6层608</p>
+   <p class="linkimg"><!--<a href="https://ss.knet.cn/verifyseal.dll?sn=e13062011010041317xgep000000&amp;ct=df&amp;a=1&amp;pa=0.9085826601367444"
+		   target="_blank" kx_type="图标式">
+			<img src="//rr.knet.cn/static/images/logo/cnnic.png" alt="可信网站">
+		</a>
+		<a href="http://v.pinpaibao.com.cn/authenticate/cert/?site=www.17k.com&at=business" target="_blank">
+			<img src="//static.anquan.org/static/outer/image/hy_124x47.png" alt="安全联盟认证" width="124" height="47">
+		</a>--> <a rel="nofollow" target="_blank" href="https://www.12377.cn/"> <img src="//static.17k.com/www/pic/icon_not.jpg" alt="不良网站举报"> </a> <a target="_blank" href="http://www.shdf.gov.cn/shdf/channels/740.html"> <img src="//static.17k.com/www/pic/icon_not2.jpg" alt="扫黄打非举报入口"> </a> <a target="_blank" href="https://www.12377.cn/jbxzxq/64d38691937611ebb858c9da04cf59d3_web.html"> <img src="//static.17k.com/www/pic/icon_not3.jpg" alt="历史虚无主义"> </a></p>
+  </div>
+  <script>
+	var _hmt = _hmt || [];
+	(function () {
+		var hm = document.createElement('script');
+		hm.src = 'https://hm.baidu.com/hm.js?9793f42b498361373512340937deb2a0';
+		var s = document.getElementsByTagName('script')[0];
+		s.parentNode.insertBefore(hm, s);
+	})();
+
+	if(k.domain ==='sfmystern.com' || k.domain === 'mixiangjihua.com' || location.href.includes('xuanyi.chineseall.net')){
+	  var headTitleDom = document.getElementsByTagName("title")[0]
+      headTitleDom.innerText =  headTitleDom.innerText.replace("17K小说网","谜想计划")
+	  k('.user-sign .box').style({display: 'none'})
+  }
+
+	if(k.domain ==='qixianghz.com' || location.href.includes('kehuan.chineseall.net')){
+	  var headTitleDom  = document.getElementsByTagName("title")[0]
+    headTitleDom.innerText =  headTitleDom.innerText.replace("17K小说网","奇想宇宙")
+  }
+</script>
+  <script type="text/javascript" src="https://zz.bdstatic.com/linksubmit/push.js"></script>
+  <script src="//static.17k.com/js/count.js?v=20200909" type="text/javascript"></script>
+  <script type="text/javascript" src="//static.17k.com/www/js/helpBartool.js?v=1"></script>
+  <script type="text/javascript" src="//static.17k.com/www/js/book/main.js?v=092218" crossorigin=""></script>
+  <script type="text/javascript" src="//static.17k.com/www/js/book/list.js?v=092218" crossorigin=""></script>
+  <script type="text/javascript" src="//dup.baidustatic.com/js/ds.js"></script>
+  <script type="text/javascript">
+	//顶部banner
+	BAIDU_CLB_fillSlotAsync("4074845", "BAIDU_banner");
+	//底部banner
+	BAIDU_CLB_fillSlotAsync("978006", "BAIDU_banner_bottom");
+	//富媒体
+	//BAIDU_CLB_preloadSlots("2457597");
+	// BAIDU_CLB_fillSlot("3745487");
+	//对联
+	// BAIDU_CLB_fillSlot("4263935");
+</script>
+  <div class="helpBartool">
+   <a class="commu" href="javascript:;"><img src="//static.17k.com/www/skin/helpBartool/commu.png?v=1" srcset="//static.17k.com/www/skin/helpBartool/commu.png 2x"></a><a class="wx" href="javascript:;"><img src="//static.17k.com/www/skin/helpBartool/app.png" srcset="//static.17k.com/www/skin/helpBartool/app_2x.png 2x"></a><a class="kf_a" title="客服" href="javascript:;"></a>
+   <dl class="Kefu">
+    <dd>
+     <p>电话(9:00-18:00)<br><strong>400 6175 217</strong></p><a href="javascript:;" id="17K_PC">在线客服</a><a target="_blank" href="//www.17k.com/Simple/contents/helpCenter/index.html?typeId=22">帮助反馈</a>
+    </dd>
+   </dl><a class="to" href="javascript:k.scrollTo()"></a>
+  </div>
+ </body>
+</html>
+
+Process finished with exit code 0

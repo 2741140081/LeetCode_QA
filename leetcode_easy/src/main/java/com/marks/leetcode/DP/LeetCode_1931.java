@@ -27,8 +27,65 @@ public class LeetCode_1931 {
      */
     public int colorTheGrid(int m, int n) {
         int result;
-        result = method_01(m, n);
+//        result = method_01(m, n);
+        result = method_02(m, n);
         return result;
+    }
+
+    /**
+     * @Description:
+     * 1. 主要是动态转移方程： dp[i][j][k], k 为 0,1,2 颜色
+     * 2. 预处理首行和首列, dp[i][j][k] 由 dp[i - 1][j][x](up) 和 dp[i][j - 1][x](left) 转换得到
+     * if x_up != k && x_left != k, dp[i][j][k] += (dp[i - 1][j][x_up] * dp[i - 1][j][x_left])
+     * @param: m
+     * @param: n
+     * @return int
+     * @author marks
+     * @CreateDate: 2026/02/05 17:06
+     * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
+     */
+    private int method_02(int m, int n) {
+        long[][][] dp = new long[m][n][3];
+        // 处理首行
+        dp[0][0][0] = 1;
+        dp[0][0][1] = 1;
+        dp[0][0][2] = 1;
+        for (int i = 1; i < n; i++) {
+            for (int k = 0; k < 3; k++) {
+                dp[0][i][k] = (dp[0][i - 1][(k + 1) % 3] + dp[0][i - 1][(k + 2) % 3]) % MOD;
+            }
+        }
+        // 处理首列
+        for (int i = 1; i < m; i++) {
+            for (int k = 0; k < 3; k++) {
+                dp[i][0][k] = (dp[i - 1][0][(k + 1) % 3] + dp[i - 1][0][(k + 2) % 3]) % MOD;
+            }
+        }
+        for (int i = 1; i < m; i++) {
+            for (int j = 1; j < n; j++) {
+                for (int k = 0; k < 3; k++) {
+                    long sum = 0;
+                    for (int z = 0; z < 3; z++) {
+                        if (z == k) {
+                            continue;
+                        }
+                        for (int l = 0; l < 3; l++) {
+                            if (l == k) {
+                                continue;
+                            }
+                            sum = (sum + dp[i - 1][j][z] * dp[i][j - 1][l]) % MOD;
+                        }
+                    }
+                    dp[i][j][k] = sum % MOD;
+                }
+            }
+        }
+        long ans = 0;
+        for (int i = 0; i < 3; i++) {
+            ans = (ans + dp[m - 1][n - 1][i]) % MOD;
+        }
+
+        return (int) ans % MOD;
     }
 
     /**
