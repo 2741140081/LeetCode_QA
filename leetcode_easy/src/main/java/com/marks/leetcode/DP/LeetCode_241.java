@@ -41,13 +41,13 @@ public class LeetCode_241 {
         return result;
     }
 
-
-
     /**
      * @Description:
      * E1:输入：expression = "2-1-1"
      * 输出：[0,2]
      * 1. 3个数, 两个操作符,
+     * 查看官方题解, 差不多看懂了, dp[][] 主要用于记忆化搜索
+     * AC: 1ms/42.86MB
      * @param: expression
      * @return java.util.List<java.lang.Integer>
      * @author marks

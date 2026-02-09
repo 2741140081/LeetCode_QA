@@ -29,11 +29,54 @@ public class LeetCode_95 {
      */
     public List<TreeNode> generateTrees(int n) {
         List<TreeNode> result;
-        result = method_01(n);
+//        result = method_01(n);
+        result = method_02(n);
         return result;
     }
 
-    
+    /**
+     * @Description:
+     * AC: 1ms/45.56MB
+     * @param: n
+     * @return java.util.List<com.marks.utils.TreeNode>
+     * @author marks
+     * @CreateDate: 2026/02/09 15:32
+     * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
+     */
+    private List<TreeNode> method_02(int n) {
+        int[] nums = new int[n];
+        for (int i = 0; i < n; i++) {
+            nums[i] = i + 1;
+        }
+        return buildTree(nums, 0, n - 1);
+    }
+
+    private List<TreeNode> buildTree(int[] nums, int left, int right) {
+        if (left > right) {
+            List<TreeNode> result = new ArrayList<>();
+            result.add(null);
+            return result;
+        }
+        List<TreeNode> result = new ArrayList<>();
+        for (int i = left; i <= right; i++) {
+            // 获取左子树可能的结果
+            List<TreeNode> leftTrees = buildTree(nums, left, i - 1);
+            // 获取右子树可能结果
+            List<TreeNode> rightTrees = buildTree(nums, i + 1, right);
+            for (TreeNode leftTree : leftTrees) {
+                for (TreeNode rightTree : rightTrees) {
+                    // 构建新的root
+                    TreeNode root = new TreeNode(nums[i]);
+                    root.left = leftTree;
+                    root.right = rightTree;
+                    result.add(root);
+                }
+            }
+        }
+        return result;
+    }
+
+
     /**
      * @Description:
      * 1. 使用回溯法来解决
