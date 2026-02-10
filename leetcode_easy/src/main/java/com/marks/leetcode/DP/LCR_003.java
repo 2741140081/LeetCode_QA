@@ -52,6 +52,7 @@ public class LCR_003 {
     /**
      * @Description:
      * 直接调Api
+     * AC: 2ms/47.96MB
      * @param: n
      * @return int[]
      * @author marks
