@@ -1,30 +1,29 @@
 package com.marks.tools.video;
 
-
 import com.marks.utils.DBUtil;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
 import java.awt.image.BufferedImage;
 import java.sql.*;
 import java.util.*;
 import java.util.List;
 import java.util.Timer;
 
-
 public class ImagePlayer extends JFrame {
     private static String IMAGE_DIR = "";
-    private static final int BATCH_SIZE = 20;
+    private static final int BATCH_SIZE = 15;
 
-    // 添加缓存窗口大小
-    private static final int CACHE_WINDOW_SIZE = BATCH_SIZE * 5;
+    private static final int CACHE_WINDOW_SIZE = BATCH_SIZE * 3;
     private static final int PRELOAD_THRESHOLD = 10;
     private List<ImageInfo> images = new ArrayList<>();
     private static int currentIndex = 0;
     private static int startIndex = 0;
     private JLabel imageLabel;
-    private JLabel imageNameLabel; // 用于显示当前图片名称的标签
-    private JLabel tipLabel; // 用于显示提示信息的标签
+    private JLabel imageNameLabel;
+    private JLabel tipLabel;
     private Timer autoPlayTimer;
     private JScrollPane scrollPane;
     private boolean autoPlay = false;
@@ -37,11 +36,18 @@ public class ImagePlayer extends JFrame {
     private JComboBox<String> folderComboBox;
     private static String currentImageType;
     private static String currentImageFormat;
-    private static int currentImageTypeId = -1; // 用于数据库查询
+    private static int currentImageTypeId = -1;
 
+    private boolean scrollMode = false;
+    private JPanel imagePanel;
+    private Map<Integer, JLabel> imageLabels = new HashMap<>();
+    private int scrollCurrentIndex = 0;
+    private List<ImageInfo> scrollImages = new ArrayList<>();
+    private static final int SCROLL_CACHE_WINDOW_SIZE = 15;
+    private int scrollWindowStartIndex = 0;
+    private boolean isLoadingMoreImages = false; // 添加标志防止重复加载
 
     public static void main(String[] args) {
-        // 初始化数据库连接
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
         } catch (ClassNotFoundException e) {
@@ -60,30 +66,25 @@ public class ImagePlayer extends JFrame {
         setSize(1750, 1000);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        // 顶部控制面板
         JPanel controlPanel = new JPanel();
 
-        // 图片类型
         folderComboBox = new JComboBox<>();
         loadImageTypesFromDB();
         controlPanel.add(new JLabel("选择图片类型:"));
         controlPanel.add(folderComboBox);
 
-        // 旋转角度
         JComboBox<String> rotateComboBox = new JComboBox<>(new String[]{"0", "90", "-90"});
-        rotateComboBox.setSelectedItem("0");  // 默认选择0度
+        rotateComboBox.setSelectedItem("0");
         rotateComboBox.addActionListener(e -> {
             String selectedDegree = (String) rotateComboBox.getSelectedItem();
             try {
                 degree = Double.parseDouble(selectedDegree);
                 isRotate = degree != 0;
 
-                // 保存到数据库
                 if(currentImageType != null) {
                     updateRotationDegree(currentImageType, degree);
                 }
 
-                // 刷新当前图片
                 if(currentImageType != null) {
                     loadInitialImages();
                 }
@@ -94,7 +95,6 @@ public class ImagePlayer extends JFrame {
         controlPanel.add(new JLabel("旋转角度:"));
         controlPanel.add(rotateComboBox);
 
-        // 添加刷新按钮
         JButton refreshBtn = new JButton("刷新");
         refreshBtn.addActionListener(e -> {
             if(currentImageType != null) {
@@ -103,67 +103,146 @@ public class ImagePlayer extends JFrame {
         });
         controlPanel.add(refreshBtn);
 
-        // 添加保存按钮
         JButton saveBtn = new JButton("保存");
         saveBtn.addActionListener(e -> {
             if(currentImageType != null) {
-                updateLastIndex(currentImageType, currentIndex);
+                if (scrollMode) {
+                    // 在滚动模式下，弹出对话框让用户输入要保存的图片ID
+                    String input = JOptionPane.showInputDialog(ImagePlayer.this, "请输入要保存的图片ID:", "保存图片", JOptionPane.QUESTION_MESSAGE);
+                    if (input != null && !input.trim().isEmpty()) {
+                        try {
+                            int imageId = Integer.parseInt(input.trim());
+                            if (imageId >= 0 && imageId < IMG_MAX_INDEX) {
+                                updateLastIndex(currentImageType, imageId);
+                                JOptionPane.showMessageDialog(ImagePlayer.this, "图片ID " + imageId + " 已保存", "保存成功", JOptionPane.INFORMATION_MESSAGE);
+                            } else {
+                                JOptionPane.showMessageDialog(ImagePlayer.this, "图片ID超出范围，请输入0到" + (IMG_MAX_INDEX - 1) + "之间的数字", "输入错误", JOptionPane.ERROR_MESSAGE);
+                            }
+                        } catch (NumberFormatException ex) {
+                            JOptionPane.showMessageDialog(ImagePlayer.this, "请输入有效的数字", "输入错误", JOptionPane.ERROR_MESSAGE);
+                        }
+                    }
+                } else {
+                    // 翻页模式下保持原有逻辑
+                    updateLastIndex(currentImageType, currentIndex);
+                }
             }
         });
         controlPanel.add(saveBtn);
 
-        add(controlPanel, BorderLayout.NORTH);
+        JButton modeBtn = new JButton("切换到滚动模式");
+        modeBtn.addActionListener(e -> {
+            scrollMode = !scrollMode;
+            modeBtn.setText(scrollMode ? "切换到翻页模式" : "切换到滚动模式");
+            if (currentImageType != null) {
+                if (scrollMode) {
+                    setupScrollMode();
+                } else {
+                    setupPageMode();
+                }
+                loadInitialImages();
+            }
+        });
+        controlPanel.add(modeBtn);
 
-        // 添加下拉框选择监听
+        add(controlPanel, BorderLayout.NORTH);
+        
         folderComboBox.addActionListener(e -> {
             currentImageType = (String) folderComboBox.getSelectedItem();
             loadImageTypeInfo(currentImageType);
             IMAGE_DIR = "D:\\spider\\data\\" + currentImageType + "\\result\\";
 
-            // 查询数据库给初始索引和最大索引
             int[] imageCountInfo = getLastIndexFromDB(currentImageType);
             startIndex = imageCountInfo[0];
             IMG_MAX_INDEX = imageCountInfo[1];
 
-            // 创建显示面板
-            imageLabel = new JLabel();
-            imageLabel.setHorizontalAlignment(JLabel.CENTER);
-            
-            // 创建提示信息标签
-            tipLabel = new JLabel();
-            tipLabel.setHorizontalAlignment(JLabel.LEFT); // 靠左对齐
-            tipLabel.setBorder(BorderFactory.createEmptyBorder(5, 10, 10, 5)); // 添加边距
-            tipLabel.setFont(new Font("SansSerif", Font.PLAIN, 14)); // 设置字体
-            tipLabel.setForeground(Color.RED); // 设置颜色为红色
-            
-            // 创建图片名称标签
-            imageNameLabel = new JLabel();
-            imageNameLabel.setHorizontalAlignment(JLabel.RIGHT); // 靠右对齐
-            imageNameLabel.setBorder(BorderFactory.createEmptyBorder(5, 0, 10, 10)); // 添加边距
-            imageNameLabel.setFont(new Font("SansSerif", Font.PLAIN, 14)); // 设置字体
-            imageNameLabel.setForeground(Color.GRAY); // 设置颜色
-
-            // 创建一个面板来包含图片和底部信息
-            JPanel bottomPanel = new JPanel(new BorderLayout());
-            bottomPanel.add(tipLabel, BorderLayout.WEST);
-            bottomPanel.add(imageNameLabel, BorderLayout.EAST);
-            
-            // 创建一个面板来包含图片和图片名称
-            JPanel imagePanel = new JPanel(new BorderLayout());
-            imagePanel.add(imageLabel, BorderLayout.CENTER);
-            imagePanel.add(bottomPanel, BorderLayout.SOUTH);
-
-            scrollPane = new JScrollPane(imagePanel);
-            scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-            add(scrollPane);
+            if (scrollMode) {
+                setupScrollMode();
+            } else {
+                setupPageMode();
+            }
 
             loadInitialImages();
-
-            setupMouseWheelListener();
             setupAutoPlayController();
-
             setVisible(true);
         });
+    }
+
+    private void setupScrollMode() {
+        removeAllComponents();
+        
+        imagePanel = new JPanel();
+        imagePanel.setLayout(new BoxLayout(imagePanel, BoxLayout.Y_AXIS));
+        imagePanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        
+        scrollPane = new JScrollPane(imagePanel) {
+            @Override
+            public Insets getInsets() {
+                return new Insets(0, 0, 0, 0);
+            }
+        };
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(20);
+        scrollPane.getVerticalScrollBar().setBlockIncrement(200);
+        add(scrollPane, BorderLayout.CENTER);
+        
+        scrollPane.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {
+            @Override
+            public void adjustmentValueChanged(AdjustmentEvent e) {
+                if (!e.getValueIsAdjusting()) {
+                    handleScrollEvent();
+                }
+            }
+        });
+        revalidate();
+        repaint();
+    }
+
+    private void setupPageMode() {
+        removeAllComponents();
+        
+        imageLabel = new JLabel();
+        imageLabel.setHorizontalAlignment(JLabel.CENTER);
+        
+        tipLabel = new JLabel();
+        tipLabel.setHorizontalAlignment(JLabel.LEFT);
+        tipLabel.setBorder(BorderFactory.createEmptyBorder(5, 10, 10, 5));
+        tipLabel.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        tipLabel.setForeground(Color.RED);
+        
+        imageNameLabel = new JLabel();
+        imageNameLabel.setHorizontalAlignment(JLabel.RIGHT);
+        imageNameLabel.setBorder(BorderFactory.createEmptyBorder(5, 0, 10, 10));
+        imageNameLabel.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        imageNameLabel.setForeground(Color.GRAY);
+
+        JPanel bottomPanel = new JPanel(new BorderLayout());
+        bottomPanel.add(tipLabel, BorderLayout.WEST);
+        bottomPanel.add(imageNameLabel, BorderLayout.EAST);
+        
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.add(imageLabel, BorderLayout.CENTER);
+        mainPanel.add(bottomPanel, BorderLayout.SOUTH);
+
+        scrollPane = new JScrollPane(mainPanel);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        add(scrollPane, BorderLayout.CENTER);
+
+        setupMouseWheelListener();
+        revalidate();
+        repaint();
+    }
+    
+    private void removeAllComponents() {
+        if (scrollPane != null) {
+            remove(scrollPane);
+            scrollPane = null;
+        }
+        imageLabel = null;
+        tipLabel = null;
+        imageNameLabel = null;
+        imagePanel = null;
+        imageLabels.clear();
     }
 
     private void loadImageTypesFromDB() {
@@ -198,7 +277,7 @@ public class ImagePlayer extends JFrame {
             rs = pstmt.executeQuery();
 
             if (rs.next()) {
-                currentImageTypeId = rs.getInt("image_id"); // 获取image_type_detail表的主键
+                currentImageTypeId = rs.getInt("image_id");
                 degree = rs.getDouble("image_rotate_degree");
                 currentImageFormat = rs.getString("image_format");
                 isRotate = degree != 0;
@@ -251,25 +330,203 @@ public class ImagePlayer extends JFrame {
     }
 
     private void loadInitialImages() {
-        new Thread(() -> {
-            // 计算加载范围：前面19张，后面20张，总共40张图片
-            int startLoadIndex = Math.max(0, startIndex - 19); // 确保不小于0
-            int endLoadIndex = Math.min(startIndex + 20, IMG_MAX_INDEX - 1); // 确保不超过最大索引
+        if (scrollMode) {
+            loadInitialImagesForScrollMode();
+        } else {
+            loadInitialImagesForPageMode();
+        }
+    }
+
+    private void loadInitialImagesForPageMode() {
+        int startLoadIndex = Math.max(0, startIndex - 19);
+        int endLoadIndex = Math.min(startIndex + 20, IMG_MAX_INDEX - 1);
+        
+        List<ImageInfo> firstBatch = loadImageInfos(startLoadIndex, endLoadIndex);
+        SwingUtilities.invokeLater(() -> {
+            images.clear();
+            images.addAll(firstBatch);
+            showImage(startIndex, 1);
+        });
+    }
+
+    private void loadInitialImagesForScrollMode() {
+        scrollWindowStartIndex = Math.max(0, startIndex);
+        int startLoadIndex = scrollWindowStartIndex;
+        int endLoadIndex = Math.min(startLoadIndex + SCROLL_CACHE_WINDOW_SIZE - 1, IMG_MAX_INDEX - 1);
+        
+        System.out.println("初始加载图片: 从索引 " + startLoadIndex + " 到 " + endLoadIndex);
+        
+        List<ImageInfo> firstBatch = loadImageInfos(startLoadIndex, endLoadIndex);
+        SwingUtilities.invokeLater(() -> {
+            synchronized (scrollImages) {
+                scrollImages.clear();
+                scrollImages.addAll(firstBatch);
+            }
             
-            // 使用新的方法加载图片信息
-            List<ImageInfo> firstBatch = loadImageInfos(startLoadIndex, endLoadIndex);
+            if (imagePanel == null) {
+                setupScrollMode();
+            } else {
+                imagePanel.removeAll();
+                imageLabels.clear();
+            }
+            
+            firstBatch.sort(Comparator.comparingInt(ImageInfo::getImageIndex));
+            
+            for (ImageInfo info : firstBatch) {
+                addImageToScrollPanel(info);
+                System.out.println("添加初始图片: 索引=" + info.getImageIndex() + ", 名称=" + info.getImageName());
+            }
+            imagePanel.revalidate();
+            imagePanel.repaint();
+            
+            SwingUtilities.invokeLater(() -> scrollToIndex(startIndex));
+        });
+    }
+
+    private void addImageToScrollPanel(ImageInfo info) {
+        // 检查图片是否已经添加到界面中
+        if (imageLabels.containsKey(info.getImageIndex() - 1)) {
+            System.out.println("图片已存在，跳过添加: 索引=" + info.getImageIndex() + ", 名称=" + info.getImageName());
+            return; // 如果已经存在，直接返回
+        }
+        
+        BufferedImage image = info.getBufImg();
+        if (image != null) {
+            if (isRotate) {
+                image = rotateImage(image);
+            }
+            
+            JLabel label = new JLabel(new ImageIcon(image));
+            label.setAlignmentX(Component.CENTER_ALIGNMENT);
+            label.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+            
+            JLabel nameLabel = new JLabel(info.getImageName());
+            nameLabel.setFont(new Font("SansSerif", Font.PLAIN, 12));
+            nameLabel.setForeground(Color.GRAY);
+            nameLabel.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0));
+            
+            JPanel wrapperPanel = new JPanel();
+            wrapperPanel.setLayout(new BoxLayout(wrapperPanel, BoxLayout.X_AXIS));
+            wrapperPanel.add(label);
+            wrapperPanel.add(nameLabel);
+            wrapperPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+            wrapperPanel.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
+            
+            wrapperPanel.setPreferredSize(new Dimension(IMG_WIDTH, IMG_HEIGHT));
+            
+            imagePanel.add(wrapperPanel);
+            imageLabels.put(info.getImageIndex() - 1, label);
+            System.out.println("成功添加图片到面板: 索引=" + info.getImageIndex() + ", 名称=" + info.getImageName());
+        } else {
+            System.out.println("图片为空，无法添加: 索引=" + info.getImageIndex() + ", 名称=" + info.getImageName());
+        }
+    }
+
+    private void scrollToIndex(int index) {
+        if (imagePanel == null || scrollPane == null) return;
+        
+        SwingUtilities.invokeLater(() -> {
+            JLabel targetLabel = imageLabels.get(index);
+            if (targetLabel != null) {
+                Rectangle rect = new Rectangle(0, targetLabel.getY(), 1, targetLabel.getHeight());
+                imagePanel.scrollRectToVisible(rect);
+            }
+        });
+    }
+
+    private void handleScrollEvent() {
+        if (!scrollMode || scrollPane == null || imagePanel == null) return;
+        
+        // 如果正在加载更多图片，则不处理滚动事件
+        if (isLoadingMoreImages) {
+            System.out.println("正在加载更多图片，跳过滚动事件处理");
+            return;
+        }
+        
+        JScrollBar verticalScrollBar = scrollPane.getVerticalScrollBar();
+        int visibleBottom = verticalScrollBar.getValue() + verticalScrollBar.getVisibleAmount();
+        int maximum = verticalScrollBar.getMaximum();
+        
+        // 使用600像素作为触发加载更多图片的阈值，与内存中的经验保持一致
+        if (visibleBottom >= maximum - 100) {
+            System.out.println("滚动条接近底部，触发加载更多图片");
+            loadMoreImagesForScrollMode();
+        }
+    }
+
+    private void loadMoreImagesForScrollMode() {
+        // 如果正在加载更多图片，则不重复加载
+        if (isLoadingMoreImages) {
+            System.out.println("已在加载更多图片中，跳过本次加载请求");
+            return;
+        }
+        
+        // 设置正在加载标志
+        isLoadingMoreImages = true;
+        System.out.println("开始加载更多图片，设置加载标志");
+        
+        // 保存当前滚动位置
+        JScrollBar verticalScrollBar = scrollPane.getVerticalScrollBar();
+        int oldValue = verticalScrollBar.getValue();
+        
+        // 获取当前窗口中的最后索引
+        int currentLastIndex = -1;
+        for (Map.Entry<Integer, JLabel> entry : imageLabels.entrySet()) {
+            if (entry.getKey() > currentLastIndex) {
+                currentLastIndex = entry.getKey();
+            }
+        }
+        
+        System.out.println("当前最后图片索引: " + currentLastIndex);
+        
+        // 计算新的加载范围，确保正确加载下一批图片
+        int startLoadIndex = currentLastIndex + 1;
+        int endLoadIndex = Math.min(startLoadIndex + SCROLL_CACHE_WINDOW_SIZE - 1, IMG_MAX_INDEX - 1);
+        
+        System.out.println("准备加载图片: 从索引 " + startLoadIndex + " 到 " + endLoadIndex);
+        
+        // 如果已经到达最后一张图片，则不加载更多
+        if (startLoadIndex >= IMG_MAX_INDEX) {
+            System.out.println("已到达最后一张图片，无需加载更多");
+            isLoadingMoreImages = false;
+            return;
+        }
+        
+        // 重新加载界面
+        SwingUtilities.invokeLater(() -> {
+            // 移除所有组件
+            imagePanel.removeAll();
+            imageLabels.clear();
+            
+            // 加载新的图片批次
+            List<ImageInfo> nextBatch = loadImageInfos(startLoadIndex, endLoadIndex);
+            nextBatch.sort(Comparator.comparingInt(ImageInfo::getImageIndex));
+            
+            System.out.println("实际加载了 " + nextBatch.size() + " 张图片");
+            
+            for (ImageInfo info : nextBatch) {
+                addImageToScrollPanel(info);
+                System.out.println("添加图片: 索引=" + info.getImageIndex() + ", 名称=" + info.getImageName());
+            }
+            
+            imagePanel.revalidate();
+            imagePanel.repaint();
+            
+            // 恢复滚动位置
             SwingUtilities.invokeLater(() -> {
-                images.clear();
-                images.addAll(firstBatch);
-                showImage(startIndex, 1);
+                // 滚动到顶部，而不是保持在底部
+                verticalScrollBar.setValue(0);
+                
+                // 重置加载标志
+                isLoadingMoreImages = false;
+                
+                System.out.println("完成加载更多图片，重置加载标志");
             });
-        }).start();
+        });
     }
 
     private void showImage(int index, int flag) {
-        // 边界检查
         if (index < 0) {
-            // 显示提示信息
             tipLabel.setText("当前为第一张图片，无法向前浏览");
             imageNameLabel.setText("");
             System.out.println("当前为第一张图片，无法向前浏览");
@@ -277,23 +534,20 @@ public class ImagePlayer extends JFrame {
         }
         
         if (index >= IMG_MAX_INDEX) {
-            // 显示提示信息
             tipLabel.setText("当前为最后一张图片，无法向后浏览");
             imageNameLabel.setText("");
             System.out.println("当前为最后一张图片，无法向后浏览");
             return;
         }
         
-        // 清除提示信息
         tipLabel.setText("");
 
-        // 查找与给定索引匹配的图片
         ImageInfo targetImageInfo = null;
         int actualIndex = -1;
         
         for (int i = 0; i < images.size(); i++) {
             ImageInfo info = images.get(i);
-            if (info.getImageIndex() == index) {
+            if ((info.getImageIndex() - 1) == index) {
                 targetImageInfo = info;
                 actualIndex = i;
                 break;
@@ -309,16 +563,13 @@ public class ImagePlayer extends JFrame {
                 }
 
                 imageLabel.setIcon(new ImageIcon(image));
-                // 更新图片名称标签
                 imageNameLabel.setText(targetImageInfo.getImageName());
                 System.out.println("图片正在显示, 当前图片index:" + currentIndex + ", 文件名:" + targetImageInfo.getImageName());
             } else {
                 System.out.println("图片加载失败: " + targetImageInfo.getImageName());
             }
 
-            // 优化预加载逻辑
             if (flag == 1) {
-                // 加载下一批图片
                 ImageInfo lastImgInfo = images.get(images.size() - 1);
                 int lastIndex = lastImgInfo.getImageIndex();
                 if (index % PRELOAD_THRESHOLD == 0 && lastIndex < IMG_MAX_INDEX) {
@@ -326,7 +577,6 @@ public class ImagePlayer extends JFrame {
                     loadNextBatch(lastIndex + 1);
                 }
             } else if (flag == -1) {
-                // 向前滚动时的预加载
                 ImageInfo firstImgInfo = images.get(0);
                 int firstIndex = firstImgInfo.getImageIndex();
                 if (index % PRELOAD_THRESHOLD == 0 && firstIndex > 0) {
@@ -339,7 +589,6 @@ public class ImagePlayer extends JFrame {
         }
     }
 
-    // 顺时针旋转方法
     private BufferedImage rotateImage(BufferedImage image) {
         int width = image.getWidth();
         int height = image.getHeight();
@@ -347,7 +596,6 @@ public class ImagePlayer extends JFrame {
         BufferedImage rotated = new BufferedImage(height, width, image.getType());
         Graphics2D g2d = rotated.createGraphics();
 
-        // 根据实际设置的角度进行旋转
         g2d.rotate(Math.toRadians(degree), height / 2.0, width / 2.0);
         g2d.translate((height - width) / 2.0, (width - height) / 2.0);
         g2d.drawImage(image, 0, 0, null);
@@ -357,55 +605,40 @@ public class ImagePlayer extends JFrame {
     }
 
     private void loadNextBatch(int startIndex) {
-        new Thread(() -> {
-            // 修正预加载逻辑：确保不超过BATCH_SIZE且不超过最大索引
-            int endIndex = Math.min(startIndex + PRELOAD_THRESHOLD - 1, IMG_MAX_INDEX - 1);
-            List<ImageInfo> nextBatch = loadImageInfos(startIndex, endIndex);
-            SwingUtilities.invokeLater(() -> {
-                // 先添加新批次
-                images.addAll(nextBatch);
-                
-                // 然后确保总数量不超过缓存窗口大小
-                if (images.size() > CACHE_WINDOW_SIZE) {
-                    // 移除最旧的图片
-                    int removeCount = images.size() - CACHE_WINDOW_SIZE;
-                    images.subList(0, removeCount).clear();
-                }
-                
-                // 调试信息
-                System.out.println("加载了下一批图片，当前缓存图片数量：" + images.size());
-            });
-        }).start();
+        int endIndex = Math.min(startIndex + PRELOAD_THRESHOLD - 1, IMG_MAX_INDEX - 1);
+        List<ImageInfo> nextBatch = loadImageInfos(startIndex, endIndex);
+        SwingUtilities.invokeLater(() -> {
+            images.addAll(nextBatch);
+            
+            if (images.size() > CACHE_WINDOW_SIZE) {
+                int removeCount = images.size() - CACHE_WINDOW_SIZE;
+                images.subList(0, removeCount).clear();
+            }
+            
+            System.out.println("加载了下一批图片，当前缓存图片数量：" + images.size());
+        });
     }
 
     private void preloadPreviousBatch(int startIndex) {
-        new Thread(() -> {
-            // 修正索引计算逻辑，确保startIndex不小于0
-            int actualStartIndex = Math.max(0, startIndex);
-            int endIndex = Math.min(actualStartIndex + PRELOAD_THRESHOLD - 1, IMG_MAX_INDEX - 1);
+        int actualStartIndex = Math.max(0, startIndex);
+        int endIndex = Math.min(actualStartIndex + PRELOAD_THRESHOLD - 1, IMG_MAX_INDEX - 1);
+        
+        List<ImageInfo> prevBatch = loadImageInfos(actualStartIndex, endIndex);
+        SwingUtilities.invokeLater(() -> {
+            images.addAll(0, prevBatch);
+            if (images.size() > CACHE_WINDOW_SIZE) {
+                int removeCount = images.size() - CACHE_WINDOW_SIZE;
+                images.subList(images.size() - removeCount, images.size()).clear();
+            }
             
-            List<ImageInfo> prevBatch = loadImageInfos(actualStartIndex, endIndex);
-            SwingUtilities.invokeLater(() -> {
-                // 在列表前面插入图片
-                images.addAll(0, prevBatch);
-                // 如果缓存过大，移除尾部图片
-                if (images.size() > CACHE_WINDOW_SIZE) {
-                    int removeCount = images.size() - CACHE_WINDOW_SIZE;
-                    images.subList(images.size() - removeCount, images.size()).clear();
-                }
-                
-                // 调试信息
-                System.out.println("加载了上一批图片，当前缓存图片数量：" + images.size());
-            });
-        }).start();
+            System.out.println("加载了上一批图片，当前缓存图片数量：" + images.size());
+        });
     }
 
     private void setupMouseWheelListener() {
         scrollPane.addMouseWheelListener(e -> {
             if (e.getWheelRotation() < 0) {
-                // 向前滚动
                 if (currentIndex <= 0) {
-                    // 显示提示信息
                     tipLabel.setText("当前为第一张图片，无法向前浏览");
                     imageNameLabel.setText("");
                     System.out.println("当前为第一张图片，无法向前浏览");
@@ -413,9 +646,7 @@ public class ImagePlayer extends JFrame {
                     showImage(currentIndex - 1, -1);
                 }
             } else {
-                // 向后滚动
                 if (currentIndex >= IMG_MAX_INDEX - 1) {
-                    // 显示提示信息
                     tipLabel.setText("当前为最后一张图片，无法向后浏览");
                     imageNameLabel.setText("");
                     System.out.println("当前为最后一张图片，无法向后浏览");
@@ -427,6 +658,8 @@ public class ImagePlayer extends JFrame {
     }
 
     private void setupAutoPlayController() {
+        System.out.println("初始化自动播放控制器，当前模式: " + (scrollMode ? "滚动模式" : "翻页模式"));
+
         autoPlayTimer = new Timer();
 
         Runnable stopAction = () -> {
@@ -443,32 +676,61 @@ public class ImagePlayer extends JFrame {
         Runnable playAction = () -> {
             if (!autoPlay) {
                 autoPlay = true;
-                System.out.println("开始自动播放, 每张图片显示5s");
-                
-                // 使用单次定时器，每次播放后检查索引再决定是否继续
+                if (scrollMode) {
+                    System.out.println("开始滚动模式自动播放, 每次滚动间隔50ms，实现更平滑的线性滚动");
+                } else {
+                    System.out.println("开始翻页模式自动播放, 每张图片显示5s");
+                }
+
                 autoPlayTimer = new Timer();
                 autoPlayTimer.scheduleAtFixedRate(new TimerTask() {
                     @Override
                     public void run() {
-                        if (currentIndex < IMG_MAX_INDEX - 1) {
-                            SwingUtilities.invokeLater(() -> {
-                                if (autoPlay) {  // 再次确认播放状态
-                                    showImage(currentIndex + 1, 1);
-                                }
-                            });
-                        } else {
-                            // 达到最大索引时停止播放
-                            SwingUtilities.invokeLater(() -> {
-                                if (autoPlay) {
+                        if (autoPlay) {
+                            if (scrollMode && scrollPane != null && imagePanel != null) {
+                                JScrollBar verticalScrollBar = scrollPane.getVerticalScrollBar();
+                                int currentValue = verticalScrollBar.getValue();
+                                int maximum = verticalScrollBar.getMaximum() - verticalScrollBar.getModel().getExtent();
+                                
+                                if (currentValue < maximum) {
+                                    // 减少滚动增量，从3改为5，降低滚动频率
+                                    int increment = Math.min(2, maximum - currentValue);
+                                    verticalScrollBar.setValue(currentValue + increment);
+                                    handleScrollEvent();
+                                } else {
+                                    System.out.println("滚动到达底部，停止播放");
                                     stopAction.run();
-                                    tipLabel.setText("当前为最后一张图片，自动播放结束");
-                                    imageNameLabel.setText("");
-                                    System.out.println("自动播放已到达最后一张图片");
                                 }
-                            });
+                            } else if (!scrollMode && imageLabel != null) {
+                                if (currentIndex < IMG_MAX_INDEX - 1) {
+                                    SwingUtilities.invokeLater(() -> {
+                                        showImage(currentIndex + 1, 1);
+                                    });
+                                } else {
+                                    SwingUtilities.invokeLater(() -> {
+                                        stopAction.run();
+                                        if (tipLabel != null) {
+                                            tipLabel.setText("当前为最后一张图片，自动播放结束");
+                                        }
+                                        if (imageNameLabel != null) {
+                                            imageNameLabel.setText("");
+                                        }
+                                        System.out.println("自动播放已到达最后一张图片");
+                                    });
+                                }
+                            } else {
+                                if (autoPlayTimer != null) {
+                                    autoPlayTimer.cancel();
+                                }
+                            }
+                        } else {
+                            System.out.println("自动播放已关闭");
+                            if (autoPlayTimer != null) {
+                                autoPlayTimer.cancel();
+                            }
                         }
                     }
-                }, 0, 5000);
+                }, 0, scrollMode ? 10 : 5000); // 增加滚动模式下的定时器间隔，从18改为50毫秒
             }
         };
 
@@ -490,7 +752,7 @@ public class ImagePlayer extends JFrame {
 
         try {
             conn = DBUtil.getConnection();
-            System.out.println("更新当前 image type 的 history");
+            System.out.println("更新当前 image type 的 history, 当前index = " + index);
             pstmt = conn.prepareStatement("UPDATE image_type_detail SET image_his_index = ? WHERE image_name = ?");
             pstmt.setInt(1, index);
             pstmt.setString(2, imageType);
@@ -502,7 +764,6 @@ public class ImagePlayer extends JFrame {
         }
     }
 
-    // 新增方法：从数据库加载图片信息
     private List<ImageInfo> loadImageInfos(int start, int end) {
         List<ImageInfo> imageInfos = new ArrayList<>();
         Connection conn = null;
@@ -511,7 +772,6 @@ public class ImagePlayer extends JFrame {
 
         try {
             conn = DBUtil.getConnection();
-            // 查询指定范围内的图片信息，使用image_name_index字段
             String sql = "SELECT detail_id, image_type_id, image_detail_name, image_name_index FROM image_display_detail " +
                     "WHERE image_type_id = ? AND image_name_index BETWEEN ? AND ? " +
                     "ORDER BY image_name_index";
@@ -530,7 +790,6 @@ public class ImagePlayer extends JFrame {
                 info.setImageName(rs.getString("image_detail_name"));
                 info.setImageIndex(rs.getInt("image_name_index"));
 
-                // 加载实际的图片
                 try {
                     String path = IMAGE_DIR + "\\" + info.getImageName();
                     BufferedImage original = javax.imageio.ImageIO.read(new java.io.File(path));
@@ -556,16 +815,13 @@ public class ImagePlayer extends JFrame {
 
 
     private BufferedImage resizeImage(BufferedImage original, int maxWidth, int maxHeight) {
-        // 计算保持宽高比的缩放比例
         double widthRatio = (double)maxWidth / original.getWidth();
         double heightRatio = (double)maxHeight / original.getHeight();
         double ratio = Math.min(widthRatio, heightRatio);
 
-        // 计算新尺寸
         int newWidth = (int)(original.getWidth() * ratio);
         int newHeight = (int)(original.getHeight() * ratio);
 
-        // 使用更高效的缩放方法
         BufferedImage resized = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_RGB);
         Graphics2D g2d = resized.createGraphics();
         g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
