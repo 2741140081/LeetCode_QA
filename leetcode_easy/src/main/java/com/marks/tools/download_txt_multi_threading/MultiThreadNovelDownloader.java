@@ -1,5 +1,6 @@
 package com.marks.tools.download_txt_multi_threading;
 
+import com.marks.tools.webcrawler.OptimizedUtilGetChapterContent;
 import com.marks.tools.webcrawler.UtilGetChapterContent;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -26,6 +27,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * 基于线程安全的SeleniumWebContentFetcher单例模式
  */
 public class MultiThreadNovelDownloader {
+
     
     /**
      * 章节信息类
@@ -143,6 +145,12 @@ public class MultiThreadNovelDownloader {
     private static final int DEFAULT_BATCH_SIZE = 100;                     // 默认每批处理章节数
     private int batchSize = DEFAULT_BATCH_SIZE;                           // 批处理大小
 
+
+    // 添加WebDriver池实例
+    private OptimizedUtilGetChapterContent contentFetcher;
+
+
+
     public MultiThreadNovelDownloader() {
         this.executorService = new ThreadPoolExecutor(
             CORE_POOL_SIZE,
@@ -152,6 +160,8 @@ public class MultiThreadNovelDownloader {
             new LinkedBlockingQueue<>(QUEUE_CAPACITY),
             new ThreadPoolExecutor.CallerRunsPolicy()
         );
+        // 初始化优化的内容获取器
+        this.contentFetcher = new OptimizedUtilGetChapterContent();
     }
 
     public MultiThreadNovelDownloader(String chromeDriverPath) {
@@ -402,9 +412,12 @@ public class MultiThreadNovelDownloader {
                     System.out.println("第" + (retryCount + 1) + "次尝试获取章节内容，延迟: " + delay + "ms");
                 }
                     
-                UtilGetChapterContent utils = new UtilGetChapterContent();
-                String chapterContent = utils.fetchChapterContent(chapterUrl, "chapter-content", delay);
-                    
+//                UtilGetChapterContent utils = new UtilGetChapterContent();
+//                String chapterContent = utils.fetchChapterContent(chapterUrl, "chapter-content", delay);
+
+                // 使用优化后的内容获取器
+                String chapterContent = contentFetcher.fetchChapterContent(chapterUrl, "chapter-content", delay);
+
                 // 检查内容是否有效
                 if (chapterContent != null && !chapterContent.trim().isEmpty() && chapterContent.length() > 100) {
                     if (DEBUG_MODE) {
@@ -525,10 +538,10 @@ public class MultiThreadNovelDownloader {
             writer.newLine();
             
             // 写入目录, 不需要写入目录
-//            for (ChapterInfo chapter : chapters) {
-//                writer.write(String.format("第%d章: %s", chapter.getNumber(), chapter.getTitle()));
-//                writer.newLine();
-//            }
+            for (ChapterInfo chapter : chapters) {
+                writer.write(String.format("第%d章: %s", chapter.getNumber(), chapter.getTitle()));
+                writer.newLine();
+            }
             
             writer.newLine();
             writer.write("正文");
@@ -590,7 +603,15 @@ public class MultiThreadNovelDownloader {
      */
     private void shutdownExecutor() {
         System.out.println("=== 开始关闭资源 ===");
-        
+
+
+        // 关闭WebDriver池
+        if (contentFetcher != null) {
+            System.out.println("正在关闭WebDriver池...");
+            contentFetcher.shutdown();
+            System.out.println("WebDriver池已关闭");
+        }
+
         // 关闭线程池
         if (executorService != null && !executorService.isShutdown()) {
             System.out.println("正在关闭线程池...");
@@ -678,7 +699,7 @@ public class MultiThreadNovelDownloader {
             }
 
             String catalogUrl = "https://bcshuku.com/novel55197/";
-            String novelName = "女神攻略调教手册";
+            String novelName = "测试小说";
 
             // 创建下载器实例
             downloader = new MultiThreadNovelDownloader(chromeDriverPath)
