@@ -36,8 +36,26 @@ public class LeetCode_486 {
         return result;
     }
 
+    /**
+     * @Description:
+     * 1. 分别计算奇数和偶数的和, 奇数和偶数和谁大, 谁就是赢家
+     * 2. 不能用贪心的思路来处理
+     * Error: 51/62 通过
+     * 错误案例: nums = {2,4,55,6,8}
+     * 3. 好像和 n 是奇数还是偶数有关系, 当 n 是奇数时, 1 号选手能取的数受制于 2 号选手的选择, 偶数时则相反
+     * @param: nums
+     * @return boolean
+     * @author marks
+     * @CreateDate: 2026/02/11 17:32
+     * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
+     */
     private boolean method_01(int[] nums) {
+        int n = nums.length;
+        if (n % 2 == 1) {
 
+        } else {
+
+        }
         return false;
     }
 
