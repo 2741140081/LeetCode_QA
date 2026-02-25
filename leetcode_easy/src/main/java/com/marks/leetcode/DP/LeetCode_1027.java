@@ -1,5 +1,7 @@
 package com.marks.leetcode.DP;
 
+import java.util.Arrays;
+
 /**
  * <p>项目名称: LeetCode_QA </p>
  * <p>文件名称: LeetCode_1027 </p>
@@ -36,7 +38,13 @@ public class LeetCode_1027 {
 
     /**
      * @Description:
-     * 1. nums[] 是一个无序的数组
+     * 1. nums[] 是一个无序的数组, 不可用Set 或者其他来进行查看元素是否存在
+     * 2. 应该使用int[][] dp = new int[nums.length][1001]; dp[i][sub] = len; sub 表示等差值, 范围是 0 - 500,
+     * 应该还可以是负数, int sub = nums[j] - nums[i], sub 可能小于0, 重新定义sub 范围 -500 ~ 500 之间 => 将范围
+     * 转换为index 下标 [0 ~ 1000], dp[n][1001]
+     * 3. 转移方程 当前节点为 i, 值为 nums[i]; 前一个节点j 在[0 ~ i - 1] 遍历 int index = nums[i] - nums[j] + 500;(转换为下标)
+     * dp[i][index] = dp[j][index] + 1; 先给dp[][] 初始化一个值, dp[i][j] = 1;
+     * AC: 54ms/65.89MB
      * @param: nums
      * @return int
      * @author marks
@@ -44,8 +52,20 @@ public class LeetCode_1027 {
      * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
      */
     private int method_01(int[] nums) {
-
-        return 0;
+        int n = nums.length;
+        int[][] dp = new int[n][1001];
+        for (int i = 0; i < n; i++) {
+            Arrays.fill(dp[i], 1);
+        }
+        int ans = 0;
+        for (int i = 1; i < n; i++) {
+            for (int j = 0; j < i; j++) {
+                int index = nums[i] - nums[j] + 500;
+                dp[i][index] = Math.max(dp[i][index], dp[j][index] + 1);
+                ans = Math.max(ans, dp[i][index]);
+            }
+        }
+        return ans;
     }
 
 }

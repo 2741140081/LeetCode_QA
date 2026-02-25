@@ -149,8 +149,8 @@ public class MultiThreadNovelDownloader {
                         failedCount.incrementAndGet();
                     }
                 }
-                // 批次的间隔等待10s, 防止内存或者cpu太高了
-                Thread.sleep(3000);
+                // 批次的间隔等待1s, 防止内存或者cpu太高了
+                Thread.sleep(1000);
                 System.out.println(String.format("批次完成: 成功 %d 章, 失败 %d 章", 
                     completedChapters.size() - (batchIndex * batchSize + failedCount.get()), failedCount.get()));
             }
@@ -576,8 +576,8 @@ public class MultiThreadNovelDownloader {
             System.out.println("=== 开始使用多线程下载小说 ===");
             long startTime = System.currentTimeMillis();
 
-            // 下载小说（true表示同时保存单独章节文件）
-            downloader.downloadNovel(catalogUrl, novelName, true);
+            // 下载小说（true表示同时保存单独章节文件）, 目前不需要单独保存单个章节文件, 所以这里传入false
+            downloader.downloadNovel(catalogUrl, novelName, false);
 
             long endTime = System.currentTimeMillis();
             System.out.println("多线程下载完成，耗时: " + (endTime - startTime) / 1000 + " 秒");
