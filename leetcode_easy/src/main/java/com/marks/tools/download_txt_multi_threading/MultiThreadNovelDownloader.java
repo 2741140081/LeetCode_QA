@@ -1,7 +1,8 @@
 package com.marks.tools.download_txt_multi_threading;
 
+import com.marks.tools.download_txt_multi_threading.entity.ChapterDownloadResult;
+import com.marks.tools.download_txt_multi_threading.entity.ChapterInfo;
 import com.marks.tools.webcrawler.OptimizedUtilGetChapterContent;
-import com.marks.tools.webcrawler.UtilGetChapterContent;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
@@ -22,134 +23,40 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+import static com.marks.tools.download_txt_multi_threading.constant.DownloadConstant.*;
+
 /**
  * 多线程小说下载器（简化版本 - 使用共享浏览器实例）
  * 基于线程安全的SeleniumWebContentFetcher单例模式
  */
 public class MultiThreadNovelDownloader {
 
-    
     /**
-     * 章节信息类
+     * 启动类
      */
-    public static class ChapterInfo {
-        private String title;
-        private String url;
-        private int number;
-        private String content;
-        
-        public ChapterInfo(String title, String url, int number) {
-            this.title = title;
-            this.url = url;
-            this.number = number;
-        }
-        
-        // Getters and Setters
-        public String getTitle() { return title; }
-        public String getUrl() { return url; }
-        public int getNumber() { return number; }
-        public String getContent() { return content; }
-        public void setContent(String content) { this.content = content; }
-        
-        @Override
-        public String toString() {
-            return String.format("第%d章: %s", number, title);
-        }
+    public static void main(String[] args) {
+        MultiThreadNovelDownloader downloader = new MultiThreadNovelDownloader();
+        String catalogUrl = BASE_URL + "/novel55197/";
+        String novelName = "测试小说";
+        downloader.start(catalogUrl, novelName);
     }
-    
-    /**
-     * 章节下载结果类
-     */
-    public static class ChapterDownloadResult {
-        public boolean success;
-        public ChapterInfo chapter;
-        public String content;
-        public String errorMessage;
-        
-        public ChapterDownloadResult(boolean success, ChapterInfo chapter, String content, String errorMessage) {
-            this.success = success;
-            this.chapter = chapter;
-            this.content = content;
-            this.errorMessage = errorMessage;
-        }
-    }
-    
-    /**
-     * 章节下载任务类
-     */
-    class ChapterDownloadTask implements Callable<ChapterDownloadResult> {
-        private final ChapterInfo chapter;
-        private final int currentIndex;
-        private final int totalChapters;
-        
-        public ChapterDownloadTask(ChapterInfo chapter, int currentIndex, int totalChapters) {
-            this.chapter = chapter;
-            this.currentIndex = currentIndex;
-            this.totalChapters = totalChapters;
-        }
-        
-        @Override
-        public ChapterDownloadResult call() throws Exception {
-            try {
-                if (DEBUG_MODE) {
-                    System.out.println(String.format("[%d/%d] 开始下载: %s", 
-                        currentIndex, totalChapters, chapter));
-                }
-                
-                String content = getSeleniumContent(chapter.getUrl());
-                
-                if (content != null && !content.trim().isEmpty()) {
-                    if (DEBUG_MODE) {
-                        System.out.println(String.format("[%d/%d] ✓ 下载成功: %s (长度: %d)", 
-                            currentIndex, totalChapters, chapter.getTitle(), content.length()));
-                    }
-                    return new ChapterDownloadResult(true, chapter, content, null);
-                } else {
-                    String errorMsg = "内容为空或获取失败";
-                    if (DEBUG_MODE) {
-                        System.err.println(String.format("[%d/%d] ✗ 下载失败: %s - %s", 
-                            currentIndex, totalChapters, chapter.getTitle(), errorMsg));
-                    }
-                    return new ChapterDownloadResult(false, chapter, null, errorMsg);
-                }
-                
-            } catch (Exception e) {
-                String errorMsg = e.getMessage();
-                if (DEBUG_MODE) {
-                    System.err.println(String.format("[%d/%d] ✗ 下载异常: %s - %s", 
-                        currentIndex, totalChapters, chapter.getTitle(), errorMsg));
-                }
-                return new ChapterDownloadResult(false, chapter, null, errorMsg);
-            }
-        }
-    }
-    
-    private static final String BASE_URL = "https://bcshuku.com";
-    private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36";
-    private static final String SAVE_DIRECTORY = "D:/novels/";
-    
+
     // 线程池配置
     private static final int CORE_POOL_SIZE = 8;           // 核心线程数
     private static final int MAX_POOL_SIZE = 18;           // 最大线程数
     private static final int QUEUE_CAPACITY = 100;         // 队列容量
     private static final long KEEP_ALIVE_TIME = 60L;       // 空闲线程存活时间（秒）
-    
-    private String chromeDriverPath = "D:/Project/chrome/chromedriver-win64/chromedriver.exe";
-    private ExecutorService executorService;
-    // 简化实现：使用共享浏览器实例
-    private static final boolean DEBUG_MODE = true;                        // 调试模式
 
-    private static final Object fetcherLock = new Object();
+    private String chromeDriverPath = "D:/Project/chrome/chromedriver-win64/chromedriver.exe";
+
+    private ExecutorService executorService;
     
     // 分页处理配置
     private static final int DEFAULT_BATCH_SIZE = 100;                     // 默认每批处理章节数
     private int batchSize = DEFAULT_BATCH_SIZE;                           // 批处理大小
 
-
     // 添加WebDriver池实例
     private OptimizedUtilGetChapterContent contentFetcher;
-
-
 
     public MultiThreadNovelDownloader() {
         this.executorService = new ThreadPoolExecutor(
@@ -162,11 +69,6 @@ public class MultiThreadNovelDownloader {
         );
         // 初始化优化的内容获取器
         this.contentFetcher = new OptimizedUtilGetChapterContent();
-    }
-
-    public MultiThreadNovelDownloader(String chromeDriverPath) {
-        this();
-        this.chromeDriverPath = chromeDriverPath;
     }
     
     /**
@@ -636,14 +538,6 @@ public class MultiThreadNovelDownloader {
     }
     
     /**
-     * 设置ChromeDriver路径
-     */
-    public MultiThreadNovelDownloader setChromeDriverPath(String path) {
-        this.chromeDriverPath = path;
-        return this;
-    }
-    
-    /**
      * 设置批处理大小
      * @param batchSize 每批处理的章节数
      */
@@ -666,7 +560,7 @@ public class MultiThreadNovelDownloader {
         System.out.println("✓ 手动资源清理完成");
     }
 
-    public void start() {
+    public void start(String catalogUrl, String novelName) {
         // 屏蔽Selenium的各种警告信息
         Logger.getLogger("org.openqa.selenium.devtools.CdpVersionFinder").setLevel(Level.OFF);
         Logger.getLogger("org.openqa.selenium.remote.http.WebSocket").setLevel(Level.OFF);
@@ -674,36 +568,8 @@ public class MultiThreadNovelDownloader {
         MultiThreadNovelDownloader downloader = null;
 
         try {
-            // 配置ChromeDriver路径
-            String chromeDriverPath = System.getenv("CHROMEDRIVER_PATH");
-
-            // 如果环境变量未设置，则使用默认路径
-            if (chromeDriverPath == null || chromeDriverPath.isEmpty()) {
-                String[] commonPaths = {
-                        "D:/Project/chrome/chromedriver-win64/chromedriver.exe"
-                };
-
-                for (String path : commonPaths) {
-                    File driverFile = new File(path);
-                    if (driverFile.exists()) {
-                        chromeDriverPath = path;
-                        System.out.println("✓ 自动检测到ChromeDriver: " + path);
-                        break;
-                    }
-                }
-
-                if (chromeDriverPath == null || chromeDriverPath.isEmpty()) {
-                    System.err.println("❌ 未找到ChromeDriver，请设置CHROMEDRIVER_PATH环境变量");
-                    return;
-                }
-            }
-
-            String catalogUrl = "https://bcshuku.com/novel55197/";
-            String novelName = "测试小说";
-
             // 创建下载器实例
-            downloader = new MultiThreadNovelDownloader(chromeDriverPath)
-                    .setBatchSize(50);  // 设置每批处理50章节，可根据内存情况调整
+            downloader = new MultiThreadNovelDownloader().setBatchSize(50);  // 设置每批处理50章节，可根据内存情况调整
 
             System.out.println("ChromeDriver路径: " + chromeDriverPath);
 
@@ -732,11 +598,53 @@ public class MultiThreadNovelDownloader {
             System.out.println("程序执行完毕");
         }
     }
-    /**
-     * 测试方法
-     */
-    public static void main(String[] args) {
-        MultiThreadNovelDownloader downloader = new MultiThreadNovelDownloader();
-        downloader.start();
+
+
+    class ChapterDownloadTask implements Callable<ChapterDownloadResult> {
+
+        private final ChapterInfo chapter;
+        private final int currentIndex;
+        private final int totalChapters;
+
+        public ChapterDownloadTask(ChapterInfo chapter, int currentIndex, int totalChapters) {
+            this.chapter = chapter;
+            this.currentIndex = currentIndex;
+            this.totalChapters = totalChapters;
+        }
+
+        @Override
+        public ChapterDownloadResult call() throws Exception {
+            try {
+                if (DEBUG_MODE) {
+                    System.out.println(String.format("[%d/%d] 开始下载: %s",
+                            currentIndex, totalChapters, chapter));
+                }
+
+                String content = getSeleniumContent(chapter.getUrl());
+
+                if (content != null && !content.trim().isEmpty()) {
+                    if (DEBUG_MODE) {
+                        System.out.println(String.format("[%d/%d] ✓ 下载成功: %s (长度: %d)",
+                                currentIndex, totalChapters, chapter.getTitle(), content.length()));
+                    }
+                    return new ChapterDownloadResult(true, chapter, content, null);
+                } else {
+                    String errorMsg = "内容为空或获取失败";
+                    if (DEBUG_MODE) {
+                        System.err.println(String.format("[%d/%d] ✗ 下载失败: %s - %s",
+                                currentIndex, totalChapters, chapter.getTitle(), errorMsg));
+                    }
+                    return new ChapterDownloadResult(false, chapter, null, errorMsg);
+                }
+
+            } catch (Exception e) {
+                String errorMsg = e.getMessage();
+                if (DEBUG_MODE) {
+                    System.err.println(String.format("[%d/%d] ✗ 下载异常: %s - %s",
+                            currentIndex, totalChapters, chapter.getTitle(), errorMsg));
+                }
+                return new ChapterDownloadResult(false, chapter, null, errorMsg);
+            }
+        }
     }
 }
