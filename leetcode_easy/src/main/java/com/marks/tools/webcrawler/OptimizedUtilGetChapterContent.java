@@ -36,27 +36,19 @@ public class OptimizedUtilGetChapterContent {
         try {
             // 从池中获取WebDriver实例
             driver = webDriverPool.borrowWebDriver();
-
             logger.fine("开始获取章节内容: " + chapterUrl);
-
             // 访问目标页面
             driver.get(chapterUrl);
-
             // 等待页面加载完成
             Thread.sleep(delayMillis);
-
             // 获取网页源码
             String pageSource = driver.getPageSource();
-
             // 添加释放WebDriver实例
             webDriverPool.returnWebDriver(driver);
-
             // 使用Jsoup解析HTML
             Document doc = Jsoup.parse(pageSource);
-
             // 通过ID获取章节内容元素
             Element contentElement = doc.getElementById(id);
-
             if (contentElement != null) {
                 // 提取并处理内容
                 String content = extractAndProcessContent(contentElement);
@@ -75,8 +67,6 @@ public class OptimizedUtilGetChapterContent {
             logger.severe("获取章节内容时发生错误: " + e.getMessage());
             e.printStackTrace();
             return "";
-        } finally {
-            // do nothing
         }
     }
 
