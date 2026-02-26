@@ -1,5 +1,8 @@
 package com.marks.leetcode.DP;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * <p>项目名称: LeetCode_QA </p>
  * <p>文件名称: LeetCode_488 </p>
@@ -58,7 +61,7 @@ public class LeetCode_488 {
      * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
      */
     private int method_01(String board, String hand) {
-
+        List<Integer> list = new ArrayList<>();
         return 0;
     }
 

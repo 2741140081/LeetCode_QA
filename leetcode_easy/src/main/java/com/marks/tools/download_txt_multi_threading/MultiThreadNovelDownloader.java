@@ -433,33 +433,17 @@ public class MultiThreadNovelDownloader {
             // 写入小说标题
             writer.write("《" + novelName + "》");
             writer.newLine();
-            writer.newLine();
-            writer.write("目录");
-            writer.newLine();
-            writer.write("====");
-            writer.newLine();
-            
-            // 写入目录, 不需要写入目录
-            for (ChapterInfo chapter : chapters) {
-                writer.write(String.format("第%d章: %s", chapter.getNumber(), chapter.getTitle()));
-                writer.newLine();
-            }
-            
-            writer.newLine();
-            writer.write("正文");
-            writer.newLine();
-            writer.write("====");
-            writer.newLine();
-            writer.newLine();
             
             // 写入各章节内容
             for (ChapterInfo chapter : chapters) {
-                writer.write("第" + chapter.getNumber() + "章: " + chapter.getTitle());
+                // 写入章节标题
+                writer.write(chapter.getTitle());
                 writer.newLine();
-                writer.newLine();
+                // 写入章节内容
                 writer.write(chapter.getContent());
                 writer.newLine();
-                writer.newLine();
+                // 章节结束标识
+                writer.write("############");
                 writer.newLine();
             }
         }
@@ -481,7 +465,7 @@ public class MultiThreadNovelDownloader {
         Path filePath = dirPath.resolve(filename);
         
         try (BufferedWriter writer = Files.newBufferedWriter(filePath, StandardCharsets.UTF_8)) {
-            writer.write("第" + chapter.getNumber() + "章: " + chapter.getTitle());
+            writer.write(chapter.getTitle());
             writer.newLine();
             writer.newLine();
             writer.write(chapter.getContent());
