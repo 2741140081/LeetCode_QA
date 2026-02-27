@@ -52,6 +52,8 @@ public class LeetCode_1824 {
      * 3. 当 for j(1~3) 时, 如果 j == obstacles[i]时, 此路不通, 需要在前一个 dp[i - 1][j] 进行侧跳,
      * 如果进行侧跳, 需要判断另外两条跑道是否存在障碍, 获取 int prev = obstacles[i - 1];
      * if prev != 0, for k(1~3) k != prev && k != j, dp[i][k] = Math.min(dp[i - 1][k], dp[i - 1][j] + 1); 好像有点问题, 先写代码看看吧
+     * 4. 查看题解, 先求出到达 i 处的最小 minCost, 然后更新 dp[i][j]
+     * AC: 78ms/240.16MB
      * @param: obstacles
      * @return int
      * @author marks
@@ -63,7 +65,7 @@ public class LeetCode_1824 {
         int n = obstacles.length;
         int[][] dp = new int[n][3];
         Arrays.fill(dp[0], 1);
-        dp[0][1] = 0;
+        dp[0][1] = 0; // 默认从跑道 1 处出发
         for (int i = 1; i < n; i++) {
             int minCost = INF; // 获取当前点 i 处, 最小侧跳次数
             for (int j = 0; j < 3; j++) {
