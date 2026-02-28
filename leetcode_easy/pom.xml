@@ -23,13 +23,13 @@
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-java</artifactId>
-            <version>4.40.0</version> <!-- 使用最新稳定版本 -->
+            <version>4.41.0</version> <!-- 使用最新稳定版本 -->
         </dependency>
 
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
-            <artifactId>selenium-devtools-v144</artifactId>
-            <version>4.40.0</version> <!-- 确保版本与 Selenium 主版本一致 -->
+            <artifactId>selenium-devtools-v145</artifactId>
+            <version>4.41.0</version> <!-- 确保版本与 Selenium 主版本一致 -->
         </dependency>
 
         <!-- WebDriverManager（可选，用于自动管理浏览器驱动） -->

@@ -61,8 +61,8 @@ public class WebDriverPool {
                 if (instance == null) {
                     instance = new WebDriverPool(
                             "D:/Project/chrome/chromedriver-win64/chromedriver.exe",
-                            10,
-                            300
+                            20,
+                            1000
                     );
                 }
             }
@@ -74,7 +74,7 @@ public class WebDriverPool {
      * 获取WebDriver实例（带超时）
      */
     public WebDriver borrowWebDriver() throws InterruptedException {
-        WebDriver driver = pool.poll(timeoutSeconds, TimeUnit.SECONDS);
+        WebDriver driver = pool.poll(10, TimeUnit.SECONDS);
 
         if (driver == null) {
             // 池中无可用实例，创建新实例（如果未达到最大限制）
