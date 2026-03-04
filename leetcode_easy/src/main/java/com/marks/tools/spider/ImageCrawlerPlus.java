@@ -41,7 +41,7 @@ public class ImageCrawlerPlus {
 
     private static String insertSQL = "INSERT INTO image_download_info (image_web_url, parent_page_url, image_index, status) VALUES (?, ?, ?, ?)";
 
-    private static String SAVE_DIR = "D:\\spider\\data\\妈妈们黏糊糊的交配日常\\result\\";
+    private static String SAVE_DIR = "D:\\spider\\data\\测试漫画\\result\\";
     public static void main(String[] args) {
         ImageCrawlerPlus imageCrawlerPlus = new ImageCrawlerPlus();
         TextToCsvProcessor csvProcessor = new TextToCsvProcessor();

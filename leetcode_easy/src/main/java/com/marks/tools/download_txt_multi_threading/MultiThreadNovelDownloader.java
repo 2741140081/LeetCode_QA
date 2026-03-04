@@ -2,6 +2,7 @@ package com.marks.tools.download_txt_multi_threading;
 
 import com.marks.tools.download_txt_multi_threading.entity.ChapterDownloadResult;
 import com.marks.tools.download_txt_multi_threading.entity.ChapterInfo;
+import com.marks.tools.download_txt_multi_threading.entity.PageParseTask;
 import com.marks.tools.webcrawler.OptimizedUtilGetChapterContent;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -18,6 +19,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -36,7 +38,7 @@ public class MultiThreadNovelDownloader {
      */
     public static void main(String[] args) {
         MultiThreadNovelDownloader downloader = new MultiThreadNovelDownloader();
-        String catalogUrl = BASE_URL + "/novel55197/";
+        String catalogUrl = BASE_URL + "/novel54785/";
         String novelName = "测试小说";
         downloader.start(catalogUrl, novelName);
     }
@@ -126,7 +128,7 @@ public class MultiThreadNovelDownloader {
                 // 收集当前批次的结果
                 for (Future<ChapterDownloadResult> future : futures) {
                     try {
-                        ChapterDownloadResult result = future.get(120, TimeUnit.SECONDS); // 2分钟超时
+                        ChapterDownloadResult result = future.get(1200, TimeUnit.SECONDS); // 20分钟超时
                         if (result.success) {
                             completedChapters.add(result.chapter);
                             result.chapter.setContent(cleanContent(result.content));
@@ -184,19 +186,81 @@ public class MultiThreadNovelDownloader {
     }
     
     /**
-     * 解析小说目录（支持分页）
+     * 解析小说目录（支持分页）- 多线程优化版本
      */
-    private List<ChapterInfo> parseNovelCatalog(String catalogUrl) throws IOException {
-        List<ChapterInfo> chapters = new ArrayList<>();
+    private List<ChapterInfo> parseNovelCatalog(String catalogUrl) throws IOException, InterruptedException, ExecutionException {
         String currentPageUrl = catalogUrl;
         int pageNumber = 1;
         
         System.out.println("开始解析小说目录...");
         
+        // 存储所有页面的Document对象和对应的起始章节号
+        List<PageParseTask> pageTasks = new ArrayList<>();
+        int totalBaseChapterNumber = 1; // 总的基础章节号
+        
+        // 第一阶段：单线程获取所有页面URL和Document
         do {
             System.out.println("解析第 " + pageNumber + " 页: " + currentPageUrl);
             
             Document doc = connectWithRetry(currentPageUrl, 3);
+            
+            // 创建页面解析任务，预计算该页面的起始章节号
+            int pageStartChapterNumber = totalBaseChapterNumber;
+            PageParseTask task = new PageParseTask(doc, pageNumber, pageStartChapterNumber);
+            pageTasks.add(task);
+            
+            // 查找下一页链接
+            String nextPageUrl = findNextPageLink(doc);
+//            nextPageUrl = null; // 测试用, 方便运行流程
+            if (nextPageUrl != null) {
+                if (!nextPageUrl.startsWith("http")) {
+                    nextPageUrl = BASE_URL + nextPageUrl;
+                }
+                currentPageUrl = nextPageUrl;
+                pageNumber++;
+                totalBaseChapterNumber += 50; // 每页预估50章节
+                
+                // 延迟300ms后继续处理下一页
+                Thread.sleep(300);
+            } else {
+                break;
+            }
+            
+        } while (true);
+        
+        System.out.println("共找到 " + pageTasks.size() + " 个分页，开始多线程解析章节信息...");
+        
+        // 第二阶段：多线程并行解析所有页面的章节信息
+        List<Future<List<ChapterInfo>>> futures = new ArrayList<>();
+        for (PageParseTask task : pageTasks) {
+            Future<List<ChapterInfo>> future = executorService.submit(() -> parsePageChapters(task));
+            futures.add(future);
+        }
+        
+        // 收集所有解析结果
+        List<ChapterInfo> allChapters = new ArrayList<>();
+        for (Future<List<ChapterInfo>> future : futures) {
+            List<ChapterInfo> pageChapters = future.get();
+            allChapters.addAll(pageChapters);
+        }
+        
+        // 根据章节编号排序
+        allChapters.sort(Comparator.comparingInt(ChapterInfo::getNumber));
+        
+        System.out.println("多线程解析完成，共解析到 " + allChapters.size() + " 个章节");
+        return allChapters;
+    }
+    
+    /**
+     * 解析单个页面的章节信息
+     */
+    private List<ChapterInfo> parsePageChapters(PageParseTask task) {
+        List<ChapterInfo> pageChapters = new ArrayList<>();
+        Document doc = task.getDocument();
+        int pageNumber = task.getPageNumber();
+        int startChapterNumber = task.getStartChapterNumber();
+        
+        try {
             Element containerDiv = doc.selectFirst("div#list-chapter");
             Element chapterList = null;
 
@@ -210,11 +274,10 @@ public class MultiThreadNovelDownloader {
 
             // 提取当前页的所有章节项
             var chapterItems = chapterList.select("li");
-
             
-            System.out.println("在第 " + pageNumber + " 页找到 " + chapterItems.size() + " 个章节链接");
+            System.out.println("线程" + Thread.currentThread().getName() + " - 解析第 " + pageNumber + " 页，找到 " + chapterItems.size() + " 个章节链接");
             
-            int chapterNumber = chapters.size() + 1;
+            int chapterNumber = startChapterNumber;
             for (Element item : chapterItems) {
                 Element link = item.selectFirst("a[href]");
 
@@ -226,33 +289,15 @@ public class MultiThreadNovelDownloader {
                 }
                 
                 if (!title.isEmpty() && href.contains("/chapter")) {
-                    chapters.add(new ChapterInfo(title, href, chapterNumber++));
+                    pageChapters.add(new ChapterInfo(title, href, chapterNumber++));
                 }
             }
             
-            // 查找下一页链接
-            String nextPageUrl = findNextPageLink(doc);
-            if (nextPageUrl != null) {
-                if (!nextPageUrl.startsWith("http")) {
-                    nextPageUrl = BASE_URL + nextPageUrl;
-                }
-                currentPageUrl = nextPageUrl;
-                pageNumber++;
-                
-                // 添加延迟避免请求过于频繁
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    break;
-                }
-            } else {
-                break;
-            }
-            
-        } while (true);
+        } catch (Exception e) {
+            System.err.println("线程" + Thread.currentThread().getName() + " - 解析第 " + pageNumber + " 页时发生错误: " + e.getMessage());
+        }
         
-        return chapters;
+        return pageChapters;
     }
     
     /**
@@ -272,22 +317,6 @@ public class MultiThreadNovelDownloader {
                     System.out.println("通过分页容器找到下一页链接: " + href);
                     return href;
                 }
-            }
-            
-            // 方法2: 直接查找包含Next的链接
-            Element nextLink = doc.selectFirst("a:contains(Next)[href]");
-            if (nextLink != null) {
-                String href = nextLink.attr("href");
-                System.out.println("直接找到下一页链接: " + href);
-                return href;
-            }
-            
-            // 方法3: 查找具有特定class的下一页链接
-            Elements nextLinks = doc.select("a[href].next-page, a[href].next, li.next a");
-            if (!nextLinks.isEmpty()) {
-                String href = nextLinks.first().attr("href");
-                System.out.println("通过class找到下一页链接: " + href);
-                return href;
             }
             
             System.out.println("未找到下一页链接");
@@ -313,9 +342,6 @@ public class MultiThreadNovelDownloader {
                 if (DEBUG_MODE && retryCount > 0) {
                     System.out.println("第" + (retryCount + 1) + "次尝试获取章节内容，延迟: " + delay + "ms");
                 }
-                    
-//                UtilGetChapterContent utils = new UtilGetChapterContent();
-//                String chapterContent = utils.fetchChapterContent(chapterUrl, "chapter-content", delay);
 
                 // 使用优化后的内容获取器
                 String chapterContent = contentFetcher.fetchChapterContent(chapterUrl, "chapter-content", delay);
@@ -397,7 +423,7 @@ public class MultiThreadNovelDownloader {
                         .userAgent(USER_AGENT)
                         .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
                         .header("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8")
-                        .header("Referer", BASE_URL)
+                        .header("Referer", REFERER_URL)
                         .timeout(30000)
                         .get();
             } catch (IOException e) {
@@ -584,6 +610,11 @@ public class MultiThreadNovelDownloader {
     }
 
 
+
+    
+    /**
+     * 章节下载任务类
+     */
     class ChapterDownloadTask implements Callable<ChapterDownloadResult> {
 
         private final ChapterInfo chapter;

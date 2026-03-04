@@ -15,8 +15,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.marks.tools.download_txt_multi_threading.constant.DownloadConstant.BASE_URL;
-import static com.marks.tools.download_txt_multi_threading.constant.DownloadConstant.USER_AGENT;
+import static com.marks.tools.download_txt_multi_threading.constant.DownloadConstant.*;
 import static com.marks.tools.webcrawler.OptimizedUtilGetChapterContentTest.CSV_FILE_PATH;
 
 /**
@@ -53,7 +52,7 @@ public class SaveChapterUrlTest {
                 .userAgent(USER_AGENT)
                 .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
                 .header("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8")
-                .header("Referer", BASE_URL)
+                .header("Referer", REFERER_URL)
                 .timeout(30000)
                 .get();
     }
