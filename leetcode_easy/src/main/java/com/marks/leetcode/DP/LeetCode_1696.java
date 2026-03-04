@@ -1,5 +1,8 @@
 package com.marks.leetcode.DP;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
+
 /**
  * <p>项目名称: LeetCode_QA </p>
  * <p>文件名称: LeetCode_1696 </p>
@@ -37,8 +40,13 @@ public class LeetCode_1696 {
 
     /**
      * @Description:
+     * E1:
+     * 输入：nums = [1,-1,-2,4,-7,3], k = 2
+     * 输出：7
      * 1. 最简单的办法是暴力求解 dp[i] = Math.max(dp[j]) + nums[i]; j => {i - k, i - 1}, 时间复杂度是O(n^2), 大概率超时, 舍弃
-     * 2.
+     * 2. 需要想一个办法, 类似于滑动窗口, 窗口大小为k, 不断移动过程中, 删除和添加两端的元素, 并且更新整个窗口中的最大值
+     * 直接查看官方题解, 使用双端队列, 需要再次理解, need todo
+     * AC: 32ms/79.41MB
      * @param: nums
      * @param: k
      * @return int
@@ -47,8 +55,26 @@ public class LeetCode_1696 {
      * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
      */
     private int method_01(int[] nums, int k) {
-
-        return 0;
+        int n = nums.length;
+        int[] dp = new int[n];
+        dp[0] = nums[0];
+        // 创建队列
+        Deque<Integer> deque = new ArrayDeque<Integer>();
+        deque.offerLast(0);
+        for (int i = 1; i < n; i++) {
+            // 弹出超过k范围的元素
+            while (!deque.isEmpty() && deque.peekFirst() < i - k) {
+                deque.pollFirst();
+            }
+            // 更新dp[i]
+            dp[i] = nums[i] + dp[deque.peekFirst()];
+            // 弹出小于dp[i]的元素
+            while (!deque.isEmpty() && dp[i] >= dp[deque.peekLast()]) {
+                deque.pollLast();
+            }
+            deque.offerLast(i);
+        }
+        return dp[n - 1];
     }
 
 }
