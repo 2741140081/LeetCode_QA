@@ -1,5 +1,6 @@
 package com.marks.tools.kkplatform;
 
+import com.marks.utils.LogUtil;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.Kernel32;
@@ -25,7 +26,7 @@ public class WindowSwitcherUtils {
 
     private static WindowSwitcherUtils instance;
 
-    private WindowSwitcherUtils() {}
+    public WindowSwitcherUtils() {}
 
     public static synchronized WindowSwitcherUtils getInstance() {
         if (instance == null) {
@@ -190,7 +191,7 @@ public class WindowSwitcherUtils {
      * 打印所有打开的窗口信息（用于调试）
      */
     public void printAllWindowsInfo() {
-        System.out.println("=== 当前打开的所有窗口 ===");
+        LogUtil.info("=== 当前打开的所有窗口 ===");
         User32.INSTANCE.EnumWindows(new User32.WNDENUMPROC() {
             @Override
             public boolean callback(User32.HWND hWnd, Pointer pointer) {
@@ -203,12 +204,12 @@ public class WindowSwitcherUtils {
                     User32.INSTANCE.GetWindowThreadProcessId(hWnd, pid);
 
                     if (!title.isEmpty()) {
-                        System.out.printf("窗口标题：%s, 进程 ID: %d%n", title, pid.getValue());
+                        LogUtil.info("窗口标题：%s, 进程 ID: %d%n", title, pid.getValue());
                     }
                 }
                 return true;
             }
         }, null);
-        System.out.println("========================");
+        LogUtil.info("========================");
     }
 }

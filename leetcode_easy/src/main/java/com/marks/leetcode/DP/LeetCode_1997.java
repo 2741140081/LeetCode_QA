@@ -37,6 +37,16 @@ public class LeetCode_1997 {
         return result;
     }
 
+    /**
+     * @Description:
+     * 直接看的官方题解, 后续自行实现
+     * AC: 14ms/86.31MB need todo
+     * @param: nextVisit
+     * @return int
+     * @author marks
+     * @CreateDate: 2026/03/05 10:31
+     * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
+     */
     private int method_02(int[] nextVisit) {
         int mod = 1000000007;
         int len = nextVisit.length;

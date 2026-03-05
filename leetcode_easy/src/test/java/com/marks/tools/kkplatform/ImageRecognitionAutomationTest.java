@@ -10,6 +10,8 @@ import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
 import java.awt.*;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -40,7 +42,7 @@ class ImageRecognitionAutomationTest {
 
     private static final double MIN_SCALE = 0.3;
     private static final double MAX_SCALE = 2.0;
-    private static final double BEST_SCALE = 0.67;
+    private static final double BEST_SCALE = 0.6667;
     private static final int BINARY_SEARCH_ITERATIONS = 10;
     private static final boolean USE_BEST_SCALE_FIRST = true;
 
@@ -102,6 +104,160 @@ class ImageRecognitionAutomationTest {
     void testRecognizeEXPInput() {
         String templateName = "EXP_Input.png";
         recognizeSingleTemplate(templateName, "EXP_Input_result.png");
+    }
+
+    @Test
+    @DisplayName("查找经验值输入框位置")
+    void testFindEXPInputLocation() {
+        try {
+            BufferedImage screenCapture = captureFullScreen();
+            Mat screenMat = bufferedImageToMat(screenCapture);
+
+            String expInputTemplate = Paths.get(TEMPLATE_DIR, "EXP_Input.png").toString();
+            Mat template = Imgcodecs.imread(expInputTemplate);
+
+            if (template.empty()) {
+                System.out.println("无法读取模板图片：" + expInputTemplate);
+                return;
+            }
+
+            System.out.println("\n=== 查找经验值输入框 ===");
+
+            ScaleMatchResult result = matchWithScale(screenMat, template, BEST_SCALE);
+
+            if (result.bestMatchValue < MATCH_THRESHOLD) {
+                result = findBestScaleBinarySearch(screenMat, template, "EXP_Input.png");
+            }
+
+            if (result.bestMatchValue >= MATCH_THRESHOLD) {
+                System.out.println("✓ 找到经验值输入框");
+                System.out.println("  缩放比例：" + String.format("%.3f", result.bestScale));
+                System.out.println("  匹配度：" + String.format("%.4f", result.bestMatchValue));
+                System.out.println("  左上角坐标：(" + result.bestLoc.x + ", " + result.bestLoc.y + ")");
+                System.out.println("  右下角坐标：(" + (result.bestLoc.x + result.bestRect.width) +
+                        ", " + (result.bestLoc.y + result.bestRect.height) + ")");
+                System.out.println("  宽度：" + result.bestRect.width + ", 高度：" + result.bestRect.height);
+
+                int centerX = (int) result.bestLoc.x + result.bestRect.width / 2;
+                int centerY = (int) result.bestLoc.y + result.bestRect.height / 2;
+                System.out.println("  中心点击位置：(" + centerX + ", " + centerY + ")");
+
+                Mat resultScreen = screenMat.clone();
+                Imgproc.rectangle(resultScreen, result.bestRect, RED_COLOR, RECT_THICKNESS);
+                saveResult(resultScreen, "exp_input_location.png");
+                resultScreen.release();
+
+            } else {
+                System.out.println("✗ 未找到经验值输入框");
+                System.out.println("  最佳匹配度：" + String.format("%.4f", result.bestMatchValue));
+            }
+
+            template.release();
+            screenMat.release();
+
+        } catch (Exception e) {
+            fail("查找失败：" + e.getMessage());
+        }
+    }
+
+
+    @Test
+    @DisplayName("修改经验值 - 定位并修改为 45000000")
+    void testModifyEXPValue() {
+        try {
+            BufferedImage screenCapture = captureFullScreen();
+            Mat screenMat = bufferedImageToMat(screenCapture);
+
+            String expInputTemplate = Paths.get(TEMPLATE_DIR, "EXP_Input.png").toString();
+            Mat template = Imgcodecs.imread(expInputTemplate);
+
+            if (template.empty()) {
+                System.out.println("无法读取模板图片：" + expInputTemplate);
+                return;
+            }
+
+            System.out.println("\n=== 修改经验值任务 ===");
+
+            ScaleMatchResult result = matchWithScale(screenMat, template, BEST_SCALE);
+
+            if (result.bestMatchValue < MATCH_THRESHOLD) {
+                System.out.println("未找到经验值输入框，尝试二分法查找...");
+                result = findBestScaleBinarySearch(screenMat, template, "EXP_Input.png");
+            }
+
+            if (result.bestMatchValue >= MATCH_THRESHOLD) {
+                System.out.println("✓ 找到经验值输入框位置");
+                System.out.println("  位置：(" + result.bestLoc.x + ", " + result.bestLoc.y + ")");
+                System.out.println("  大小：" + result.bestRect.width + "x" + result.bestRect.height);
+
+                int inputX = (int) result.bestLoc.x;
+                int inputY = (int) result.bestLoc.y;
+                int inputWidth = result.bestRect.width;
+                int inputHeight = result.bestRect.height;
+
+                int clickX = inputX + (inputWidth * 2 / 3);
+                int clickY = inputY + inputHeight / 2;
+
+                System.out.println("\n开始修改经验值...");
+                System.out.println("1. 双击输入框位置：(" + clickX + ", " + clickY + ") (宽度 2/3 处)");
+
+                Robot robot = new Robot();
+                robot.setAutoDelay(100);
+
+                robot.mouseMove(clickX, clickY);
+                robot.delay(50);
+
+                System.out.println("2. 第一次点击");
+                robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
+                robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
+
+                robot.delay(100);
+
+                System.out.println("3. 第二次点击 (双击)");
+                robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
+                robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
+
+                robot.delay(300);
+
+                System.out.println("4. 全选原有内容 (Ctrl+A)");
+                robot.keyPress(KeyEvent.VK_CONTROL);
+                robot.keyPress(KeyEvent.VK_A);
+                robot.keyRelease(KeyEvent.VK_A);
+                robot.keyRelease(KeyEvent.VK_CONTROL);
+
+                robot.delay(100);
+
+                System.out.println("5. 输入新值：45000000");
+                typeString(robot, "45000000");
+
+                robot.delay(200);
+
+                System.out.println("6. 按 Enter 确认");
+                robot.keyPress(KeyEvent.VK_ENTER);
+                robot.keyRelease(KeyEvent.VK_ENTER);
+
+                System.out.println("\n✓ 经验值修改完成！");
+
+                Mat resultScreen = screenMat.clone();
+                Imgproc.rectangle(resultScreen, result.bestRect, RED_COLOR, RECT_THICKNESS);
+
+                Point clickPoint = new Point(clickX, clickY);
+                Imgproc.circle(resultScreen, clickPoint, 5, new Scalar(0, 255, 0), -1);
+
+                saveResult(resultScreen, "exp_input_modify_result.png");
+                resultScreen.release();
+
+            } else {
+                System.out.println("✗ 未找到经验值输入框");
+                System.out.println("  最佳匹配度：" + String.format("%.4f", result.bestMatchValue));
+            }
+
+            template.release();
+            screenMat.release();
+
+        } catch (Exception e) {
+            fail("修改经验值失败：" + e.getMessage());
+        }
     }
 
     @Test
@@ -383,5 +539,35 @@ class ImageRecognitionAutomationTest {
         String outputPath = Paths.get(OUTPUT_DIR, fileName).toString();
         Imgcodecs.imwrite(outputPath, resultImage);
         System.out.println("\n结果已保存到：" + outputPath);
+    }
+
+
+    private void typeString(Robot robot, String text) {
+        for (char c : text.toCharArray()) {
+            int keyCode = getVirtualKeyCode(c);
+            if (keyCode != 0) {
+                robot.keyPress(keyCode);
+                robot.keyRelease(keyCode);
+                robot.delay(50);
+            }
+        }
+    }
+
+    private int getVirtualKeyCode(char c) {
+        switch (c) {
+            case '0': return KeyEvent.VK_0;
+            case '1': return KeyEvent.VK_1;
+            case '2': return KeyEvent.VK_2;
+            case '3': return KeyEvent.VK_3;
+            case '4': return KeyEvent.VK_4;
+            case '5': return KeyEvent.VK_5;
+            case '6': return KeyEvent.VK_6;
+            case '7': return KeyEvent.VK_7;
+            case '8': return KeyEvent.VK_8;
+            case '9': return KeyEvent.VK_9;
+            case '-': return KeyEvent.VK_MINUS;
+            case '=': return KeyEvent.VK_EQUALS;
+            default: return 0;
+        }
     }
 }
