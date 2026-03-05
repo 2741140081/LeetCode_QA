@@ -42,15 +42,16 @@ class ImageRecognitionAutomationTest {
 
     private static final double MIN_SCALE = 0.3;
     private static final double MAX_SCALE = 2.0;
-    private static final double BEST_SCALE = 0.6667;
+    private static final double BEST_SCALE = 0.5625;
     private static final int BINARY_SEARCH_ITERATIONS = 10;
     private static final boolean USE_BEST_SCALE_FIRST = true;
-
+    private WindowSwitcherUtils windowSwitcher;
     @BeforeEach
     void setUp() {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
         try {
             Files.createDirectories(Paths.get(OUTPUT_DIR));
+            windowSwitcher = WindowSwitcherUtils.getInstance();
         } catch (IOException e) {
             throw new RuntimeException("Failed to create output directory", e);
         }
@@ -80,8 +81,12 @@ class ImageRecognitionAutomationTest {
 
     @Test
     @DisplayName("识别特定模板图片 - 开始游戏按钮")
-    void testRecognizeStartGameButton() {
+    void testRecognizeStartGameButton() throws InterruptedException {
         String templateName = "start_game_btn.png";
+        // 添加切换窗口代码
+        windowSwitcher.switchToWindow("KK官方对战平台");
+        // delay
+        Thread.sleep(2000);
         recognizeSingleTemplate(templateName, "start_game_btn_result.png");
     }
 

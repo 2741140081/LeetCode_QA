@@ -91,6 +91,27 @@ class WindowSwitcherUtilsTest {
     }
 
     @Test
+    @DisplayName("测试通过窗口标题切换窗口 - 使用游戏窗口")
+    void switchToWindow2() {
+        // 注意：这个测试需要系统中实际运行这些应用才能成功
+
+        // 测试 1: 尝试切换到Warcraft III（如果存在）
+        boolean result = windowSwitcherUtils.switchToWindow("Warcraft III");
+        System.out.println("切换到Warcraft III结果：" + result);
+
+        // 测试 2: 尝试切换到 魔兽3内存修改器（如果存在）
+        boolean chromeResult = windowSwitcherUtils.switchToWindow("魔兽3内存修改器");
+        System.out.println("切换到 Outlook 结果：" + chromeResult);
+
+        // 测试 3: 尝试切换到 KK官方对战平台（如果存在）
+        boolean ideaResult = windowSwitcherUtils.switchToWindow("KK官方对战平台");
+        System.out.println("切换到 KK官方对战平台 结果：" + ideaResult);
+
+        // 由于无法保证这些应用是否打开，只验证方法能正常执行
+        // 实际应用时需要确保目标应用已打开
+    }
+
+    @Test
     @DisplayName("测试通过进程名切换窗口 - 使用常见应用")
     void switchToWindowByProcess() {
         // 注意：这个测试需要系统中实际运行这些应用才能成功
