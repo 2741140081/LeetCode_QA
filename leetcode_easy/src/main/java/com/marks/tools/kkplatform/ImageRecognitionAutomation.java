@@ -44,7 +44,9 @@ public class ImageRecognitionAutomation {
     private static final double MIN_SCALE = 0.3;
     private static final double MAX_SCALE = 2.0;
     private static final double BEST_SCALE = 0.6667;
-    private static final int BINARY_SEARCH_ITERATIONS = 10;
+
+    private static final int RECT_THICKNESS = 2;
+    private static final Scalar RED_COLOR = new Scalar(0, 0, 255);
 
     // 操作延迟（毫秒）
     private static final int DELAY_SHORT = 100;
@@ -78,7 +80,7 @@ public class ImageRecognitionAutomation {
                 return null;
             }
 
-            Point result = findImageWithScale(screenMat, template, templateName);
+            Point result = recognizeAndMarkElement(screenMat, template, templateName);
 
             screenMat.release();
             template.release();
@@ -95,39 +97,164 @@ public class ImageRecognitionAutomation {
     /**
      * 使用最佳缩放比例 + 二分法查找图片
      */
-    private Point findImageWithScale(Mat screenMat, Mat template, String templateName) {
-        LogUtil.info("\n=== 查找元素：" + templateName + " ===");
+    private Point recognizeAndMarkElement(Mat screenMat, Mat template, String templatePath) {
+        LogUtil.info("\n=== 查找元素：" + templatePath + " ===");
+
+        String templateName = Paths.get(templatePath).getFileName().toString();
+        System.out.println("\n=== 识别元素：" + templateName + " ===");
+
+        Mat screenGray = new Mat();
+        Mat templateGray = new Mat();
+        Imgproc.cvtColor(screenMat, screenGray, Imgproc.COLOR_BGR2GRAY);
+        Imgproc.cvtColor(template, templateGray, Imgproc.COLOR_BGR2GRAY);
 
         ScaleMatchResult result;
 
         // 首先尝试最佳缩放比例
         LogUtil.info("尝试使用最佳缩放比例：" + BEST_SCALE);
-        result = matchWithScale(screenMat, template, BEST_SCALE);
+        result = matchWithScaleGray(screenGray, templateGray, BEST_SCALE);
 
         if (result.bestMatchValue >= MATCH_THRESHOLD) {
+            Imgproc.rectangle(screenMat, result.bestRect, RED_COLOR, RECT_THICKNESS);
             LogUtil.info("✓ 使用最佳缩放比例匹配成功！");
             LogUtil.info("  匹配度：" + String.format("%.4f", result.bestMatchValue));
             LogUtil.info("  位置：(" + result.bestLoc.x + ", " + result.bestLoc.y + ")");
-            return convertToJavaPoint(result.bestLoc, template.cols(), template.rows());
+        } else {
+            LogUtil.info("最佳缩放比例匹配失败（匹配度：" + String.format("%.4f", result.bestMatchValue) +
+                    "），开始二分法查找...");
+            result = findBestScaleBinarySearchGray(screenGray, templateGray);
         }
 
-        LogUtil.info("最佳缩放比例匹配失败（匹配度：" + String.format("%.4f", result.bestMatchValue) +
-                "），开始二分法查找...");
-
-        // 使用二分法查找最佳缩放比例
-        result = findBestScaleBinarySearch(screenMat, template);
-
         if (result.bestMatchValue >= MATCH_THRESHOLD) {
+            Imgproc.rectangle(screenMat, result.bestRect, RED_COLOR, RECT_THICKNESS);
             LogUtil.info("✓ 二分法查找成功！");
             LogUtil.info("  最佳缩放比例：" + String.format("%.3f", result.bestScale));
             LogUtil.info("  匹配度：" + String.format("%.4f", result.bestMatchValue));
             LogUtil.info("  位置：(" + result.bestLoc.x + ", " + result.bestLoc.y + ")");
-            return convertToJavaPoint(result.bestLoc, result.bestRect.width, result.bestRect.height);
+        } else {
+            LogUtil.info("✗ 未找到匹配元素：" + templateName);
+            LogUtil.info("  最佳匹配度：" + String.format("%.4f", result.bestMatchValue));
+            LogUtil.info("  阈值：" + MATCH_THRESHOLD);
         }
 
         // 二分法也未找到，保存截图并报错
         handleNotFound(screenMat, templateName, result);
-        return null;
+
+        // 释放资源
+        templateGray.release();
+        screenGray.release();
+        // 返回结果
+        return result.bestMatchValue >= MATCH_THRESHOLD ? convertToJavaPoint(result.bestLoc, template.cols(), template.rows()) : null;
+    }
+
+
+    private ScaleMatchResult matchWithScaleGray(Mat screenGray, Mat templateGray, double scale) {
+        Mat scaledTemplate = new Mat();
+        Size newSize = new Size(templateGray.cols() * scale, templateGray.rows() * scale);
+        Imgproc.resize(templateGray, scaledTemplate, newSize);
+
+        System.out.println("模板尺寸：" + templateGray.cols() + "x" + templateGray.rows() +
+                " -> 缩放后：" + scaledTemplate.cols() + "x" + scaledTemplate.rows());
+
+        if (scaledTemplate.cols() > screenGray.cols() || scaledTemplate.rows() > screenGray.rows()) {
+            System.out.println("缩放后的模板超出屏幕范围");
+            scaledTemplate.release();
+            return new ScaleMatchResult(scale, 0.0, new org.opencv.core.Point(0, 0));
+        }
+
+        Mat result = new Mat();
+        Imgproc.matchTemplate(screenGray, scaledTemplate, result, Imgproc.TM_CCOEFF_NORMED);
+        Core.MinMaxLocResult minMaxResult = Core.minMaxLoc(result);
+
+        org.opencv.core.Point bestLoc = minMaxResult.maxLoc;
+        double bestMatchValue = minMaxResult.maxVal;
+
+        Rect bestRect = new Rect(bestLoc, new org.opencv.core.Point(
+                bestLoc.x + scaledTemplate.cols(),
+                bestLoc.y + scaledTemplate.rows()
+        ));
+
+        result.release();
+        scaledTemplate.release();
+
+        ScaleMatchResult scaleMatchResult = new ScaleMatchResult(scale, bestMatchValue, bestLoc);
+        scaleMatchResult.bestRect = bestRect;
+        return scaleMatchResult;
+    }
+
+    private ScaleMatchResult findBestScaleBinarySearchGray(Mat screenGray, Mat originalTemplate) {
+        double left = MIN_SCALE;
+        double right = MAX_SCALE;
+
+        double globalBestScale = 1.0;
+        double globalBestMatchValue = 0.0;
+        org.opencv.core.Point globalBestLoc;
+
+        double bestScale = left;
+        double bestMatchValue = 0.0;
+
+        for (double scale = left; scale <= right; scale += 0.1) {
+            double matchValue = testScaleGray(screenGray, originalTemplate, scale);
+
+            System.out.println(String.format("测试缩放比例：%.3f, 匹配度：%.4f", scale, matchValue));
+
+            if (matchValue > bestMatchValue) {
+                bestMatchValue = matchValue;
+                bestScale = scale;
+            }
+
+            if (bestMatchValue > globalBestMatchValue) {
+                globalBestMatchValue = bestMatchValue;
+                globalBestScale = bestScale;
+            }
+        }
+
+        System.out.println("遍历查找结束，最佳缩放比例：" + String.format("%.3f", globalBestScale) +
+                "，匹配度：" + String.format("%.4f", globalBestMatchValue));
+
+        Mat bestScaledTemplate = new Mat();
+        Size bestSize = new Size(originalTemplate.cols() * globalBestScale, originalTemplate.rows() * globalBestScale);
+        Imgproc.resize(originalTemplate, bestScaledTemplate, bestSize);
+
+        Mat result = new Mat();
+        Imgproc.matchTemplate(screenGray, bestScaledTemplate, result, Imgproc.TM_CCOEFF_NORMED);
+        Core.MinMaxLocResult minMaxResult = Core.minMaxLoc(result);
+        globalBestLoc = minMaxResult.maxLoc;
+
+        Rect bestRect = new Rect(globalBestLoc, new org.opencv.core.Point(
+                globalBestLoc.x + bestScaledTemplate.cols(),
+                globalBestLoc.y + bestScaledTemplate.rows()
+        ));
+
+        result.release();
+        bestScaledTemplate.release();
+
+        ScaleMatchResult scaleMatchResult = new ScaleMatchResult(globalBestScale, globalBestMatchValue, globalBestLoc);
+        scaleMatchResult.bestRect = bestRect;
+        return scaleMatchResult;
+    }
+
+
+    private double testScaleGray(Mat screenGray, Mat template, double scale) {
+        Mat scaledTemplate = new Mat();
+        Size newSize = new Size(template.cols() * scale, template.rows() * scale);
+        Imgproc.resize(template, scaledTemplate, newSize);
+
+        if (scaledTemplate.cols() > screenGray.cols() || scaledTemplate.rows() > screenGray.rows()) {
+            scaledTemplate.release();
+            return 0.0;
+        }
+
+        Mat result = new Mat();
+        Imgproc.matchTemplate(screenGray, scaledTemplate, result, Imgproc.TM_CCOEFF_NORMED);
+        Core.MinMaxLocResult minMaxResult = Core.minMaxLoc(result);
+
+        double maxVal = minMaxResult.maxVal;
+
+        scaledTemplate.release();
+        result.release();
+
+        return maxVal;
     }
 
     /**
@@ -225,92 +352,6 @@ public class ImageRecognitionAutomation {
         Mat mat = new Mat(height, width, CvType.CV_8UC3);
         mat.put(0, 0, data);
         return mat;
-    }
-
-    /**
-     * 二分查找最佳缩放比例
-     */
-    private ScaleMatchResult findBestScaleBinarySearch(Mat screenMat, Mat originalTemplate) {
-        double left = MIN_SCALE;
-        double right = MAX_SCALE;
-
-        double globalBestScale = 1.0;
-        double globalBestMatchValue = 0.0;
-        org.opencv.core.Point globalBestLoc = new org.opencv.core.Point(0, 0);
-        Rect globalBestRect = null;
-
-        LogUtil.info("二分查找范围：[" + left + ", " + right + "]，迭代次数：" + BINARY_SEARCH_ITERATIONS);
-
-        for (int iteration = 0; iteration < BINARY_SEARCH_ITERATIONS; iteration++) {
-            double mid1 = left + (right - left) / 3;
-            double mid2 = right - (right - left) / 3;
-
-            ScaleMatchResult result1 = matchWithScale(screenMat, originalTemplate, mid1);
-            ScaleMatchResult result2 = matchWithScale(screenMat, originalTemplate, mid2);
-
-            LogUtil.info(String.format("迭代 %d: scale=%.3f(%.4f), scale=%.3f(%.4f)",
-                    iteration + 1, mid1, result1.bestMatchValue, mid2, result2.bestMatchValue));
-
-            if (result1.bestMatchValue > globalBestMatchValue) {
-                globalBestMatchValue = result1.bestMatchValue;
-                globalBestScale = mid1;
-                globalBestLoc = result1.bestLoc;
-                globalBestRect = result1.bestRect;
-            }
-            if (result2.bestMatchValue > globalBestMatchValue) {
-                globalBestMatchValue = result2.bestMatchValue;
-                globalBestScale = mid2;
-                globalBestLoc = result2.bestLoc;
-                globalBestRect = result2.bestRect;
-            }
-
-            if (result1.bestMatchValue < result2.bestMatchValue) {
-                left = mid1;
-            } else {
-                right = mid2;
-            }
-        }
-
-        LogUtil.info("二分查找完成，最佳缩放比例：" + String.format("%.3f", globalBestScale) +
-                "，匹配度：" + String.format("%.4f", globalBestMatchValue));
-
-        return new ScaleMatchResult(globalBestScale, globalBestMatchValue, globalBestLoc, globalBestRect);
-    }
-
-    /**
-     * 使用指定缩放比例进行模板匹配
-     */
-    private ScaleMatchResult matchWithScale(Mat screenMat, Mat template, double scale) {
-        Mat scaledTemplate = new Mat();
-        Size newSize = new Size(template.cols() * scale, template.rows() * scale);
-        Imgproc.resize(template, scaledTemplate, newSize);
-
-        LogUtil.info("测试缩放比例：" + String.format("%.3f", scale) +
-                " (模板：" + template.cols() + "x" + template.rows() +
-                " -> 缩放后：" + scaledTemplate.cols() + "x" + scaledTemplate.rows() + ")");
-
-        if (scaledTemplate.cols() > screenMat.cols() || scaledTemplate.rows() > screenMat.rows()) {
-            LogUtil.info("缩放后的模板超出屏幕范围");
-            scaledTemplate.release();
-            return new ScaleMatchResult(scale, 0.0, new org.opencv.core.Point(0, 0), null);
-        }
-
-        Mat result = new Mat();
-        Imgproc.matchTemplate(screenMat, scaledTemplate, result, Imgproc.TM_CCOEFF_NORMED);
-        Core.MinMaxLocResult minMaxResult = Core.minMaxLoc(result);
-
-        org.opencv.core.Point bestLoc = minMaxResult.maxLoc;
-        double bestMatchValue = minMaxResult.maxVal;
-
-        Rect bestRect = new Rect(bestLoc, new org.opencv.core.Point(
-                bestLoc.x + scaledTemplate.cols(),
-                bestLoc.y + scaledTemplate.rows()
-        ));
-
-        result.release();
-        scaledTemplate.release();
-
-        return new ScaleMatchResult(scale, bestMatchValue, bestLoc, bestRect);
     }
 
     /**
@@ -492,11 +533,10 @@ public class ImageRecognitionAutomation {
         org.opencv.core.Point bestLoc;
         Rect bestRect;
 
-        ScaleMatchResult(double bestScale, double bestMatchValue, org.opencv.core.Point bestLoc, Rect bestRect) {
+        ScaleMatchResult(double bestScale, double bestMatchValue, org.opencv.core.Point bestLoc) {
             this.bestScale = bestScale;
             this.bestMatchValue = bestMatchValue;
             this.bestLoc = bestLoc;
-            this.bestRect = bestRect;
         }
     }
 }
