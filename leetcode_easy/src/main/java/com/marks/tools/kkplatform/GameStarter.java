@@ -68,18 +68,36 @@ public class GameStarter {
      */
     private boolean executeOneRound() {
         try {
+            // 切换到准备房间界面
             if (!switchToPrepareRoom()) {
                 return false;
             }
 
+            // 点击"开始游戏"按钮
             if (!startGameFromPrepareRoom()) {
                 return false;
             }
 
+            // 切换到游戏窗口
             if (!switchToGameWindow()) {
                 return false;
             }
+            // executeGameAndSelectHero
+            if (!kingOfBeastsArchive.executeGameAndSelectHero()) {
+                return false;
+            }
 
+            // 切换到修改器窗口
+            if (!switchToModifiersWindow()) {
+                return false;
+            }
+
+            // 执行修改器操作
+            if (!modifiersOperation.execute()) {
+                return false;
+            }
+
+            // 运行游戏循环
             if (!kingOfBeastsArchive.executeGameLoop()) {
                 return false;
             }

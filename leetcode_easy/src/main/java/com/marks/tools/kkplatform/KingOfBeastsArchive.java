@@ -52,38 +52,35 @@ public class KingOfBeastsArchive extends GameOperationCommon {
         this.modifiersOperation = modifiersOperation;
     }
 
+    public boolean executeGameAndSelectHero() {
+        LogUtil.info("=== 开始游戏流程 ===");
+
+        // 等待游戏加载完成, 按下空格键进入游戏
+        if (!enterGame()) {
+            return false;
+        }
+
+        // 选择难度
+        if (!selectDifficulty()) {
+            return false;
+        }
+
+        // 选择英雄
+        return selectHero();
+    }
+
     /**
      * 执行完整的游戏流程
      * @return 是否成功完成
      */
     public boolean executeGameLoop() {
         try {
-            LogUtil.info("=== 开始游戏流程 ===");
-
-            // 等待游戏加载完成, 按下空格键进入游戏
-            if (!enterGame()) {
-                return false;
-            }
-
-            // 选择难度
-            if (!selectDifficulty()) {
-                return false;
-            }
-
-            // 选择英雄
-            if (!selectHero()) {
-                return false;
-            }
-
-            if (!modifyAttributes()) {
-                LogUtil.error("修改属性失败");
-                return false;
-            }
-
+            // 选择天赋
             if (!selectTalent()) {
                 return false;
             }
 
+            // 准备并等待
             if (!prepareAndWait()) {
                 return false;
             }
@@ -145,14 +142,6 @@ public class KingOfBeastsArchive extends GameOperationCommon {
     }
 
     /**
-     * 步骤 4: 切换到修改器修改属性
-     */
-    private boolean modifyAttributes() {
-        LogUtil.info("=== 步骤 4: 修改属性 ===");
-        return modifiersOperation.execute();
-    }
-
-    /**
      * 步骤 5: 选择天赋
      */
     private boolean selectTalent() {
@@ -171,11 +160,13 @@ public class KingOfBeastsArchive extends GameOperationCommon {
     private boolean prepareAndWait() {
         LogUtil.info("=== 步骤 6: 准备并等待 ===");
 
+        // 按下 "1键" 通过编号选择英雄
         automation.robot.keyPress(KeyEvent.VK_1);
         automation.delay(50);
         automation.robot.keyRelease(KeyEvent.VK_1);
         automation.delay(CLICK_DELAY);
 
+        // 点击 "准备" 按钮
         Point readyPoint = automation.findImage(READY_btn);
         if (readyPoint == null) {
             LogUtil.error("未找到准备按钮");
@@ -184,6 +175,7 @@ public class KingOfBeastsArchive extends GameOperationCommon {
 
         automation.click(readyPoint.x, readyPoint.y);
 
+        // 创建一个线程, 每隔5s点击一次 "准备" 按钮
         Thread clickThread = new Thread(() -> {
             long startTime = System.currentTimeMillis();
             while (!shouldStop && System.currentTimeMillis() - startTime < 15 * 60 * 1000) {
@@ -195,6 +187,7 @@ public class KingOfBeastsArchive extends GameOperationCommon {
 
         clickThread.start();
 
+        // 等待15分钟游戏胜利
         automation.delay(15 * 60 * 1000);
         shouldStop = true;
 
@@ -216,18 +209,21 @@ public class KingOfBeastsArchive extends GameOperationCommon {
         long startTime = System.currentTimeMillis();
         boolean archiveFound = false;
 
-        while (!archiveFound && System.currentTimeMillis() - startTime < 25 * 60 * 1000) {
+        while (System.currentTimeMillis() - startTime < 25 * 60 * 1000) {
             if (waitForImage(ARCHIVE_btn, 30000)) {
                 archiveFound = true;
 
+                // 点击 "存档" 按钮
                 if (!findAndClickImage(ARCHIVE_btn)) {
                     return false;
                 }
 
+                // 点击 "开始存档" 按钮
                 if (!findAndClickImage(START_ARCHIVE_btn)) {
                     return false;
                 }
 
+                // 选择存档位置
                 if (!findAndClickImage(ARCHIVE_SLOT_A)) {
                     return false;
                 }

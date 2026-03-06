@@ -19,7 +19,6 @@ public class GameOperationCommon {
     protected ImageRecognitionAutomation automation;
 
     protected static final int CLICK_DELAY = 500;
-    protected static final int FIND_IMAGE_TIMEOUT = 30000;
     protected static final int RETRY_TIMES = 3;
 
     public GameOperationCommon(ImageRecognitionAutomation automation) {

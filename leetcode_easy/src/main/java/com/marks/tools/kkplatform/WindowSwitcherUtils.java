@@ -70,19 +70,16 @@ public class WindowSwitcherUtils {
     public List<String> getAllOpenWindows() {
         List<String> windows = new ArrayList<>();
 
-        User32.INSTANCE.EnumWindows(new User32.WNDENUMPROC() {
-            @Override
-            public boolean callback(User32.HWND hWnd, Pointer pointer) {
-                if (User32.INSTANCE.IsWindowVisible(hWnd)) {
-                    char[] buffer = new char[512];
-                    User32.INSTANCE.GetWindowText(hWnd, buffer, 512);
-                    String title = Native.toString(buffer).trim();
-                    if (!title.isEmpty()) {
-                        windows.add(title);
-                    }
+        User32.INSTANCE.EnumWindows((hWnd, pointer) -> {
+            if (User32.INSTANCE.IsWindowVisible(hWnd)) {
+                char[] buffer = new char[512];
+                User32.INSTANCE.GetWindowText(hWnd, buffer, 512);
+                String title = Native.toString(buffer).trim();
+                if (!title.isEmpty()) {
+                    windows.add(title);
                 }
-                return true;
             }
+            return true;
         }, null);
 
         return windows;
@@ -97,20 +94,17 @@ public class WindowSwitcherUtils {
         final User32.HWND[] foundWindow = {null};
         final String searchTitle = windowTitle.toLowerCase();
 
-        User32.INSTANCE.EnumWindows(new User32.WNDENUMPROC() {
-            @Override
-            public boolean callback(User32.HWND hWnd, Pointer pointer) {
-                if (User32.INSTANCE.IsWindowVisible(hWnd)) {
-                    char[] buffer = new char[512];
-                    User32.INSTANCE.GetWindowText(hWnd, buffer, 512);
-                    String title = Native.toString(buffer).trim();
-                    if (title.toLowerCase().contains(searchTitle)) {
-                        foundWindow[0] = hWnd;
-                        return false; // 找到后停止枚举
-                    }
+        User32.INSTANCE.EnumWindows((hWnd, pointer) -> {
+            if (User32.INSTANCE.IsWindowVisible(hWnd)) {
+                char[] buffer = new char[512];
+                User32.INSTANCE.GetWindowText(hWnd, buffer, 512);
+                String title = Native.toString(buffer).trim();
+                if (title.toLowerCase().contains(searchTitle)) {
+                    foundWindow[0] = hWnd;
+                    return false; // 找到后停止枚举
                 }
-                return true;
             }
+            return true;
         }, null);
 
         return foundWindow[0];
@@ -125,34 +119,31 @@ public class WindowSwitcherUtils {
         final User32.HWND[] foundWindow = {null};
         final String targetProcess = processName.toLowerCase();
 
-        User32.INSTANCE.EnumWindows(new User32.WNDENUMPROC() {
-            @Override
-            public boolean callback(User32.HWND hWnd, Pointer pointer) {
-                if (User32.INSTANCE.IsWindowVisible(hWnd)) {
-                    IntByReference pid = new IntByReference();
-                    User32.INSTANCE.GetWindowThreadProcessId(hWnd, pid);
+        User32.INSTANCE.EnumWindows((hWnd, pointer) -> {
+            if (User32.INSTANCE.IsWindowVisible(hWnd)) {
+                IntByReference pid = new IntByReference();
+                User32.INSTANCE.GetWindowThreadProcessId(hWnd, pid);
 
-                    WinNT.HANDLE hProcess = Kernel32.INSTANCE.OpenProcess(
-                            PROCESS_QUERY_INFORMATION | PROCESS_VM_READ,
-                            false,
-                            pid.getValue()
-                    );
+                WinNT.HANDLE hProcess = Kernel32.INSTANCE.OpenProcess(
+                        PROCESS_QUERY_INFORMATION | PROCESS_VM_READ,
+                        false,
+                        pid.getValue()
+                );
 
-                    if (hProcess != null) {
-                        char[] processNameBuffer = new char[512];
-                        if (Kernel32.INSTANCE.QueryFullProcessImageName(hProcess, 0, processNameBuffer, new IntByReference(processNameBuffer.length))) {
-                            String currentProcess = Native.toString(processNameBuffer).toLowerCase();
-                            if (currentProcess.endsWith(targetProcess)) {
-                                foundWindow[0] = hWnd;
-                                Kernel32.INSTANCE.CloseHandle(hProcess);
-                                return false;
-                            }
+                if (hProcess != null) {
+                    char[] processNameBuffer = new char[512];
+                    if (Kernel32.INSTANCE.QueryFullProcessImageName(hProcess, 0, processNameBuffer, new IntByReference(processNameBuffer.length))) {
+                        String currentProcess = Native.toString(processNameBuffer).toLowerCase();
+                        if (currentProcess.endsWith(targetProcess)) {
+                            foundWindow[0] = hWnd;
+                            Kernel32.INSTANCE.CloseHandle(hProcess);
+                            return false;
                         }
-                        Kernel32.INSTANCE.CloseHandle(hProcess);
                     }
+                    Kernel32.INSTANCE.CloseHandle(hProcess);
                 }
-                return true;
             }
+            return true;
         }, null);
 
         return foundWindow[0];
