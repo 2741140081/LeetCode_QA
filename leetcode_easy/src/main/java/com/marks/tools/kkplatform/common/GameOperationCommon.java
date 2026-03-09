@@ -112,14 +112,18 @@ public class GameOperationCommon {
         automation.delay(CLICK_DELAY);
     }
 
+    public void oneClickAt(int x, int y) {
+        automation.oneClick(x, y);
+        automation.delay(CLICK_DELAY);
+    }
+
     /**
-     * 通用方法：输入文本并确认
+     * 通用方法：输入文本即可
      * @param text 要输入的文本
      */
     public void inputTextAndConfirm(String text) {
         automation.typeText(text);
         automation.delay(200);
-        automation.pressEnter();
         automation.delay(CLICK_DELAY);
     }
 }

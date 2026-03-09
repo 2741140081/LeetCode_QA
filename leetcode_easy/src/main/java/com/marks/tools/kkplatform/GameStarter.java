@@ -43,6 +43,8 @@ public class GameStarter {
         try {
             while (true) {
                 LogUtil.info("\n========== 新一轮游戏流程 ==========");
+                // 延迟3s
+                automation.delay(1000);
 
                 if (!executeOneRound()) {
                     LogUtil.error("本轮游戏流程执行失败，5 秒后退出...");
@@ -96,6 +98,8 @@ public class GameStarter {
             if (!modifiersOperation.execute()) {
                 return false;
             }
+            // 延迟2s
+            automation.delay(2000);
 
             // 运行游戏循环
             if (!kingOfBeastsArchive.executeGameLoop()) {

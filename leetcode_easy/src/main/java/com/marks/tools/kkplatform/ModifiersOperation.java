@@ -23,10 +23,9 @@ import java.awt.event.KeyEvent;
  * @update [序号][日期YYYY-MM-DD] [更改人姓名][变更描述]
  */
 public class ModifiersOperation extends GameOperationCommon {
-    private static final String FIND_GAME_BUTTON = "find_game_button";
-    private static final String CHARACTER_ATTR_BUTTON = "character_attr_button";
+    private static final String FIND_GAME_BUTTON = "find_game_btn";
     private static final String EXP_INPUT_BOX = "exp_input_box";
-    private static final String MODIFY_BUTTON = "modify_button";
+    private static final String MODIFY_BUTTON = "modify_btn";
     private static final String EXPERIENCE_VALUE = "45000000";
 
     public ModifiersOperation(ImageRecognitionAutomation automation) {
@@ -40,23 +39,24 @@ public class ModifiersOperation extends GameOperationCommon {
      */
     public boolean execute() {
         LogUtil.info("=== 修改器操作开始 ===");
+        // 延迟100ms
+        automation.delay(100);
 
+        // 步骤 1: 点击查找游戏按钮
         if (!findGame()) {
             return false;
         }
 
-        if (!selectCharacterAttributes()) {
-            return false;
-        }
-
+        // 步骤 3: 修改经验值
         if (!modifyExperience()) {
             return false;
         }
-
+        // 延迟100ms
+        automation.delay(100);
+        // 步骤 4: 点击修改按钮
         if (!clickModifyButton()) {
             return false;
         }
-
         LogUtil.info("=== 修改器操作完成 ===");
         return true;
     }
@@ -67,14 +67,6 @@ public class ModifiersOperation extends GameOperationCommon {
     private boolean findGame() {
         LogUtil.info("步骤 1: 查找游戏");
         return findAndClickImage(FIND_GAME_BUTTON);
-    }
-
-    /**
-     * 步骤 2: 选择人物属性
-     */
-    private boolean selectCharacterAttributes() {
-        LogUtil.info("步骤 2: 选择人物属性");
-        return findAndClickImage(CHARACTER_ATTR_BUTTON);
     }
 
     /**
@@ -100,13 +92,14 @@ public class ModifiersOperation extends GameOperationCommon {
         LogUtil.info("经验值输入框截图已保存：" + screenshotPath);
 
         int clickX = expInputPoint.x;
-        int clickY = expInputPoint.y + (int) (50 * 2.0 / 3.0);
+        int clickY = expInputPoint.y;
 
-        doubleClickAt(clickX, clickY);
+        oneClickAt(clickX, clickY);
 
         pressCombinationKey(KeyEvent.VK_CONTROL, KeyEvent.VK_A);
-
+        automation.delay(1000);
         inputTextAndConfirm(EXPERIENCE_VALUE);
+        automation.delay(1000);
 
         return true;
     }

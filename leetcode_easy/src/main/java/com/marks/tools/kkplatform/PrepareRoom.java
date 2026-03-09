@@ -17,7 +17,7 @@ import java.awt.Point;
  * @update [序号][日期YYYY-MM-DD] [更改人姓名][变更描述]
  */
 public class PrepareRoom extends GameOperationCommon {
-    private static final String START_GAME_BUTTON = "start_game_button";
+    private static final String START_GAME_BUTTON = "start_game_btn";
 
     public PrepareRoom(ImageRecognitionAutomation automation) {
         super(automation);
@@ -25,7 +25,7 @@ public class PrepareRoom extends GameOperationCommon {
 
     /**
      * 在准备房间页面点击"开始游戏"按钮
-     *
+     * 修改等待时间为20s
      * @return 是否成功
      */
     public boolean startGame() {
@@ -33,7 +33,7 @@ public class PrepareRoom extends GameOperationCommon {
 
         if (findAndClickImage(START_GAME_BUTTON)) {
             LogUtil.info("已点击开始游戏按钮，等待游戏加载...");
-            automation.delay(60000);
+            automation.delay(10000);
             LogUtil.info("游戏加载完成");
             return true;
         }

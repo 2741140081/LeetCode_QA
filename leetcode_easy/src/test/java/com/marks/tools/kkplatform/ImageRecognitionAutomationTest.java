@@ -83,6 +83,7 @@ class ImageRecognitionAutomationTest {
     @Test
     @DisplayName("识别特定模板图片 - 开始游戏按钮")
     void testRecognizeStartGameButton() {
+        windowSwitcherUtils.switchToWindow("KK官方对战平台");
         String templateName = "start_game_btn.png";
         recognizeSingleTemplate(templateName, "start_game_btn_result.png");
     }

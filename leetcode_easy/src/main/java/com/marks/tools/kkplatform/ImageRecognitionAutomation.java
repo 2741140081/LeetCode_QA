@@ -36,6 +36,10 @@ public class ImageRecognitionAutomation {
     public Robot robot;
     private Dimension screenSize;
 
+    static {
+        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+    }
+
     // 模板图片路径
     private static final String TEMPLATE_DIR = "D:/images/automation/templates";
     private static final String OUTPUT_DIR = "D:/images/automation/results";
@@ -60,9 +64,10 @@ public class ImageRecognitionAutomation {
     /**
      * 在屏幕上查找匹配的图片（使用最佳缩放比例 + 二分法）
      * @param templateName 模板图片名称（不含扩展名）
+     * @param isNecessary 是否为必需的图片，true 时识别失败会报错并保存截图，false 时仅返回 null
      * @return 匹配到的坐标，未找到返回 null
      */
-    public Point findImage(String templateName) {
+    public Point findImage(String templateName, boolean isNecessary) {
         try {
             String templatePath = Paths.get(TEMPLATE_DIR, templateName + ".png").toString();
             File templateFile = new File(templatePath);
@@ -80,8 +85,9 @@ public class ImageRecognitionAutomation {
                 return null;
             }
 
-            Point result = recognizeAndMarkElement(screenMat, template, templateName);
+            Point result = recognizeAndMarkElement(screenMat, template, templateName, isNecessary);
 
+            saveResult(screenMat, "result_" + templateName);
             screenMat.release();
             template.release();
 
@@ -95,9 +101,23 @@ public class ImageRecognitionAutomation {
     }
 
     /**
-     * 使用最佳缩放比例 + 二分法查找图片
+     * 在屏幕上查找匹配的图片（使用最佳缩放比例 + 二分法），默认是必需的图片
+     * @param templateName 模板图片名称（不含扩展名）
+     * @return 匹配到的坐标，未找到返回 null
      */
-    private Point recognizeAndMarkElement(Mat screenMat, Mat template, String templatePath) {
+    public Point findImage(String templateName) {
+        return findImage(templateName, true);
+    }
+
+    /**
+     * 使用最佳缩放比例 + 二分法查找图片
+     * @param screenMat 屏幕截图 Mat 对象
+     * @param template 模板图片 Mat 对象
+     * @param templatePath 模板图片路径
+     * @param isNecessary 是否为必需的图片，true 时识别失败会报错并保存截图，false 时不处理
+     * @return 匹配到的坐标，未找到返回 null
+     */
+    private Point recognizeAndMarkElement(Mat screenMat, Mat template, String templatePath, boolean isNecessary) {
         LogUtil.info("\n=== 查找元素：" + templatePath + " ===");
 
         String templateName = Paths.get(templatePath).getFileName().toString();
@@ -119,26 +139,26 @@ public class ImageRecognitionAutomation {
             LogUtil.info("✓ 使用最佳缩放比例匹配成功！");
             LogUtil.info("  匹配度：" + String.format("%.4f", result.bestMatchValue));
             LogUtil.info("  位置：(" + result.bestLoc.x + ", " + result.bestLoc.y + ")");
-        } else {
+        } else if (isNecessary) {
+            // isNecessary = true, 则需要进行遍历查找, 如果未找到则报错, isNecessary = false, 则不进行后续查找
             LogUtil.info("最佳缩放比例匹配失败（匹配度：" + String.format("%.4f", result.bestMatchValue) +
                     "），开始二分法查找...");
             result = findBestScaleBinarySearchGray(screenGray, templateGray);
-        }
 
-        if (result.bestMatchValue >= MATCH_THRESHOLD) {
-            Imgproc.rectangle(screenMat, result.bestRect, RED_COLOR, RECT_THICKNESS);
-            LogUtil.info("✓ 二分法查找成功！");
-            LogUtil.info("  最佳缩放比例：" + String.format("%.3f", result.bestScale));
-            LogUtil.info("  匹配度：" + String.format("%.4f", result.bestMatchValue));
-            LogUtil.info("  位置：(" + result.bestLoc.x + ", " + result.bestLoc.y + ")");
-        } else {
-            LogUtil.info("✗ 未找到匹配元素：" + templateName);
-            LogUtil.info("  最佳匹配度：" + String.format("%.4f", result.bestMatchValue));
-            LogUtil.info("  阈值：" + MATCH_THRESHOLD);
-        }
+            if (result.bestMatchValue >= MATCH_THRESHOLD) {
+                Imgproc.rectangle(screenMat, result.bestRect, RED_COLOR, RECT_THICKNESS);
+                LogUtil.info("✓ 二分法查找成功！");
+                LogUtil.info("  最佳缩放比例：" + String.format("%.3f", result.bestScale));
+                LogUtil.info("  匹配度：" + String.format("%.4f", result.bestMatchValue));
+                LogUtil.info("  位置：(" + result.bestLoc.x + ", " + result.bestLoc.y + ")");
+            } else {
+                LogUtil.info("✗ 未找到匹配元素：" + templateName);
+                LogUtil.info("  最佳匹配度：" + String.format("%.4f", result.bestMatchValue));
+                LogUtil.info("  阈值：" + MATCH_THRESHOLD);
+                handleNotFound(screenMat, templateName, result);
 
-        // 二分法也未找到，保存截图并报错
-        handleNotFound(screenMat, templateName, result);
+            }
+        }
 
         // 释放资源
         templateGray.release();
@@ -261,8 +281,7 @@ public class ImageRecognitionAutomation {
      * 处理未找到匹配的情况，保存截图
      */
     private void handleNotFound(Mat screenMat, String templateName, ScaleMatchResult result) {
-        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
-        String errorFileName = "error_" + templateName.replace(".png", "") + "_" + timestamp + ".png";
+        String errorFileName = "error_" + templateName;
 
         try {
             saveResult(screenMat, errorFileName);
@@ -373,6 +392,15 @@ public class ImageRecognitionAutomation {
         click(x, y);
         robot.delay(100);
         click(x, y);
+        robot.delay(100);
+    }
+
+    /**
+     * 双击指定坐标
+     */
+    public void oneClick(int x, int y) {
+        click(x, y);
+        robot.delay(100);
     }
 
     /**
@@ -519,6 +547,9 @@ public class ImageRecognitionAutomation {
      * 保存结果图片
      */
     private void saveResult(Mat resultImage, String fileName) {
+        //
+        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+        fileName = fileName.replace(".png", "") + "_" + timestamp + ".png";
         String outputPath = Paths.get(OUTPUT_DIR, fileName).toString();
         Imgcodecs.imwrite(outputPath, resultImage);
         LogUtil.info("\n结果已保存到：" + outputPath);

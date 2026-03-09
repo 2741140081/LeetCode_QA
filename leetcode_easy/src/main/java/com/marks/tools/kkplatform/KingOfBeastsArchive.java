@@ -35,8 +35,8 @@ import java.util.Date;
  */
 public class KingOfBeastsArchive extends GameOperationCommon {
     private static final String DIFFICULTY_btn = "difficulty_btn";
-    private static final String CONFIRM_btn = "confirm_btn";
     private static final String TALENT_btn = "talent_btn";
+    private static final String SMALL_btn = "small_btn";
     private static final String FIRE_TALENT_btn = "fire_talent_btn";
     private static final String READY_btn = "ready_btn";
     private static final String ARCHIVE_btn = "archive_btn";
@@ -55,10 +55,8 @@ public class KingOfBeastsArchive extends GameOperationCommon {
     public boolean executeGameAndSelectHero() {
         LogUtil.info("=== 开始游戏流程 ===");
 
-        // 等待游戏加载完成, 按下空格键进入游戏
-        if (!enterGame()) {
-            return false;
-        }
+        // 等待游戏加载完成, 按下空格键进入游戏, 该步骤可以省略, 只需要等待20s即可
+        automation.delay(20000);
 
         // 选择难度
         if (!selectDifficulty()) {
@@ -75,10 +73,12 @@ public class KingOfBeastsArchive extends GameOperationCommon {
      */
     public boolean executeGameLoop() {
         try {
-            // 选择天赋
-            if (!selectTalent()) {
+            // 点击缩放符文按钮
+            if (!selectSmallBtn()) {
                 return false;
             }
+            // 选择天赋
+            selectTalent();
 
             // 准备并等待
             if (!prepareAndWait()) {
@@ -103,7 +103,9 @@ public class KingOfBeastsArchive extends GameOperationCommon {
 
     /**
      * 步骤 1: 按空格键进入游戏
+     * 过时方法, 待弃
      */
+    @Deprecated
     private boolean enterGame() {
         LogUtil.info("=== 步骤 1: 进入游戏 ===");
         automation.robot.keyPress(KeyEvent.VK_SPACE);
@@ -124,15 +126,13 @@ public class KingOfBeastsArchive extends GameOperationCommon {
 
     /**
      * 步骤 3: 选择英雄
+     * update: 修改, 改成等待60s, 系统自动分配英雄
      */
     private boolean selectHero() {
         LogUtil.info("=== 步骤 3: 选择英雄 ===");
 
-        pressFunctionKey(KeyEvent.VK_F1);
-
-        if (!findAndClickImage(CONFIRM_btn)) {
-            return false;
-        }
+        // 等待35s, 系统自动分配英雄
+        automation.delay(35000);
 
         // 按下 "Ctrl + 1" 给英雄编号
         pressCombinationKey(KeyEvent.VK_CONTROL, KeyEvent.VK_1);
@@ -142,16 +142,50 @@ public class KingOfBeastsArchive extends GameOperationCommon {
     }
 
     /**
-     * 步骤 5: 选择天赋
+     * 步骤 pre 5: 特殊处理缩放按钮
+     * 1. 不需要点击缩放按钮, 只需要找到缩放按钮的位置即可
+     * 2. 找到位置后, 需要将坐标进行变换, x + 100px(向右移动100px), y - 150px(向上移动150px)
+     * 3. 得到新的坐标后, 进行 点击
      */
-    private boolean selectTalent() {
-        LogUtil.info("=== 步骤 5: 选择天赋 ===");
-
-        if (!findAndClickImage(TALENT_btn)) {
+    private boolean selectSmallBtn() {
+        LogUtil.info("=== 步骤 pre 5: 点击缩放按钮 ===");
+        // 延迟100ms
+        automation.delay(100);
+        // 获取small_btn 位置
+        Point smallBtnPoint = automation.findImage(SMALL_btn);
+        // 延迟1s
+        automation.delay(1000);
+        // 判断small_btn 是否存在
+        if (smallBtnPoint == null) {
+            LogUtil.error("未找到缩放按钮");
             return false;
         }
+        // 找到small_btn, 变换坐标
+        Point newSmallBtnPoint = new Point(smallBtnPoint.x + 100, smallBtnPoint.y - 150);
+        LogUtil.info("缩放按钮坐标: " + newSmallBtnPoint);
+        modifiersOperation.doubleClickAt(newSmallBtnPoint.x, newSmallBtnPoint.y);
+        // 延迟500ms
+        automation.delay(500);
+        // 再次查找small_btn, 如果没找到, 证明点击成功, 如果找到, 继续点击
+        if (automation.findImage(SMALL_btn, false) == null) {
+            LogUtil.info("缩放按钮点击成功");
+            return true;
+        }
 
-        return findAndClickImage(FIRE_TALENT_btn);
+        return false;
+    }
+
+    /**
+     * 步骤 5: 选择天赋
+     * 1. 需要变更, 如果未找到天赋按钮, 不进行任何处理, 找到了天赋按钮, 则进行点击
+     */
+    private void selectTalent() {
+        LogUtil.info("=== 步骤 5: 选择天赋 ===");
+
+        automation.findImage(TALENT_btn, false);
+
+        automation.findImage(FIRE_TALENT_btn, false);
+
     }
 
     /**
@@ -162,7 +196,7 @@ public class KingOfBeastsArchive extends GameOperationCommon {
 
         // 按下 "1键" 通过编号选择英雄
         automation.robot.keyPress(KeyEvent.VK_1);
-        automation.delay(50);
+        automation.delay(100);
         automation.robot.keyRelease(KeyEvent.VK_1);
         automation.delay(CLICK_DELAY);
 
