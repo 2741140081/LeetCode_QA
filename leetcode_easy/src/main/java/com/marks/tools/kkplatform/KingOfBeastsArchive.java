@@ -40,9 +40,9 @@ public class KingOfBeastsArchive extends GameOperationCommon {
     private static final String FIRE_TALENT_btn = "fire_talent_btn";
     private static final String READY_btn = "ready_btn";
     private static final String ARCHIVE_btn = "archive_btn";
-    private static final String START_ARCHIVE_btn = "start_archive_btn";
+    private static final String SELECT_btn = "select_btn";
     private static final String ARCHIVE_SLOT_A = "archive_slot_a";
-    private static final String EXIT_GAME_btn = "exit_game_btn";
+    private static final String HERO_btn = "hero_btn";
 
     private ModifiersOperation modifiersOperation;
     private boolean shouldStop = false;
@@ -131,7 +131,7 @@ public class KingOfBeastsArchive extends GameOperationCommon {
     private boolean selectHero() {
         LogUtil.info("=== 步骤 3: 选择英雄 ===");
 
-        // 等待35s, 系统自动分配英雄
+        // 使用默认方案, 等待35s, 系统自动分配英雄
         automation.delay(35000);
 
         // 按下 "Ctrl + 1" 给英雄编号
@@ -182,10 +182,10 @@ public class KingOfBeastsArchive extends GameOperationCommon {
     private void selectTalent() {
         LogUtil.info("=== 步骤 5: 选择天赋 ===");
 
-        automation.findImage(TALENT_btn, false);
-
-        automation.findImage(FIRE_TALENT_btn, false);
-
+        Point talentImage = automation.findImage(TALENT_btn, false);
+        if (talentImage != null) {
+            automation.findImage(FIRE_TALENT_btn, false);
+        }
     }
 
     /**
@@ -209,10 +209,30 @@ public class KingOfBeastsArchive extends GameOperationCommon {
 
         automation.click(readyPoint.x, readyPoint.y);
 
+        // 重置shouldStop 状态
+        shouldStop = false;
+
         // 创建一个线程, 每隔5s点击一次 "准备" 按钮
         Thread clickThread = new Thread(() -> {
             long startTime = System.currentTimeMillis();
+            int scaleBtnClickCount = 0; // 缩放按钮点击计数器
+            final int MAX_SCALE_BTN_CLICKS = 3; // 最大点击次数 3 次
+
             while (!shouldStop && System.currentTimeMillis() - startTime < 15 * 60 * 1000) {
+                // 添加一个计数器, 最多3次, 需要在每次准备前, 判定是否存在缩放按钮, 如果存在, 则进行点击, 最多点击3次
+                // 在每次准备前，判定是否存在缩放按钮，如果存在，则进行点击，最多点击 3 次
+                if (scaleBtnClickCount < MAX_SCALE_BTN_CLICKS) {
+                    Point scaleBtnPoint = automation.findImage(SMALL_btn, false);
+                    if (scaleBtnPoint != null) {
+                        LogUtil.info("检测到缩放按钮，第 " + (scaleBtnClickCount + 1) + " 次点击");
+                        // 找到small_btn, 变换坐标后进行点击
+                        Point newSmallBtnPoint = new Point(scaleBtnPoint.x + 100, scaleBtnPoint.y - 150);
+                        LogUtil.info("缩放按钮坐标: " + newSmallBtnPoint);
+                        modifiersOperation.doubleClickAt(newSmallBtnPoint.x, newSmallBtnPoint.y);
+                        scaleBtnClickCount++;
+                        automation.delay(500); // 点击后延迟 500ms，确保点击生效
+                    }
+                }
                 automation.delay(5000);
                 automation.click(readyPoint.x, readyPoint.y);
                 LogUtil.info("自动点击准备按钮");
@@ -221,16 +241,21 @@ public class KingOfBeastsArchive extends GameOperationCommon {
 
         clickThread.start();
 
-        // 等待15分钟游戏胜利
-        automation.delay(15 * 60 * 1000);
+        // 等待 16 分钟游戏胜利
+        try {
+            Thread.sleep(16 * 60 * 1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        // 设置停止标志，让线程安全退出
         shouldStop = true;
 
+        // 等待线程执行完成，确保资源被正确释放
         try {
             clickThread.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-
         return true;
     }
 
@@ -253,7 +278,7 @@ public class KingOfBeastsArchive extends GameOperationCommon {
                 }
 
                 // 点击 "开始存档" 按钮
-                if (!findAndClickImage(START_ARCHIVE_btn)) {
+                if (!findAndClickImage(SELECT_btn)) {
                     return false;
                 }
 
@@ -284,7 +309,13 @@ public class KingOfBeastsArchive extends GameOperationCommon {
      */
     private void exitGame() {
         LogUtil.info("=== 步骤 8: 退出游戏 ===");
-        findAndClickImage(EXIT_GAME_btn);
+        // 使用组合键退出游戏, 先按 F10 键, 再按 E 键, 再按 X 键, 最后再按 X, 然后等待10s, 即可完全退出游戏
+        pressFunctionKey(KeyEvent.VK_F10);
+        pressFunctionKey(KeyEvent.VK_E);
+        pressFunctionKey(KeyEvent.VK_X);
+        pressFunctionKey(KeyEvent.VK_X);
+        // 等待10s
+        automation.delay(10000);
         LogUtil.info("已点击退出游戏按钮");
     }
 

@@ -41,19 +41,22 @@ public class GameStarter {
         LogUtil.info("=== 斗兽之王自动化存档程序启动 ===");
 
         try {
-            while (true) {
-                LogUtil.info("\n========== 新一轮游戏流程 ==========");
+            // 最大运行次数设置为10次
+            int maxRetryCount = 1;
+            while (maxRetryCount <= 10) {
+                LogUtil.info("\n========== 新%d轮游戏流程开始 ==========", maxRetryCount);
                 // 延迟3s
                 automation.delay(1000);
 
                 if (!executeOneRound()) {
-                    LogUtil.error("本轮游戏流程执行失败，5 秒后退出...");
+                    LogUtil.error("新%d轮游戏流程执行失败，5 秒后退出...", maxRetryCount);
                     Thread.sleep(5000);
                     break;
                 }
 
-                LogUtil.info("本轮游戏流程完成，10 秒后开始下一轮...");
+                LogUtil.info("新%d轮游戏流程完成，10 秒后开始下一轮...", maxRetryCount);
                 Thread.sleep(10000);
+                maxRetryCount++;
             }
         } catch (InterruptedException e) {
             LogUtil.error("程序被中断");

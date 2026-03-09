@@ -88,6 +88,21 @@ class ImageRecognitionAutomationTest {
         recognizeSingleTemplate(templateName, "start_game_btn_result.png");
     }
 
+
+    @Test
+    @DisplayName("识别特定模板图片 - 开始游戏按钮")
+    void testRecognizeArchiveButton() throws InterruptedException {
+        windowSwitcherUtils.switchToWindow("Warcraft III");
+        String templateName = "archive_btn.png";
+        recognizeSingleTemplate(templateName, "archive_btn_result.png");
+        // delay
+        Thread.sleep(5000);
+        // 开始存档按钮, start_archive_btn
+        String tName = "start_archive_btn.png";
+        recognizeSingleTemplate(tName, "start_archive_btn_result.png");
+    }
+
+
     @Test
     @DisplayName("识别特定模板图片 - 开始游戏按钮2")
     void testRecognizeStartGameButton2() {
