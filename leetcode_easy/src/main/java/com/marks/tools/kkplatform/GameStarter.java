@@ -22,9 +22,9 @@ public class GameStarter {
     private ModifiersOperation modifiersOperation;
     private WindowSwitcherUtils windowSwitcher;
 
-    private static final String PREPARE_ROOM_TITLE = "准备房间";
-    private static final String GAME_TITLE = "King of Beasts";
-    private static final String MODIFIER_TITLE = "xTools";
+    private static final String PREPARE_ROOM_TITLE = "KK官方对战平台";
+    private static final String GAME_TITLE = "Warcraft III";
+    private static final String MODIFIER_TITLE = "魔兽3内存修改器";
 
     public GameStarter() throws Exception {
         automation = new ImageRecognitionAutomation();
