@@ -33,6 +33,10 @@ import static org.junit.jupiter.api.Assertions.fail;
  * @update [序号][日期YYYY-MM-DD] [更改人姓名][变更描述]
  */
 public class ImageRecognitionAutomation {
+    // 添加静态代码块
+    static {
+        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+    }
     public Robot robot;
     private Dimension screenSize;
 
