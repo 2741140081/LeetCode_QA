@@ -1,5 +1,6 @@
 package com.marks.tools.kkplatform;
 
+import com.marks.tools.kkplatform.entity.WindowInfo;
 import com.marks.utils.LogUtil;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
@@ -67,8 +68,8 @@ public class WindowSwitcherUtils {
      * 获取所有打开的窗口列表
      * @return 窗口标题列表
      */
-    public List<String> getAllOpenWindows() {
-        List<String> windows = new ArrayList<>();
+    public List<WindowInfo> getAllOpenWindows() {
+        List<WindowInfo> windows = new ArrayList<>();
 
         User32.INSTANCE.EnumWindows((hWnd, pointer) -> {
             if (User32.INSTANCE.IsWindowVisible(hWnd)) {
@@ -76,13 +77,44 @@ public class WindowSwitcherUtils {
                 User32.INSTANCE.GetWindowText(hWnd, buffer, 512);
                 String title = Native.toString(buffer).trim();
                 if (!title.isEmpty()) {
-                    windows.add(title);
+                    IntByReference pidRef = new IntByReference();
+                    User32.INSTANCE.GetWindowThreadProcessId(hWnd, pidRef);
+                    int processId = pidRef.getValue();
+
+                    String processName = getProcessNameById(processId);
+
+                    windows.add(new WindowInfo(title, processId, hWnd, processName));
                 }
             }
             return true;
         }, null);
 
         return windows;
+    }
+
+    /**
+     * 根据进程 ID 获取进程名
+     * @param processId 进程 ID
+     * @return 进程名
+     */
+    private String getProcessNameById(int processId) {
+        WinNT.HANDLE hProcess = Kernel32.INSTANCE.OpenProcess(
+                PROCESS_QUERY_INFORMATION | PROCESS_VM_READ,
+                false,
+                processId
+        );
+
+        if (hProcess != null) {
+            try {
+                char[] processNameBuffer = new char[512];
+                if (Kernel32.INSTANCE.QueryFullProcessImageName(hProcess, 0, processNameBuffer, new IntByReference(processNameBuffer.length))) {
+                    return Native.toString(processNameBuffer);
+                }
+            } finally {
+                Kernel32.INSTANCE.CloseHandle(hProcess);
+            }
+        }
+        return "Unknown";
     }
 
     /**

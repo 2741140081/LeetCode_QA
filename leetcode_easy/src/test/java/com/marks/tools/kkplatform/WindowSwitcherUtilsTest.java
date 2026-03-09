@@ -1,5 +1,7 @@
 package com.marks.tools.kkplatform;
 
+import com.marks.tools.kkplatform.entity.WindowInfo;
+import com.marks.utils.LogUtil;
 import org.junit.jupiter.api.Test;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -46,18 +48,15 @@ class WindowSwitcherUtilsTest {
     @DisplayName("测试获取所有打开的窗口列表")
     void getAllOpenWindows() {
         // 当获取所有打开的窗口时
-        List<String> windows = windowSwitcherUtils.getAllOpenWindows();
+        List<WindowInfo> windows = windowSwitcherUtils.getAllOpenWindows();
 
         // 验证返回的窗口列表不为 null
         assertNotNull(windows, "窗口列表不应为 null");
-
-        // 打印所有窗口（用于调试和手动验证）
-        System.out.println("当前打开的窗口数量：" + windows.size());
-        windows.forEach(window -> System.out.println("窗口标题：" + window));
-
-        // 注意：无法断言窗口数量，因为取决于系统当前状态
-        // 但至少应该能获取到一些窗口（包括桌面、任务栏等）
-        assertTrue(windows.size() >= 0, "窗口列表应该可以获取");
+        for (WindowInfo window : windows) {
+            LogUtil.info(String.format("窗口标题：%s, 进程 ID: %d, 进程名：%s, 句柄：%s",
+                    window.getTitle(), window.getProcessId(), window.getProcessName(), window.getHwnd()));
+        }
+        LogUtil.info("========================");
     }
 
     @Test
@@ -138,7 +137,7 @@ class WindowSwitcherUtilsTest {
 
         // 步骤 1: 获取并打印所有窗口
         System.out.println("步骤 1: 获取所有窗口");
-        List<String> allWindows = windowSwitcherUtils.getAllOpenWindows();
+        List<WindowInfo> allWindows = windowSwitcherUtils.getAllOpenWindows();
         System.out.println("找到 " + allWindows.size() + " 个窗口");
 
         // 步骤 2: 打印详细的窗口信息
@@ -162,11 +161,11 @@ class WindowSwitcherUtilsTest {
         // 测试模糊匹配 - 使用部分标题
         // 例如，如果有一个窗口标题是 "IntelliJ IDEA - Project"，搜索 "IDEA" 也应该能找到
 
-        List<String> windows = windowSwitcherUtils.getAllOpenWindows();
+        List<WindowInfo> windows = windowSwitcherUtils.getAllOpenWindows();
 
         // 如果有窗口包含 "Google"，尝试用不同的关键词匹配
         boolean hasGoogleWindow = windows.stream()
-                .anyMatch(title -> title.toLowerCase().contains("google"));
+                .anyMatch(window -> window.getTitle().toLowerCase().contains("google"));
 
         if (hasGoogleWindow) {
             // 尝试用 "Google" 作为关键词切换
