@@ -47,11 +47,13 @@ public class KingOfBeastsArchive extends GameOperationCommon {
     private static final String INTERVAL_LOCK_btn = "interval_lock_btn";
 
     private ModifiersOperation modifiersOperation;
+    private SpecialHandel specialHandel;
     private boolean shouldStop = false;
 
     public KingOfBeastsArchive(ImageRecognitionAutomation automation, ModifiersOperation modifiersOperation) {
         super(automation);
         this.modifiersOperation = modifiersOperation;
+        specialHandel = new SpecialHandel();
     }
 
     public boolean executeGameAndSelectHero() {
@@ -197,15 +199,20 @@ public class KingOfBeastsArchive extends GameOperationCommon {
     /**
      * 步骤 5: 选择天赋
      * 1. 需要变更, 如果未找到天赋按钮, 不进行任何处理, 找到了天赋按钮, 则进行点击
-     * 2. need todo: 待完成
+     * 2. need todo: 待完成, start 和 end 需要实际确认后进行修改.
      */
     private void selectTalent() {
         LogUtil.info("=== 步骤 5: 选择天赋 ===");
-
-        Point talentImage = automation.findImage(TALENT_btn, false);
-        if (talentImage != null) {
-            automation.findImage(FIRE_TALENT_btn, false);
-        }
+        // 圈选符文建筑
+        Point start = new Point(1200, 500);
+        Point end = new Point(1600, 700);
+        moveMouseWithLeftUp(start, end, 500);
+        // 延迟1s
+        automation.delay(1000);
+        // 选择火焰之球天赋
+        findAndClickImage(FIRE_TALENT_btn);
+        // 延迟3s, 等待确认
+        automation.delay(2000);
     }
 
     /**
@@ -311,7 +318,7 @@ public class KingOfBeastsArchive extends GameOperationCommon {
         boolean archiveFound = false;
 
         while (System.currentTimeMillis() - startTime < 25 * 60 * 1000) {
-            if (waitForImage(ARCHIVE_btn, 30000)) {
+            if (waitForImage(ARCHIVE_btn, 3000)) {
                 archiveFound = true;
 
                 // 点击 "存档" 按钮
@@ -319,10 +326,19 @@ public class KingOfBeastsArchive extends GameOperationCommon {
                     return false;
                 }
 
-                // 点击 "开始存档" 按钮
-                if (!findAndClickImage(SELECT_btn)) {
-                    return false;
+                // 点击 "开始存档" 按钮, 特殊处理
+                Point image = specialHandel.findImage(SELECT_btn);
+                if (image == null) {
+                    // 退回原始方案
+                    if (!findAndClickImage(SELECT_btn)) {
+                        return false;
+                    }
+                } else {
+                    LogUtil.info("特殊处理: 找到 " + SELECT_btn + " 按钮");
+                    // 点击 image point
+                    modifiersOperation.oneClickAt(image.x, image.y);
                 }
+
 
                 // 选择存档位置
                 if (!findAndClickImage(ARCHIVE_SLOT_A)) {

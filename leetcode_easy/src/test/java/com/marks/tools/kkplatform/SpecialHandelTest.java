@@ -1,5 +1,7 @@
 package com.marks.tools.kkplatform;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opencv.core.Core;
@@ -19,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * @update [序号][日期YYYY-MM-DD] [更改人姓名][变更描述]
  */
 class SpecialHandelTest {
+    private static final Logger logger = LogManager.getLogger(SpecialHandelTest.class);
 
     private WindowSwitcherUtils windowSwitcherUtils;
     private ImageRecognitionAutomation automation;
@@ -37,10 +40,11 @@ class SpecialHandelTest {
         windowSwitcherUtils.switchToWindow("test.xlsx - Excel");
         // 延迟 1s
         automation.delay(1000);
-        Point templateA = sp.findImage("template_A");
+        sp.findImage("template_A");
     }
 
     @Test
     void findTopLeftMatch() {
+        logger.info("开始查找图片");
     }
 }

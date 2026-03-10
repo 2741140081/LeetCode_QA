@@ -5,11 +5,9 @@ import com.marks.utils.LogUtil;
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
-import org.opencv.core.Core.MinMaxLocResult;
 
 import java.awt.*;
 import java.awt.Point;
-import java.awt.event.InputEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.io.File;
@@ -20,6 +18,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.PriorityQueue;
+
+import static com.marks.tools.kkplatform.common.KingOfBeastsConstants.*;
 /**
  * <p>项目名称: LeetCode_QA </p>
  * <p>文件名称: SpecialHandel </p>
@@ -43,28 +43,17 @@ import java.util.PriorityQueue;
  * @update [序号][日期 YYYY-MM-DD] [更改人姓名][变更描述]
  */
 public class SpecialHandel {
-    private static final String TEMPLATE_DIR = "D:/images/automation/templates";
-    private static final String OUTPUT_DIR = "D:/images/automation/results";
-    private static final double MATCH_THRESHOLD = 0.75;
-
-    private static final double MIN_SCALE = 0.3;
-    private static final double MAX_SCALE = 2.0;
-    private static final double BEST_SCALE = 0.6667;
-
-    private static final int RECT_THICKNESS = 2;
-    private static final Scalar RED_COLOR = new Scalar(0, 0, 255);
-    private static final Scalar GREEN_COLOR = new Scalar(0, 255, 0);
-
-    // 操作延迟（毫秒）
-    private static final int DELAY_SHORT = 100;
-
     public Robot robot;
     static {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     }
 
-    public SpecialHandel() throws Exception {
-        this.robot = new Robot();
+    public SpecialHandel() {
+        try {
+            this.robot = new Robot();
+        } catch (AWTException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -96,12 +85,6 @@ public class SpecialHandel {
         mat.put(0, 0, pixels);
         return mat;
     }
-
-
-
-
-
-
 
     public Point findImage(String templateName) {
         try {

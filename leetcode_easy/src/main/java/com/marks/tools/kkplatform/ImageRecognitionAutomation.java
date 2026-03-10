@@ -18,6 +18,7 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import static com.marks.tools.kkplatform.common.KingOfBeastsConstants.*;
 import static org.junit.jupiter.api.Assertions.fail;
 
 /**
@@ -39,22 +40,6 @@ public class ImageRecognitionAutomation {
     }
     public Robot robot;
     private Dimension screenSize;
-
-    static {
-        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-    }
-
-    // 模板图片路径
-    private static final String TEMPLATE_DIR = "D:/images/automation/templates";
-    private static final String OUTPUT_DIR = "D:/images/automation/results";
-    private static final double MATCH_THRESHOLD = 0.75;
-
-    private static final double MIN_SCALE = 0.3;
-    private static final double MAX_SCALE = 2.0;
-    private static final double BEST_SCALE = 0.6667;
-
-    private static final int RECT_THICKNESS = 2;
-    private static final Scalar RED_COLOR = new Scalar(0, 0, 255);
 
     // 操作延迟（毫秒）
     private static final int DELAY_SHORT = 100;

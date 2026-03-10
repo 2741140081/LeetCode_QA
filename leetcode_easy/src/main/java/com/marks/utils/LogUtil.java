@@ -131,4 +131,21 @@ public class LogUtil {
     public static Logger getLogger(String name) {
         return LogManager.getLogger(name);
     }
+
+    public static void main(String[] args) {
+        logger.info("应用程序启动。");
+        logger.debug("这是一条调试信息。");
+        logger.warn("这是一条警告信息。");
+        logger.error("这是一条错误信息。");
+
+        try {
+            // 模拟业务逻辑
+            int result = 10 / 2;
+            logger.info("计算完成，结果为: {}", result);
+        } catch (Exception e) {
+            logger.error("计算过程中发生错误", e);
+        }
+
+        logger.info("应用程序结束。");
+    }
 }
