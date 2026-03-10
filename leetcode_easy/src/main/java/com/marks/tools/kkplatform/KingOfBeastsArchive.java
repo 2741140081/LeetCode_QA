@@ -4,6 +4,7 @@ import com.marks.tools.kkplatform.common.GameOperationCommon;
 import com.marks.utils.LogUtil;
 
 import java.awt.*;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -43,6 +44,7 @@ public class KingOfBeastsArchive extends GameOperationCommon {
     private static final String SELECT_btn = "select_btn";
     private static final String ARCHIVE_SLOT_A = "archive_slot_a";
     private static final String HERO_btn = "hero_btn";
+    private static final String INTERVAL_LOCK_btn = "interval_lock_btn";
 
     private ModifiersOperation modifiersOperation;
     private boolean shouldStop = false;
@@ -55,8 +57,8 @@ public class KingOfBeastsArchive extends GameOperationCommon {
     public boolean executeGameAndSelectHero() {
         LogUtil.info("=== 开始游戏流程 ===");
 
-        // 等待游戏加载完成, 按下空格键进入游戏, 该步骤可以省略, 只需要等待20s即可
-        automation.delay(20000);
+        // 等待游戏加载完成, 按下空格键进入游戏, 该步骤可以省略, 只需要等待5s即可
+        automation.delay(5000);
 
         // 选择难度
         if (!selectDifficulty()) {
@@ -118,21 +120,38 @@ public class KingOfBeastsArchive extends GameOperationCommon {
 
     /**
      * 步骤 2: 选择难度
+     * 修改, 直接通过循环判断难度按钮是否存在, 如果不存在, 等待1s后继续判断
      */
     private boolean selectDifficulty() {
         LogUtil.info("=== 步骤 2: 选择难度 ===");
+        while (automation.findImage(DIFFICULTY_btn, false) == null) {
+            LogUtil.info("等待难度按钮加载...");
+            automation.delay(1000);
+        }
         return findAndClickImage(DIFFICULTY_btn);
     }
 
     /**
      * 步骤 3: 选择英雄
-     * update: 修改, 改成等待60s, 系统自动分配英雄
+     * update: 修改, 改成等待35s, 系统自动分配英雄
+     * update: todo: 待完善 start 和 end 需要实际确认后进行修改.
+     * 并且, 通过 Snipaste 的F1 截图, 左上角 到start 点的距离 (px, py) * 0.667 后即为 start 点坐标, 同理得到 end 点坐标.
      */
     private boolean selectHero() {
         LogUtil.info("=== 步骤 3: 选择英雄 ===");
-
-        // 使用默认方案, 等待35s, 系统自动分配英雄
-        automation.delay(35000);
+        // 圈选英雄
+        Point start = new Point(1200, 500);
+        Point end = new Point(1600, 700);
+        moveMouseWithLeftUp(start, end, 500);
+        // 延迟1s
+        automation.delay(1000);
+        // 选择确认按钮
+        if (!findAndClickImage(SELECT_btn)) {
+            // 默认方案延迟34s
+            automation.delay(30000);
+        }
+        // 延迟3s, 等待确认
+        automation.delay(3000);
 
         // 按下 "Ctrl + 1" 给英雄编号
         pressCombinationKey(KeyEvent.VK_CONTROL, KeyEvent.VK_1);
@@ -178,6 +197,7 @@ public class KingOfBeastsArchive extends GameOperationCommon {
     /**
      * 步骤 5: 选择天赋
      * 1. 需要变更, 如果未找到天赋按钮, 不进行任何处理, 找到了天赋按钮, 则进行点击
+     * 2. need todo: 待完成
      */
     private void selectTalent() {
         LogUtil.info("=== 步骤 5: 选择天赋 ===");
@@ -218,7 +238,7 @@ public class KingOfBeastsArchive extends GameOperationCommon {
             int scaleBtnClickCount = 0; // 缩放按钮点击计数器
             final int MAX_SCALE_BTN_CLICKS = 3; // 最大点击次数 3 次
 
-            while (!shouldStop && System.currentTimeMillis() - startTime < 15 * 60 * 1000) {
+            while (!shouldStop && System.currentTimeMillis() - startTime < 12 * 60 * 1000) {
                 // 添加一个计数器, 最多3次, 需要在每次准备前, 判定是否存在缩放按钮, 如果存在, 则进行点击, 最多点击3次
                 // 在每次准备前，判定是否存在缩放按钮，如果存在，则进行点击，最多点击 3 次
                 if (scaleBtnClickCount < MAX_SCALE_BTN_CLICKS) {
@@ -232,6 +252,11 @@ public class KingOfBeastsArchive extends GameOperationCommon {
                         scaleBtnClickCount++;
                         automation.delay(500); // 点击后延迟 500ms，确保点击生效
                     }
+                    // 添加一个方法, 到达scaleBtnClickCount == 2时
+                    if (scaleBtnClickCount == 2) {
+                        // 执行修改器操作, 点击"间隔锁定" 按钮, 然后切换窗口至游戏主体
+                        intervalLock();
+                    }
                 }
                 automation.delay(5000);
                 automation.click(readyPoint.x, readyPoint.y);
@@ -241,9 +266,9 @@ public class KingOfBeastsArchive extends GameOperationCommon {
 
         clickThread.start();
 
-        // 等待 16 分钟游戏胜利
+        // 等待 12 分钟游戏胜利
         try {
-            Thread.sleep(16 * 60 * 1000);
+            Thread.sleep(12 * 60 * 1000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -257,6 +282,23 @@ public class KingOfBeastsArchive extends GameOperationCommon {
             e.printStackTrace();
         }
         return true;
+    }
+
+    /**
+     * 步骤 : 执行修改器操作, 点击"间隔锁定" 按钮, 然后切换窗口至游戏主体
+     */
+    private void intervalLock() {
+        // 切换窗口到修改器窗口, 使用父类的方法
+        switchToModifiersWindow();
+        // 延迟1s
+        automation.delay(1000);
+        // 点击 "间隔锁定" 按钮
+        modifiersOperation.findAndClickImage(INTERVAL_LOCK_btn);
+        // 延迟1s
+        automation.delay(1000);
+        // 切换窗口到游戏主体窗口, 使用父类方法
+        switchToGameWindow();
+        LogUtil.info("已切换到游戏主体窗口");
     }
 
     /**
@@ -290,8 +332,8 @@ public class KingOfBeastsArchive extends GameOperationCommon {
                 LogUtil.info("存档完成");
                 break;
             } else {
-                LogUtil.info("未找到存档按钮，30 秒后重试...");
-                automation.delay(30000);
+                LogUtil.info("未找到存档按钮，10 秒后重试...");
+                automation.delay(10000);
             }
         }
 
@@ -334,5 +376,79 @@ public class KingOfBeastsArchive extends GameOperationCommon {
 
         automation.captureScreen(screenshotPath);
         LogUtil.error("错误截图已保存：" + screenshotPath);
+    }
+
+    /**
+     * 圈选英雄 / 天赋按钮
+     * 1. 鼠标移动到start点
+     * 2. 左键按下(不立即释放)
+     * 3. 鼠标移动到end 点
+     * 4. 释放左键
+     */
+    public void moveMouseWithLeftUp(Point start, Point end, int spendTime) {
+        try {
+            // 1. 鼠标移动到起始点
+            automation.robot.mouseMove((int) start.x, (int) start.y);
+            automation.delay(100); // 短暂延迟，确保鼠标到位
+
+            // 2. 左键按下（不立即释放）
+            automation.robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
+            automation.delay(200); // 等待按下稳定
+
+            // 3. 鼠标平滑移动到结束点
+            smoothMouseMove(start, end, spendTime);
+
+            // 4. 释放左键
+            automation.robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
+            automation.delay(100); // 释放后短暂延迟
+
+            LogUtil.info(String.format("圈选操作完成：从 (%d, %d) 到 (%d, %d), 耗时 %dms",
+                    (int) start.x, (int) start.y,
+                    (int) end.x, (int) end.y,
+                    spendTime));
+
+        } catch (Exception e) {
+            LogUtil.error("圈选操作失败：" + e.getMessage());
+            // 确保释放鼠标左键（防止卡住）
+            automation.robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 平滑移动鼠标（模拟人类行为）
+     * @param start 起始点
+     * @param end 结束点
+     * @param totalDuration 总耗时（毫秒）
+     */
+    private void smoothMouseMove(Point start, Point end, int totalDuration) {
+        double distance = Math.sqrt(
+                Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2)
+        );
+
+        // 计算需要移动的步数（每 10 像素一步）
+        int steps = (int) (distance / 10);
+        if (steps < 1) {
+            steps = 1;
+        }
+
+        // 计算每步的延迟
+        int delayPerStep = totalDuration / steps;
+        if (delayPerStep < 1) {
+            delayPerStep = 1;
+        }
+
+        // 计算每步的增量
+        double dx = (end.x - start.x) / (double) steps;
+        double dy = (end.y - start.y) / (double) steps;
+
+        // 逐步移动鼠标
+        for (int i = 0; i <= steps; i++) {
+            int x = (int) (start.x + dx * i);
+            int y = (int) (start.y + dy * i);
+
+            automation.robot.mouseMove(x, y);
+            automation.delay(delayPerStep);
+        }
     }
 }

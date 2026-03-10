@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
+import java.awt.*;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -23,12 +24,16 @@ import static org.junit.jupiter.api.Assertions.*;
  * @update [序号][日期YYYY-MM-DD] [更改人姓名][变更描述]
  */
 class WindowSwitcherUtilsTest {
-
+    private ImageRecognitionAutomation automation;
     private WindowSwitcherUtils windowSwitcherUtils;
+    private KingOfBeastsArchive kingOfBeastsArchive;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
+        automation = new ImageRecognitionAutomation();
+
         windowSwitcherUtils = WindowSwitcherUtils.getInstance();
+        kingOfBeastsArchive = new KingOfBeastsArchive(automation, new ModifiersOperation(automation));
     }
 
     @Test
@@ -66,6 +71,23 @@ class WindowSwitcherUtilsTest {
         assertDoesNotThrow(() -> {
             windowSwitcherUtils.printAllWindowsInfo();
         }, "打印窗口信息时不应抛出异常");
+    }
+
+
+    @Test
+    @DisplayName("测试通过窗口标题切换窗口 - 使用常见应用")
+    void switchToWindowChrome() throws InterruptedException {
+        Thread.sleep(2000);
+        // 测试 1: 尝试切换到 chrome（如果存在）
+        boolean ideaResult = windowSwitcherUtils.switchToWindow("有道云笔记 - Google Chrome");
+        System.out.println("切换到 chrome 结果：" + ideaResult);
+        // delay
+        Thread.sleep(2000);
+
+        Point start = new Point(1000, 400);
+        Point end = new Point(1200, 600);
+        // 测试
+        kingOfBeastsArchive.moveMouseWithLeftUp(start, end, 500);
     }
 
     @Test

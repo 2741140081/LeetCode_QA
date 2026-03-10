@@ -2,6 +2,8 @@ package com.marks.tools.kkplatform;
 
 import com.marks.utils.LogUtil;
 
+import static com.marks.tools.kkplatform.common.KingOfBeastsConstants.*;
+
 /**
  * <p>项目名称: LeetCode_QA </p>
  * <p>文件名称: GameStarter </p>
@@ -15,20 +17,16 @@ import com.marks.utils.LogUtil;
  * @update [序号][日期YYYY-MM-DD] [更改人姓名][变更描述]
  */
 public class GameStarter {
-
     private ImageRecognitionAutomation automation;
     private PrepareRoom prepareRoom;
     private KingOfBeastsArchive kingOfBeastsArchive;
     private ModifiersOperation modifiersOperation;
     private WindowSwitcherUtils windowSwitcher;
 
-    private static final String PREPARE_ROOM_TITLE = "KK官方对战平台";
-    private static final String GAME_TITLE = "Warcraft III";
-    private static final String MODIFIER_TITLE = "魔兽3内存修改器";
 
     public GameStarter() throws Exception {
         automation = new ImageRecognitionAutomation();
-        windowSwitcher = new WindowSwitcherUtils();
+        windowSwitcher = WindowSwitcherUtils.getInstance(); // 通过工厂模式获取单例实例
         modifiersOperation = new ModifiersOperation(automation);
         prepareRoom = new PrepareRoom(automation);
         kingOfBeastsArchive = new KingOfBeastsArchive(automation, modifiersOperation);
@@ -83,10 +81,9 @@ public class GameStarter {
                 return false;
             }
 
-            // 切换到游戏窗口
-            if (!switchToGameWindow()) {
-                return false;
-            }
+            // 切换到游戏窗口, 不需要返回值
+            switchToGameWindow();
+
             // executeGameAndSelectHero
             if (!kingOfBeastsArchive.executeGameAndSelectHero()) {
                 return false;
@@ -137,13 +134,17 @@ public class GameStarter {
     /**
      * 切换到游戏窗口
      */
-    private boolean switchToGameWindow() {
+    private void switchToGameWindow() {
         LogUtil.info("=== 切换到游戏窗口 ===");
-        return windowSwitcher.switchToWindow(GAME_TITLE);
+        // 做一个循环判断, 直到找到游戏窗口
+        while (!windowSwitcher.switchToWindow(GAME_TITLE)) {
+            LogUtil.info("未找到游戏窗口，等待1s后继续查找");
+            automation.delay(1000);
+        }
     }
 
     /**
-     * 切换到游戏窗口
+     * 切换到修改器窗口
      */
     private boolean switchToModifiersWindow() {
         LogUtil.info("=== 切换到修改器窗口 ===");

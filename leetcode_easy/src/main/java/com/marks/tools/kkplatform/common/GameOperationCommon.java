@@ -1,10 +1,15 @@
 package com.marks.tools.kkplatform.common;
 
 import com.marks.tools.kkplatform.ImageRecognitionAutomation;
+import com.marks.tools.kkplatform.WindowSwitcherUtils;
 import com.marks.utils.LogUtil;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
+
+import static com.marks.tools.kkplatform.common.KingOfBeastsConstants.GAME_TITLE;
+import static com.marks.tools.kkplatform.common.KingOfBeastsConstants.MODIFIER_TITLE;
+
 /**
  * <p>项目名称: LeetCode_QA </p>
  * <p>文件名称: GameOperationCommon </p>
@@ -17,12 +22,14 @@ import java.awt.event.KeyEvent;
  */
 public class GameOperationCommon {
     protected ImageRecognitionAutomation automation;
+    private WindowSwitcherUtils windowSwitcher;
 
     protected static final int CLICK_DELAY = 500;
     protected static final int RETRY_TIMES = 3;
 
     public GameOperationCommon(ImageRecognitionAutomation automation) {
         this.automation = automation;
+        this.windowSwitcher = WindowSwitcherUtils.getInstance();
     }
 
     /**
@@ -125,5 +132,26 @@ public class GameOperationCommon {
         automation.typeText(text);
         automation.delay(200);
         automation.delay(CLICK_DELAY);
+    }
+
+
+    /**
+     * 切换到游戏窗口
+     */
+    public void switchToGameWindow() {
+        LogUtil.info("=== 切换到游戏窗口 ===");
+        // 做一个循环判断, 直到找到游戏窗口
+        while (!windowSwitcher.switchToWindow(GAME_TITLE)) {
+            LogUtil.info("未找到游戏窗口，等待1s后继续查找");
+            automation.delay(1000);
+        }
+    }
+
+    /**
+     * 切换到修改器窗口
+     */
+    public boolean switchToModifiersWindow() {
+        LogUtil.info("=== 切换到修改器窗口 ===");
+        return windowSwitcher.switchToWindow(MODIFIER_TITLE);
     }
 }
