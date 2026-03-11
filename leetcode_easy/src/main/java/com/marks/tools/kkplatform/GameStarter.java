@@ -1,5 +1,6 @@
 package com.marks.tools.kkplatform;
 
+import com.marks.tools.CmdUtils;
 import com.marks.utils.LogUtil;
 import com.sun.jna.platform.win32.WinDef;
 
@@ -25,6 +26,7 @@ public class GameStarter {
     private KingOfBeastsArchive kingOfBeastsArchive;
     private ModifiersOperation modifiersOperation;
     private WindowSwitcherUtils windowSwitcher;
+    private CmdUtils cmdUtils; // 命令行工具
 
 
     public GameStarter() throws Exception {
@@ -33,6 +35,7 @@ public class GameStarter {
         modifiersOperation = new ModifiersOperation(automation);
         prepareRoom = new PrepareRoom(automation);
         kingOfBeastsArchive = new KingOfBeastsArchive(automation, modifiersOperation);
+        cmdUtils = new CmdUtils();
     }
 
     /**
@@ -44,8 +47,9 @@ public class GameStarter {
         try {
             // 最大运行次数设置为10次
             int maxRetryCount = 1;
-            while (maxRetryCount <= 10) {
-                LogUtil.info("\n========== 新%d轮游戏流程开始 ==========", maxRetryCount);
+            while (maxRetryCount <= 15) {
+                LogUtil.info("\n========== 新" + maxRetryCount + "轮游戏流程开始 ==========");
+                long startTime = System.currentTimeMillis();
                 // 延迟3s
                 automation.delay(1000);
 
@@ -54,9 +58,10 @@ public class GameStarter {
                     Thread.sleep(5000);
                     break;
                 }
-
-                LogUtil.info("新%d轮游戏流程完成，10 秒后开始下一轮...", maxRetryCount);
-                Thread.sleep(10000);
+                long endTime = System.currentTimeMillis();
+                int timeConsuming =(int) (endTime - startTime) / 1000 / 60;
+                LogUtil.info("新" + maxRetryCount +"轮游戏流程完成, 耗时: "+ timeConsuming +"min, 10 秒后开始下一轮");
+                Thread.sleep(5000);
                 maxRetryCount++;
             }
         } catch (InterruptedException e) {
@@ -65,6 +70,11 @@ public class GameStarter {
         } catch (Exception e) {
             LogUtil.error("程序异常：" + e.getMessage());
             e.printStackTrace();
+        } finally {
+            LogUtil.info("=== 斗兽之王自动化存档程序结束 ===");
+            // 使用 cmd 命令设置关机指令，延迟 60 秒后关机
+            LogUtil.info("程序执行完毕，将在 60 秒后自动关机...");
+            cmdUtils.shutDownWindows(60);
         }
     }
 

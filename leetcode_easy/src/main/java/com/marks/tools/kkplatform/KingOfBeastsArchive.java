@@ -143,14 +143,14 @@ public class KingOfBeastsArchive extends GameOperationCommon {
     /**
      * 步骤 3: 选择英雄
      * update: 修改, 改成等待35s, 系统自动分配英雄
-     * update: todo: 待完善 start 和 end 需要实际确认后进行修改.
+     * update: done
      * 并且, 通过 Snipaste 的F1 截图, 左上角 到start 点的距离 (px, py) * 0.667 后即为 start 点坐标, 同理得到 end 点坐标.
      */
     private boolean selectHero() {
         LogUtil.info("=== 步骤 3: 选择英雄 ===");
         // 圈选英雄
-        Point start = new Point(1200, 500);
-        Point end = new Point(1600, 700);
+        Point start = new Point(1113, 600);
+        Point end = new Point(1227, 720);
         moveMouseWithLeftUp(start, end, 500);
         // 延迟1s
         automation.delay(1000);
@@ -206,13 +206,13 @@ public class KingOfBeastsArchive extends GameOperationCommon {
     /**
      * 步骤 5: 选择天赋
      * 1. 需要变更, 如果未找到天赋按钮, 不进行任何处理, 找到了天赋按钮, 则进行点击
-     * 2. need todo: 待完成, start 和 end 需要实际确认后进行修改.
+     * 2. done
      */
     private void selectTalent() {
         LogUtil.info("=== 步骤 5: 选择天赋 ===");
         // 圈选符文建筑
-        Point start = new Point(1200, 500);
-        Point end = new Point(1600, 700);
+        Point start = new Point(1000, 600);
+        Point end = new Point(1173, 800);
         moveMouseWithLeftUp(start, end, 500);
         // 延迟1s
         automation.delay(1000);
@@ -347,21 +347,21 @@ public class KingOfBeastsArchive extends GameOperationCommon {
                 }
 
 
-                // 选择存档位置, 改一下方法, 强化存档装备
-                if (strengthenArchiveEquipment()) {
+                // 选择存档位置
+                if (!findAndClickImage(ARCHIVE_SLOT_A)) {
                     return false;
                 }
 
                 LogUtil.info("存档完成");
                 break;
             } else {
-                LogUtil.info("未找到存档按钮，10 秒后重试...");
-                automation.delay(10000);
+                LogUtil.info("未找到存档按钮，5 秒后重试...");
+                automation.delay(5000);
             }
         }
 
         if (!archiveFound) {
-            LogUtil.error("超过 25 分钟未找到存档按钮，截取当前画面");
+            LogUtil.error("超过 15 分钟未找到存档按钮，截取当前画面");
             captureErrorScreen();
             return false;
         }
@@ -414,7 +414,7 @@ public class KingOfBeastsArchive extends GameOperationCommon {
         pressFunctionKey(KeyEvent.VK_X);
         pressFunctionKey(KeyEvent.VK_X);
         // 等待10s
-        automation.delay(10000);
+        automation.delay(5000);
         LogUtil.info("已点击退出游戏按钮");
     }
 
