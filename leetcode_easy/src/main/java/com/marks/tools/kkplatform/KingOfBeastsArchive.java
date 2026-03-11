@@ -39,15 +39,11 @@ import java.util.Date;
  */
 public class KingOfBeastsArchive extends GameOperationCommon {
     private static final String DIFFICULTY_btn = "difficulty_btn";
-    private static final String TALENT_btn = "talent_btn";
     private static final String SMALL_btn = "small_btn";
     private static final String FIRE_TALENT_btn = "fire_talent_btn";
     private static final String READY_btn = "ready_btn";
     private static final String ARCHIVE_btn = "archive_btn";
     private static final String SELECT_btn = "select_btn";
-    private static final String ARCHIVE_SLOT_A = "archive_slot_a";
-    private static final String HERO_btn = "hero_btn";
-    private static final String INTERVAL_LOCK_btn = "interval_lock_btn";
     private static final String NEXT_PAGE_btn = "next_page_btn";
 
     private ModifiersOperation modifiersOperation;
@@ -252,7 +248,7 @@ public class KingOfBeastsArchive extends GameOperationCommon {
             int scaleBtnClickCount = 0; // 缩放按钮点击计数器
             final int MAX_SCALE_BTN_CLICKS = 3; // 最大点击次数 3 次
 
-            while (!shouldStop && System.currentTimeMillis() - startTime < 12 * 60 * 1000) {
+            while (!shouldStop && System.currentTimeMillis() - startTime < 10 * 60 * 1000) {
                 // 添加一个计数器, 最多3次, 需要在每次准备前, 判定是否存在缩放按钮, 如果存在, 则进行点击, 最多点击3次
                 // 在每次准备前，判定是否存在缩放按钮，如果存在，则进行点击，最多点击 3 次
                 if (scaleBtnClickCount < MAX_SCALE_BTN_CLICKS) {
@@ -266,11 +262,6 @@ public class KingOfBeastsArchive extends GameOperationCommon {
                         scaleBtnClickCount++;
                         automation.delay(500); // 点击后延迟 500ms，确保点击生效
                     }
-                    // 添加一个方法, 到达scaleBtnClickCount == 2时
-                    if (scaleBtnClickCount == 2) {
-                        // 执行修改器操作, 点击"间隔锁定" 按钮, 然后切换窗口至游戏主体
-                        intervalLock();
-                    }
                 }
                 automation.delay(5000);
                 automation.click(readyPoint.x, readyPoint.y);
@@ -282,7 +273,7 @@ public class KingOfBeastsArchive extends GameOperationCommon {
 
         // 等待 12 分钟游戏胜利
         try {
-            Thread.sleep(12 * 60 * 1000);
+            Thread.sleep(10 * 60 * 1000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -299,23 +290,6 @@ public class KingOfBeastsArchive extends GameOperationCommon {
     }
 
     /**
-     * 步骤 : 执行修改器操作, 点击"间隔锁定" 按钮, 然后切换窗口至游戏主体
-     */
-    private void intervalLock() {
-        // 切换窗口到修改器窗口, 使用父类的方法
-        switchToModifiersWindow();
-        // 延迟1s
-        automation.delay(1000);
-        // 点击 "间隔锁定" 按钮
-        modifiersOperation.findAndClickImage(INTERVAL_LOCK_btn);
-        // 延迟1s
-        automation.delay(1000);
-        // 切换窗口到游戏主体窗口, 使用父类方法
-        switchToGameWindow();
-        LogUtil.info("已切换到游戏主体窗口");
-    }
-
-    /**
      * 步骤 7: 存档
      */
     private boolean archiveGame() {
@@ -324,8 +298,10 @@ public class KingOfBeastsArchive extends GameOperationCommon {
         long startTime = System.currentTimeMillis();
         boolean archiveFound = false;
 
-        while (System.currentTimeMillis() - startTime < 25 * 60 * 1000) {
-            if (waitForImage(ARCHIVE_btn, 3000)) {
+        while (System.currentTimeMillis() - startTime < 15 * 60 * 1000) {
+            LogUtil.info("等待存档按钮出现...");
+            Point point = automation.findImage(ARCHIVE_btn, false);
+            if (point != null) {
                 archiveFound = true;
 
                 // 点击 "存档" 按钮
@@ -348,15 +324,15 @@ public class KingOfBeastsArchive extends GameOperationCommon {
 
 
                 // 选择存档位置
-                if (!findAndClickImage(ARCHIVE_SLOT_A)) {
+                if (!strengthenArchiveEquipment()) {
                     return false;
                 }
 
                 LogUtil.info("存档完成");
                 break;
             } else {
-                LogUtil.info("未找到存档按钮，5 秒后重试...");
-                automation.delay(5000);
+                LogUtil.info("未找到存档按钮，3 秒后重试...");
+                automation.delay(3000);
             }
         }
 
@@ -381,7 +357,7 @@ public class KingOfBeastsArchive extends GameOperationCommon {
         AEEInfoDAO aeeInfoDAO = archiveEquipmentService.selectMinEnhanceableEquipment();
         // 图片匹配
         String aeImgName = aeeInfoDAO.getAeImgName();
-        String aeImgPath = aeeInfoDAO.getAeImgPath();
+        String aeImgPath = aeeInfoDAO.getAeImgPath() + aeImgName;
         int aeId = aeeInfoDAO.getAeId();
         int aeEnhancedCount = aeeInfoDAO.getAeEnhancedCount();
         int pageNumber = aeeInfoDAO.getAePageNumber();

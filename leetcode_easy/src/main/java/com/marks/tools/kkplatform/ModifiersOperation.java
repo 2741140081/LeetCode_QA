@@ -26,6 +26,7 @@ public class ModifiersOperation extends GameOperationCommon {
     private static final String FIND_GAME_BUTTON = "find_game_btn";
     private static final String EXP_INPUT_BOX = "exp_input_box";
     private static final String MODIFY_BUTTON = "modify_btn";
+    private static final String INTERVAL_LOCK_BUTTON = "interval_lock_btn";
     private static final String EXPERIENCE_VALUE = "45000000";
 
     public ModifiersOperation(ImageRecognitionAutomation automation) {
@@ -51,12 +52,20 @@ public class ModifiersOperation extends GameOperationCommon {
         if (!modifyExperience()) {
             return false;
         }
-        // 延迟100ms
-        automation.delay(100);
+        // 延迟500ms
+        automation.delay(500);
         // 步骤 4: 点击修改按钮
         if (!clickModifyButton()) {
             return false;
         }
+        // 延迟500ms
+        automation.delay(500);
+        // 点击间隔锁定按钮
+        if (!clickIntervalLockButton()) {
+            return false;
+        }
+        // 延迟500ms
+        automation.delay(500);
         LogUtil.info("=== 修改器操作完成 ===");
         return true;
     }
@@ -116,6 +125,21 @@ public class ModifiersOperation extends GameOperationCommon {
         }
 
         LogUtil.error("修改失败");
+        return false;
+    }
+
+    /**
+     * 步骤 4: 点击间隔锁定按钮
+     */
+    private boolean clickIntervalLockButton() {
+        LogUtil.info("步骤 5: 点击间隔锁定按钮");
+
+        if (findAndClickImage(INTERVAL_LOCK_BUTTON)) {
+            LogUtil.info("点击成功");
+            return true;
+        }
+
+        LogUtil.error("点击失败");
         return false;
     }
 }

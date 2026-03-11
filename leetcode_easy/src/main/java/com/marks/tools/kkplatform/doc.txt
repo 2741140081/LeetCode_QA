@@ -142,9 +142,22 @@ INSERT INTO archive_equipment_enhancement_information (
     AE_Max_Enhancement_Count,
     AE_Description
 ) VALUES
-    (1002, '秘银胸甲', 'mithril_chest.png', 'D:\images\automation\templates\archive_equipment\', 1, 5, 50, '由轻便而坚固的秘银打造，提供卓越的防护。'),
-    (1003, '火焰法杖', 'fire_staff.png', 'D:\images\automation\templates\archive_equipment\', 1, 5, 50, '杖头镶嵌着永恒燃烧的火焰宝石，能大幅增强火系法术。'),
-    (1004, '精灵长弓', 'elf_bow.png', 'D:\images\automation\templates\archive_equipment\', 2, 5, 50, '由森林中的古木与精灵工艺制成，射程极远且精准。');
+    (1001, '头盔', 'AE_Img_01.png', 'D:/images/automation/templates/archive_equipment/', 1, 5, 50, '每次强化增加40点生命值'),
+    (1002, '肩膀', 'AE_Img_02.png', 'D:/images/automation/templates/archive_equipment/', 1, 5, 50, '每次强化增加0.5点护甲值'),
+    (1003, '胸甲', 'AE_Img_03.png', 'D:/images/automation/templates/archive_equipment/', 1, 46, 50, '每次强化增加1点主属性'),
+    (1004, '护腕', 'AE_Img_04.png', 'D:/images/automation/templates/archive_equipment/', 1, 5, 50, '每次强化增加2点攻击值'),
+    (1005, '手套', 'AE_Img_05.png', 'D:/images/automation/templates/archive_equipment/', 1, 5, 50, '每次强化增加1点攻速值'),
+    (1006, '腰带', 'AE_Img_06.png', 'D:/images/automation/templates/archive_equipment/', 1, 5, 50, '每次强化增加40点魔法值'),
+    (1007, '护腿', 'AE_Img_07.png', 'D:/images/automation/templates/archive_equipment/', 1, 5, 50, '每次强化增加0.5点魔抗值'),
+    (1009, '项链', 'AE_Img_09.png', 'D:/images/automation/templates/archive_equipment/', 2, 5, 50, '每次强化增加0.3伤害吸血'),
+    (1010, '披风', 'AE_Img_10.png', 'D:/images/automation/templates/archive_equipment/', 2, 5, 50, '每次强化增加0.2伤害减免'),
+    (1011, '戒指', 'AE_Img_11.png', 'D:/images/automation/templates/archive_equipment/', 2, 5, 50, '每次强化增加0.5暴击伤害'),
+    (1012, '勋章', 'AE_Img_12.png', 'D:/images/automation/templates/archive_equipment/', 2, 50, 50, '每次强化增加5点回合金币'),
+    (1013, '饰品', 'AE_Img_13.png', 'D:/images/automation/templates/archive_equipment/', 2, 6, 50, '每次强化增加0.3暴击率'),
+    (1014, '护符', 'AE_Img_14.png', 'D:/images/automation/templates/archive_equipment/', 2, 5, 50, '每次强化增加0.4技能冷却'),
+    (1015, '武器', 'AE_Img_15.png', 'D:/images/automation/templates/archive_equipment/', 2, 5, 50, '每次强化增加0.5物理伤害'),
+    (1016, '副手', 'AE_Img_16.png', 'D:/images/automation/templates/archive_equipment/', 2, 5, 50, '每次强化增加0.5魔法伤害'),
+    (1008, '鞋子', 'AE_Img_08.png', 'D:/images/automation/templates/archive_equipment/', 1, 5, 50, '每次强化增加1点移速值');
 
 
 
