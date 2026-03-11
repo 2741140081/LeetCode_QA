@@ -1,6 +1,9 @@
 package com.marks.tools.kkplatform;
 
 import com.marks.utils.LogUtil;
+import com.sun.jna.platform.win32.WinDef;
+
+import java.util.List;
 
 import static com.marks.tools.kkplatform.common.KingOfBeastsConstants.*;
 
@@ -120,7 +123,12 @@ public class GameStarter {
      */
     private boolean switchToPrepareRoom() {
         LogUtil.info("=== 切换到准备房间界面 ===");
-        return windowSwitcher.switchToWindow(PREPARE_ROOM_TITLE);
+        // 通过名称获取所有同名的窗口句柄信息
+        List<WinDef.HWND> sameNameWindowByTitle = windowSwitcher.findSameNameWindowByTitle(PREPARE_ROOM_TITLE);
+        // 通过处理获取正确的窗口句柄
+        WinDef.HWND roomWindow = prepareRoom.getPrepareRoomWindow(sameNameWindowByTitle);
+        // 通过窗口句柄切换窗口
+        return windowSwitcher.switchToWindowByHWND(roomWindow);
     }
 
     /**

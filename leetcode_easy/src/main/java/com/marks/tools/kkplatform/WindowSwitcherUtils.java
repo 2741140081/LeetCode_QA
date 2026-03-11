@@ -65,6 +65,19 @@ public class WindowSwitcherUtils {
     }
 
     /**
+     * 根据窗口句柄切换到指定的应用程序窗口
+     * @param targetWindow 窗口句柄（例如："chrome.exe", "outlook.exe"）
+     * @return true 如果切换成功，否则 false
+     */
+    public boolean switchToWindowByHWND(User32.HWND targetWindow) {
+        if (targetWindow != null) {
+            bringWindowToFront(targetWindow);
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * 获取所有打开的窗口列表
      * @return 窗口标题列表
      */
@@ -140,6 +153,26 @@ public class WindowSwitcherUtils {
         }, null);
 
         return foundWindow[0];
+    }
+    /**
+     * 根据窗口标题查找并返回所有同名的窗口
+     */
+    public List<User32.HWND> findSameNameWindowByTitle(String windowTitle) {
+        List<User32.HWND> foundWindows = new ArrayList<>();
+        final String searchTitle = windowTitle.toLowerCase();
+
+        User32.INSTANCE.EnumWindows((hWnd, pointer) -> {
+            if (User32.INSTANCE.IsWindowVisible(hWnd)) {
+                char[] buffer = new char[512];
+                User32.INSTANCE.GetWindowText(hWnd, buffer, 512);
+                String title = Native.toString(buffer).trim();
+                if (!title.isEmpty() && title.toLowerCase().contains(searchTitle)) {
+                    foundWindows.add(hWnd);
+                }
+            }
+            return true;
+        }, null);
+        return foundWindows;
     }
 
     /**

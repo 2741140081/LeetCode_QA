@@ -2,8 +2,11 @@ package com.marks.tools.kkplatform;
 
 import com.marks.tools.kkplatform.common.GameOperationCommon;
 import com.marks.utils.LogUtil;
+import com.sun.jna.platform.win32.User32;
 
 import java.awt.Point;
+import java.util.List;
+
 /**
  * <p>项目名称: LeetCode_QA </p>
  * <p>文件名称: PrepareRoom </p>
@@ -18,9 +21,14 @@ import java.awt.Point;
  */
 public class PrepareRoom extends GameOperationCommon {
     private static final String START_GAME_BUTTON = "start_game_btn";
+    private static final String ROOM_NUM_FLAG = "room_number_flag"; // 房间编号标识
+    private ImageRecognitionAutomation automation;
+    private WindowSwitcherUtils windowSwitcher;
 
     public PrepareRoom(ImageRecognitionAutomation automation) {
         super(automation);
+        this.automation = automation;
+        this.windowSwitcher = WindowSwitcherUtils.getInstance();
     }
 
     /**
@@ -43,51 +51,26 @@ public class PrepareRoom extends GameOperationCommon {
     }
 
     /**
-     * 使用最佳缩放比例查找图片
-     *
-     * @param imageName 图片名称
-     * @return 找到的坐标
+     * @Description:
+     * 处理同名窗口
+     * 1. 遍历窗口列表，将窗口放到前面, 然后截图匹配是否有 ROOM_NUM_FLAG
+     * @param: sameNameWindows
+     * @return com.sun.jna.platform.win32.WinDef.HWND
+     * @author marks
+     * @CreateDate: 2026/03/11 16:25
+     * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
      */
-    public Point findImageWithBestScale(String imageName) {
-        double[] scales = {0.8, 0.9, 1.0, 1.1, 1.2};
-
-        for (double scale : scales) {
-            Point point = automation.findImage(imageName);
-            if (point != null) {
-                LogUtil.info("在缩放比例 " + scale + " 下找到图片：" + imageName);
-                return point;
+    public User32.HWND getPrepareRoomWindow(List<User32.HWND> sameNameWindows) {
+        // 遍历窗口列表
+        for (User32.HWND hwnd : sameNameWindows) {
+            windowSwitcher.switchToWindowByHWND(hwnd);
+            // 延迟1s
+            automation.delay(1000);
+            // 判断ROOM_NUM_FLAG
+            if (automation.findImage(ROOM_NUM_FLAG, false) != null) {
+                return hwnd;
             }
         }
-
-        return null;
-    }
-
-    /**
-     * 迭代二分查找最佳匹配
-     *
-     * @param imageName 图片名称
-     * @return 找到的坐标
-     */
-    public Point findImageWithBinarySearch(String imageName) {
-        int minScale = 80;
-        int maxScale = 120;
-
-        while (minScale <= maxScale) {
-            int midScale = (minScale + maxScale) / 2;
-            Point point = automation.findImage(imageName);
-
-            if (point != null) {
-                LogUtil.info("二分查找成功，缩放比例：" + midScale + "%");
-                return point;
-            }
-
-            if (midScale < 100) {
-                minScale = midScale + 1;
-            } else {
-                maxScale = midScale - 1;
-            }
-        }
-
         return null;
     }
 }

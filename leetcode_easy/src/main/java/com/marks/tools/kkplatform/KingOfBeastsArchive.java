@@ -1,6 +1,9 @@
 package com.marks.tools.kkplatform;
 
 import com.marks.tools.kkplatform.common.GameOperationCommon;
+import com.marks.tools.kkplatform.entity.AEEInfoDAO;
+import com.marks.tools.kkplatform.service.ArchiveEquipmentService;
+import com.marks.tools.kkplatform.service.impl.ArchiveEquipmentServiceImpl;
 import com.marks.utils.LogUtil;
 
 import java.awt.*;
@@ -45,15 +48,19 @@ public class KingOfBeastsArchive extends GameOperationCommon {
     private static final String ARCHIVE_SLOT_A = "archive_slot_a";
     private static final String HERO_btn = "hero_btn";
     private static final String INTERVAL_LOCK_btn = "interval_lock_btn";
+    private static final String NEXT_PAGE_btn = "next_page_btn";
 
     private ModifiersOperation modifiersOperation;
     private SpecialHandel specialHandel;
     private boolean shouldStop = false;
+    // 手动注入服务层 ArchiveEquipmentService
+    private ArchiveEquipmentService archiveEquipmentService;
 
     public KingOfBeastsArchive(ImageRecognitionAutomation automation, ModifiersOperation modifiersOperation) {
         super(automation);
         this.modifiersOperation = modifiersOperation;
         specialHandel = new SpecialHandel();
+        archiveEquipmentService = new ArchiveEquipmentServiceImpl();
     }
 
     public boolean executeGameAndSelectHero() {
@@ -340,8 +347,8 @@ public class KingOfBeastsArchive extends GameOperationCommon {
                 }
 
 
-                // 选择存档位置
-                if (!findAndClickImage(ARCHIVE_SLOT_A)) {
+                // 选择存档位置, 改一下方法, 强化存档装备
+                if (strengthenArchiveEquipment()) {
                     return false;
                 }
 
@@ -363,6 +370,40 @@ public class KingOfBeastsArchive extends GameOperationCommon {
     }
 
     /**
+     * archiveEquipmentService 来查询数据库
+     * 从数据库表中查找强化未到达上限的最小id 的存档装备信息,
+     * 执行强化装备流程,
+     * 如果强化完成, 更新数据库信息
+     * 如果强化未完成, 找下一个id的装备信息
+     */
+    private boolean strengthenArchiveEquipment() {
+        // 找到最小可强化的装备
+        AEEInfoDAO aeeInfoDAO = archiveEquipmentService.selectMinEnhanceableEquipment();
+        // 图片匹配
+        String aeImgName = aeeInfoDAO.getAeImgName();
+        String aeImgPath = aeeInfoDAO.getAeImgPath();
+        int aeId = aeeInfoDAO.getAeId();
+        int aeEnhancedCount = aeeInfoDAO.getAeEnhancedCount();
+        int pageNumber = aeeInfoDAO.getAePageNumber();
+        // 判断是否需要点击'下一页'
+        if (pageNumber > 1) {
+            // 需要点击下一页
+            if (!findAndClickImage(NEXT_PAGE_btn)) {
+                return false;
+            }
+        }
+        Point point = automation.findImage(aeImgName, aeImgPath, true);
+        // 点击强化
+        if (point != null) {
+            doubleClickAt(point.x, point.y);
+            // 更新数据库信息
+            return archiveEquipmentService.updateEnhancedCount(aeId, aeEnhancedCount + 1);
+        }
+
+        return false;
+    }
+
+    /**
      * 步骤 8: 退出游戏
      */
     private void exitGame() {
@@ -376,6 +417,7 @@ public class KingOfBeastsArchive extends GameOperationCommon {
         automation.delay(10000);
         LogUtil.info("已点击退出游戏按钮");
     }
+
 
     /**
      * 截取错误截图
@@ -442,8 +484,8 @@ public class KingOfBeastsArchive extends GameOperationCommon {
                 Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2)
         );
 
-        // 计算需要移动的步数（每 10 像素一步）
-        int steps = (int) (distance / 10);
+        // 计算需要移动的步数（每 20 像素一步）
+        int steps = (int) (distance / 20);
         if (steps < 1) {
             steps = 1;
         }

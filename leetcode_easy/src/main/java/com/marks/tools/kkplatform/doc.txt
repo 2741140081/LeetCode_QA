@@ -92,6 +92,66 @@ c. 问题4, 处理天赋按钮
 s1: 通过截取更小的截图来进行对比, 当前无法找到的原因是因为, 天赋的图标是一个动态旋转的状态, 但是中间部分没有进行旋转(有小幅度的升降), 应该影响不大(待测试)
 s2: 将天赋和英雄选取类似操作, 由于这两者都是一个固定点, 可以通过按住左键 + 鼠标移动进行 圈选: 1. 起始点和终止点 2. 鼠标移动方法, 可以写一个方法
 void moveMouseWithLeftUp(Point start, Point end, int spendTime)
+d. 日志系统暂时放弃, 由于依赖冲突导致
+
+
+update: 2026-03-11
+1. 解决存档强化上限后, 如何继续强化的问题
+2. 存档强化数据, 这些数据存储到数据库还是csv文件, 还是用数据库更加便捷, 需要添加mysql数据库
+3. 需要设计数据库字段, 可以参考现有csv 文件的字段
+4. 需要更改现有的存档流程,
+当前流程: 强化特定存档装备, 无其他任何处理, 只能手动更改强化存档装备图片
+改进流程: 从数据库表中查找强化未到达上限的最小id 的存档装备信息, 执行强化装备流程, 如果强化完成, 更新数据库信息, 完成
+5. 由于存档装备页数有两页, 需要通过点击下一页, 才能找到下一页可强化的存档装备(新功能, 待添加)
+6. 针对同名窗口的问题(Prepare Room),建议添加一个方法, 通过窗口内部的内容不同来进行区分, 建议是返回所需窗口的完整信息, 包括句柄,
+例如, Prepare Room 内存在一个"房间号" 标识, 可以通过图片识别来判断同名窗口内是否存在"房间号" 标识, 识别出所需的 Prepare Room(待完成, 有时间可以写)
+7. 是否可以添加一个全局控制键F8, 希望暂停当前程序执行, 可能我需要处理其它事情(与游戏无关)时, 希望当前程序暂停, 当其它事情处理完成后, 按下F9, 继续执行暂停的流程
+
+solution:
+1. 设计存档信息表, 数据库使用mysql数据库
+表名: 存档装备强化信息(archive_equipment_enhancement_information), 简称 AEE_Info
+表字段: 自增字段 AE_id 类型 int, 存档装备编号 AE_Number 类型 int, 存档装备名称 AE_Name 类型 String, 存档装备图片名称 AE_Img_Name 类型 String,
+存档装备图片路径 AE_Img_Path 类型 String, 存档装备所在页面 AE_Page_Number 类型 int, 存档装备已强化次数 AE_Enhanced_Count 类型 int,
+存档装备最大强化次数 AE_Max_Enhancement_Count 类型 int, 更新日期 Update_Time 类型 timestamp, 存档装备描述 AE_Description 类型 String
+
+表创建的sql:
+CREATE TABLE archive_equipment_enhancement_information (
+    AE_id INT NOT NULL AUTO_INCREMENT COMMENT '自增主键ID',
+    AE_Number INT NOT NULL COMMENT '存档装备编号',
+    AE_Name VARCHAR(255) NOT NULL COMMENT '存档装备名称',
+    AE_Img_Name VARCHAR(255) COMMENT '存档装备图片名称',
+    AE_Img_Path VARCHAR(500) COMMENT '存档装备图片路径',
+    AE_Page_Number INT NOT NULL DEFAULT 1 COMMENT '存档装备所在页面',
+    AE_Enhanced_Count INT NOT NULL DEFAULT 0 COMMENT '存档装备已强化次数',
+    AE_Max_Enhancement_Count INT NOT NULL DEFAULT 50 COMMENT '存档装备最大强化次数',
+    Update_Time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新日期',
+    AE_Description TEXT COMMENT '存档装备描述',
+    PRIMARY KEY (AE_id),
+    INDEX idx_ae_number (AE_Number),
+    INDEX idx_update_time (Update_Time)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='存档装备强化信息表';
+
+表插入数据的sql 语句
+INSERT INTO archive_equipment_enhancement_information (
+    AE_Number,
+    AE_Name,
+    AE_Img_Name,
+    AE_Img_Path,
+    AE_Page_Number,
+    AE_Enhanced_Count,
+    AE_Max_Enhancement_Count,
+    AE_Description
+) VALUES
+    (1002, '秘银胸甲', 'mithril_chest.png', 'D:\images\automation\templates\archive_equipment\', 1, 5, 50, '由轻便而坚固的秘银打造，提供卓越的防护。'),
+    (1003, '火焰法杖', 'fire_staff.png', 'D:\images\automation\templates\archive_equipment\', 1, 5, 50, '杖头镶嵌着永恒燃烧的火焰宝石，能大幅增强火系法术。'),
+    (1004, '精灵长弓', 'elf_bow.png', 'D:\images\automation\templates\archive_equipment\', 2, 5, 50, '由森林中的古木与精灵工艺制成，射程极远且精准。');
+
+
+
+
+2. 开始解决问题6, 处理同名Prepare Room 问题
+
+
 
 
 

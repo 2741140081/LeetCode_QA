@@ -50,15 +50,20 @@ public class ImageRecognitionAutomation {
         robot.setAutoDelay(DELAY_SHORT);
     }
 
+    public Point findImage(String templateName, boolean isNecessary) {
+        // 构建模板图片完整路径
+        String templatePath = Paths.get(TEMPLATE_DIR, templateName + ".png").toString();
+        return findImage(templateName, templatePath, isNecessary);
+    }
+
     /**
      * 在屏幕上查找匹配的图片（使用最佳缩放比例 + 二分法）
      * @param templateName 模板图片名称（不含扩展名）
      * @param isNecessary 是否为必需的图片，true 时识别失败会报错并保存截图，false 时仅返回 null
      * @return 匹配到的坐标，未找到返回 null
      */
-    public Point findImage(String templateName, boolean isNecessary) {
+    public Point findImage(String templateName, String templatePath, boolean isNecessary) {
         try {
-            String templatePath = Paths.get(TEMPLATE_DIR, templateName + ".png").toString();
             File templateFile = new File(templatePath);
 
             if (!templateFile.exists()) {
@@ -108,9 +113,7 @@ public class ImageRecognitionAutomation {
      */
     private Point recognizeAndMarkElement(Mat screenMat, Mat template, String templatePath, boolean isNecessary) {
         LogUtil.info("\n=== 查找元素：" + templatePath + " ===");
-
         String templateName = Paths.get(templatePath).getFileName().toString();
-        System.out.println("\n=== 识别元素：" + templateName + " ===");
 
         Mat screenGray = new Mat();
         Mat templateGray = new Mat();
