@@ -47,7 +47,7 @@ public class GameStarter {
         try {
             // 最大运行次数设置为10次
             int maxRetryCount = 1;
-            while (maxRetryCount <= 15) {
+            while (maxRetryCount <= 17) {
                 LogUtil.info("\n========== 新" + maxRetryCount + "轮游戏流程开始 ==========");
                 long startTime = System.currentTimeMillis();
                 // 延迟3s
@@ -74,7 +74,7 @@ public class GameStarter {
             LogUtil.info("=== 斗兽之王自动化存档程序结束 ===");
             // 使用 cmd 命令设置关机指令，延迟 60 秒后关机
             LogUtil.info("程序执行完毕，将在 60 秒后自动关机...");
-//            cmdUtils.shutDownWindows(60);
+            cmdUtils.shutDownWindows(60);
         }
     }
 
