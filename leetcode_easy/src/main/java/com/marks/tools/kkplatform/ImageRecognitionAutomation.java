@@ -374,7 +374,17 @@ public class ImageRecognitionAutomation {
         robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
         robot.delay(50);
         robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
-        LogUtil.info("点击坐标：(" + x + ", " + y + ")");
+    }
+
+    /**
+     * 右键点击点击指定坐标
+     */
+    public void rightClick(int x, int y) {
+        robot.mouseMove(x, y);
+        robot.delay(DELAY_SHORT);
+        robot.mousePress(InputEvent.BUTTON3_DOWN_MASK);
+        robot.delay(50);
+        robot.mouseRelease(InputEvent.BUTTON3_DOWN_MASK);
     }
 
     /**
@@ -393,6 +403,13 @@ public class ImageRecognitionAutomation {
     public void oneClick(int x, int y) {
         click(x, y);
         robot.delay(100);
+    }
+
+    /**
+     * 移动到指定坐标
+     */
+    public void moveTo(int x, int y) {
+        robot.mouseMove(x, y);
     }
 
     /**
@@ -494,6 +511,17 @@ public class ImageRecognitionAutomation {
         robot.keyRelease(keyCode);
         robot.keyRelease(controlKey);
         LogUtil.info("按下快捷键：" + KeyEvent.getKeyText(controlKey) + "+" + KeyEvent.getKeyText(keyCode));
+    }
+
+    /**
+     * 通用方法：按下功能键
+     * @param keyCode 键值
+     */
+    public void pressFunctionKey(int keyCode) {
+        robot.keyPress(keyCode);
+        robot.delay(50);
+        robot.keyRelease(keyCode);
+        robot.delay(50);
     }
 
     /**

@@ -2,6 +2,9 @@ package com.marks.tools.thief_gold_game.controller;
 
 import com.marks.tools.kkplatform.ImageRecognitionAutomation;
 import com.marks.utils.LogUtil;
+
+import java.awt.*;
+
 /**
  * <p>项目名称: LeetCode_QA </p>
  * <p>文件名称: StrengthenAttributeController </p>
@@ -13,6 +16,7 @@ import com.marks.utils.LogUtil;
  * @update [序号][日期YYYY-MM-DD] [更改人姓名][变更描述]
  */
 public class StrengthenAttributeController extends CommonController {
+    private static final int STRENGTHEN_ATTRIBUTE_NUMBER = 4;
 
     private static final String ATTACK_SPEED_UP = "4/attack_speed_up";
     private static final String RANGE_UP = "4/range_up";
@@ -21,6 +25,8 @@ public class StrengthenAttributeController extends CommonController {
     private static final String ATTACK_2_UP = "4/attack_2_up";
     private static final String ATTACK_3_UP = "4/attack_3_up";
     private static final String ATTACK_4_UP = "4/attack_4_up";
+    private static final String STRENGTHEN_ATTRIBUTE_BUILDING = "common/strengthen_attribute_building";
+
 
     private long gameStartTime;
     private long lastUpgradeTime;
@@ -32,30 +38,54 @@ public class StrengthenAttributeController extends CommonController {
     }
 
     /**
-     * 设置游戏开始时间
+     * 初始化
+     * 1. 对强化属性建筑物进行编号4
+     * 2. 从gameStartTime = startTime
+     * @param startTime 游戏开始时间
+     * @return 是否成功
      */
-    public void setGameStartTime(long startTime) {
+    public boolean initialize(long startTime) {
+        LogUtil.info("=== 属性强化控制器初始化 ===");
+        // 找到属性建筑物, 并返回坐标
+        Point attr_point = findImage(STRENGTHEN_ATTRIBUTE_BUILDING);
+        if (attr_point == null) {
+            LogUtil.error("未找到属性建筑物");
+            return false;
+        } else {
+            // 点击属性建筑物
+            LogUtil.info("点击属性建筑物");
+            automation.delay(CLICK_DELAY);
+            automation.click(attr_point.x, attr_point.y);
+            automation.delay(CLICK_DELAY);
+        }
+        // 对已选的属性建筑物进行编号
+        selectNumber(STRENGTHEN_ATTRIBUTE_NUMBER);
+        // 延迟1s
+        automation.delay(CLICK_DELAY);
+        // 设置游戏开始时间
         this.gameStartTime = startTime;
-        this.lastUpgradeTime = startTime;
+        return true;
     }
 
     /**
-     * 强化攻击速度（点击 2 下，间隔 1 秒）
+     * 开启 10连点击按钮
+     * @return 是否成功
+     */
+    public boolean openTenClicks() {
+        LogUtil.info("=== 开启 10连点击按钮 ===");
+        return findAndClickImage(TEN_CLICK_BTN);
+    }
+
+    /**
+     * 强化攻击速度
      * @return 是否成功
      */
     public boolean upgradeAttackSpeed() {
         LogUtil.info("=== 强化攻击速度 ===");
-
         if (!findAndClickImage(ATTACK_SPEED_UP)) {
             return false;
         }
-
         automation.delay(1000);
-
-        if (!findAndClickImage(ATTACK_SPEED_UP)) {
-            return false;
-        }
-
         return true;
     }
 
@@ -89,21 +119,22 @@ public class StrengthenAttributeController extends CommonController {
         if (!findAndClickImage(ATTACK_1_UP)) {
             success = false;
         }
-        automation.delay(300);
+        automation.delay(1000);
 
         if (!findAndClickImage(ATTACK_2_UP)) {
             success = false;
         }
-        automation.delay(300);
+        automation.delay(1000);
 
         if (!findAndClickImage(ATTACK_3_UP)) {
             success = false;
         }
-        automation.delay(300);
+        automation.delay(1000);
 
         if (!findAndClickImage(ATTACK_4_UP)) {
             success = false;
         }
+        automation.delay(1000);
 
         return success;
     }
@@ -114,41 +145,34 @@ public class StrengthenAttributeController extends CommonController {
      */
     public boolean performUpgrade() {
         LogUtil.info("=== 执行属性强化 ===");
+        // 切换到属性强化建筑编号
+        pressKey(STRENGTHEN_ATTRIBUTE_NUMBER);
+        // 延迟1s
+        automation.delay(1000);
 
         boolean success = true;
 
         if (!upgradeAttackSpeed()) {
             success = false;
         }
-        automation.delay(500);
 
         if (!upgradeRange()) {
             success = false;
         }
-        automation.delay(500);
+        automation.delay(1000);
 
         if (!upgradeMultiShot()) {
             success = false;
         }
-        automation.delay(500);
+        automation.delay(1000);
 
         if (!upgradeAttack()) {
             success = false;
         }
 
-        lastUpgradeTime = System.currentTimeMillis();
         return success;
     }
 
-    /**
-     * 检查是否需要强化属性（每隔 1 分钟）
-     * @return 是否需要强化
-     */
-    public boolean shouldUpgrade() {
-        long currentTime = System.currentTimeMillis();
-        long elapsedSinceLastUpgrade = currentTime - lastUpgradeTime;
-        return elapsedSinceLastUpgrade >= 60000;
-    }
 
     /**
      * 检查游戏是否已经运行了 15 分钟
@@ -161,34 +185,22 @@ public class StrengthenAttributeController extends CommonController {
     }
 
     /**
-     * 获取游戏已运行时间（分钟）
-     * @return 已运行时间（分钟）
+     * 循环执行强化流程，
      */
-    public long getElapsedGameTimeInMinutes() {
-        long currentTime = System.currentTimeMillis();
-        long elapsedGameTime = currentTime - gameStartTime;
-        return elapsedGameTime / (60 * 1000);
-    }
-
-    /**
-     * 循环检查并强化属性，直到游戏时间达到 15 分钟
-     */
-    public void loopUntil15Minutes() {
+    public boolean loopExecuteEnhancedProcess() {
         LogUtil.info("=== 开始循环强化属性，直到 15 分钟 ===");
-
         while (!isGameTimeReached15Minutes()) {
-            long elapsedMinutes = getElapsedGameTimeInMinutes();
-            LogUtil.info("当前游戏时间：" + elapsedMinutes + " 分钟");
-
-            if (shouldUpgrade()) {
-                LogUtil.info("执行属性强化");
-                performUpgrade();
+            // 执行强化操作
+            if (!performUpgrade()) {
+                LogUtil.error("属性强化失败");
+                return false;
             }
-
-            automation.delay(10000);
+            // 每3分钟执行一次强化操作
+            automation.delay(180000);
         }
 
         LogUtil.info("游戏时间已达到 15 分钟，停止强化");
+        return true;
     }
 
 }

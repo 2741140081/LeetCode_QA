@@ -3,9 +3,12 @@ package com.marks.tools.kkplatform;
 import com.marks.tools.kkplatform.common.GameOperationCommon;
 import com.marks.utils.LogUtil;
 import com.sun.jna.platform.win32.User32;
+import com.sun.jna.platform.win32.WinDef;
 
 import java.awt.Point;
 import java.util.List;
+
+import static com.marks.tools.kkplatform.common.KingOfBeastsConstants.PREPARE_ROOM_TITLE;
 
 /**
  * <p>项目名称: LeetCode_QA </p>
@@ -60,7 +63,7 @@ public class PrepareRoom extends GameOperationCommon {
      * @CreateDate: 2026/03/11 16:25
      * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
      */
-    public User32.HWND getPrepareRoomWindow(List<User32.HWND> sameNameWindows) {
+    private User32.HWND getPrepareRoomWindow(List<User32.HWND> sameNameWindows) {
         // 遍历窗口列表
         for (User32.HWND hwnd : sameNameWindows) {
             windowSwitcher.switchToWindowByHWND(hwnd);
@@ -72,5 +75,18 @@ public class PrepareRoom extends GameOperationCommon {
             }
         }
         return null;
+    }
+
+    /**
+     * 切换到准备房间界面
+     */
+    public boolean switchToPrepareRoom() {
+        LogUtil.info("=== 切换到准备房间界面 ===");
+        // 通过名称获取所有同名的窗口句柄信息
+        List<WinDef.HWND> sameNameWindowByTitle = windowSwitcher.findSameNameWindowByTitle(PREPARE_ROOM_TITLE);
+        // 通过处理获取正确的窗口句柄
+        WinDef.HWND roomWindow = getPrepareRoomWindow(sameNameWindowByTitle);
+        // 通过窗口句柄切换窗口
+        return windowSwitcher.switchToWindowByHWND(roomWindow);
     }
 }

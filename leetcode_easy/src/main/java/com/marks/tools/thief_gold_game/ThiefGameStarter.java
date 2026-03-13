@@ -2,6 +2,7 @@ package com.marks.tools.thief_gold_game;
 
 
 
+import com.marks.tools.CmdUtils;
 import com.marks.tools.kkplatform.ImageRecognitionAutomation;
 import com.marks.tools.thief_gold_game.controller.GameFlowController;
 import com.marks.utils.LogUtil;
@@ -24,7 +25,7 @@ public class ThiefGameStarter {
 
     public static void main(String[] args) {
         LogUtil.info("=== 《小偷偷金 TD》自动化脚本启动 ===");
-
+        CmdUtils cmdUtils = new CmdUtils(); // 命令行工具
         try {
             // 解析命令行参数
             int difficulty = parseDifficulty(args);
@@ -35,12 +36,23 @@ public class ThiefGameStarter {
             // 创建游戏流程控制器
             GameFlowController gameFlowController = new GameFlowController(automation);
 
-            // 启动游戏流程
-            gameFlowController.startGame(difficulty);
+            // 启动游戏流程, 循环执行游戏主体
+            int count = 1;
+            int maxCount = 10; // 执行10次
+            while (count <= maxCount) {
+                LogUtil.info("第 " + count + " 次执行游戏");
+                gameFlowController.startGame(difficulty);
+                count++;
+                Thread.sleep(5000);
+            }
 
         } catch (Exception e) {
             LogUtil.error("启动失败：" + e.getMessage(), e);
             System.exit(1);
+        } finally {
+            LogUtil.info("=== 脚本执行完毕, 将在 60 秒后自动关机... ===");
+            // 关闭计算机, 先暂时注释掉, 等流程可以正常运行后, 取消注释
+//            cmdUtils.shutDownWindows(60);
         }
     }
 
@@ -73,9 +85,7 @@ public class ThiefGameStarter {
      */
     private static ImageRecognitionAutomation initializeAutomation() throws AWTException {
         LogUtil.info("正在初始化图像识别自动化环境...");
-
         ImageRecognitionAutomation automation = new ImageRecognitionAutomation();
-
         // 延迟 2 秒，确保环境准备就绪
         automation.delay(2000);
 

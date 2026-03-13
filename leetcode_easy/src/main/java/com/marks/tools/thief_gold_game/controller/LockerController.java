@@ -5,6 +5,7 @@ import com.marks.utils.LogUtil;
 
 import java.awt.*;
 import java.awt.event.InputEvent;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -43,7 +44,7 @@ public class LockerController extends CommonController {
     private static final String RED_CHEST = "red_chest";                   // 红色宝箱
 
     // 物品栏相关
-    private static final String LOCKER_ITEM_SLOT_PREFIX = "locker_item_";  // 储物柜物品栏前缀
+
 
     // 操作延迟配置（毫秒）
     private static final int SKILL_BOOK_DELAY = 500;                       // 技能书点击间隔
@@ -52,81 +53,23 @@ public class LockerController extends CommonController {
     // 修改器引用
     private ModifierController modifierController;
 
-    public LockerController(ImageRecognitionAutomation automation) {
+    public LockerController(ImageRecognitionAutomation automation, ModifierController modifierController) {
         super(automation);
-    }
-
-    /**
-     * 设置修改器控制器引用
-     * @param modifierController 修改器控制器
-     */
-    public void setModifierController(ModifierController modifierController) {
         this.modifierController = modifierController;
     }
 
-    /**
-     * 储物柜初始化流程
-     * 1. 找到储物柜并选中
-     * 2. 给储物柜编号为 2
-     * @return 是否成功
-     */
     public boolean initialize() {
-        LogUtil.info("=== 储物柜初始化流程开始 ===");
-
-        // 1. 找到储物柜位置并点击
-        Point lockerPoint = findImage("locker");
+        // 找到储物柜位置并点击
+        Point lockerPoint = findImage(LOCKER_BUILDING);
         if (lockerPoint == null) {
             LogUtil.error("未找到储物柜");
             return false;
         }
-
-        LogUtil.info("找到储物柜坐标：({}, {})", lockerPoint.x, lockerPoint.y);
         automation.click(lockerPoint.x, lockerPoint.y);
         automation.delay(CLICK_DELAY);
-
-        // 2. 给储物柜编号为 2
+        // 对储物柜进行编号
         selectNumber(LOCKER_NUMBER);
-
-        LogUtil.info("储物柜初始化完成，编号为：{}", LOCKER_NUMBER);
         return true;
-    }
-
-    /**
-     * 拾取丢弃点的物品
-     * 先找绿色宝箱，如果没有则找红色宝箱
-     * @return 是否成功
-     */
-    public boolean pickupItemFromDropPoint() {
-        LogUtil.info("=== 储物柜拾取物品 ===");
-
-        // 切换到储物柜
-        switchToLocker();
-
-        // 1. 先找绿色宝箱
-        Point greenChestPoint = findImage(GREEN_CHEST);
-        if (greenChestPoint != null) {
-            LogUtil.info("找到绿色宝箱坐标：({}, {})", greenChestPoint.x, greenChestPoint.y);
-            automation.click(greenChestPoint.x, greenChestPoint.y);
-            automation.delay(CLICK_DELAY);
-            LogUtil.info("绿色宝箱拾取成功");
-            return true;
-        }
-
-        // 2. 绿色宝箱不存在，找红色宝箱
-        LogUtil.info("未找到绿色宝箱，尝试查找红色宝箱...");
-        Point redChestPoint = findImage(RED_CHEST);
-        if (redChestPoint != null) {
-            LogUtil.info("找到红色宝箱坐标：({}, {})", redChestPoint.x, redChestPoint.y);
-            automation.click(redChestPoint.x, redChestPoint.y);
-            automation.delay(CLICK_DELAY);
-            LogUtil.info("红色宝箱拾取成功");
-            return true;
-        }
-
-        // 3. 两种宝箱都不存在，报错
-        LogUtil.error("未找到任何宝箱（绿色和红色都不存在），无法拾取物品");
-        // TODO: 截图保存错误现场
-        return false;
     }
 
     /**
@@ -177,7 +120,7 @@ public class LockerController extends CommonController {
      */
     // TODO: 需要与 ModifierController 配合
     public boolean modifyItems(List<String> itemNames) {
-        LogUtil.info("=== 储物柜：修改物品，数量：{} ===", itemNames.size());
+        LogUtil.info("=== 储物柜：修改物品，数量：{" + itemNames.size() + "} ===");
 
         if (modifierController == null) {
             LogUtil.error("ModifierController 未设置");
@@ -196,7 +139,8 @@ public class LockerController extends CommonController {
 
             // 切换回游戏窗口
             switchToGameWindow();
-            automation.delay(CLICK_DELAY);
+            // 延迟1s
+            automation.delay(1000);
 
             // 返回结果, TODO
             return false;
@@ -209,18 +153,15 @@ public class LockerController extends CommonController {
     }
 
     /**
-     * 丢弃储物柜物品栏中的物品到丢弃点 2
+     * 丢弃储物柜物品栏中的物品到小偷物品栏中
      * @param itemName 物品名称（图片名）
      * @return 是否成功
      */
     public boolean dropItemFromLocker(String itemName) {
-        LogUtil.info("=== 储物柜丢弃物品：{} ===", itemName);
-
         // 切换到储物柜
         switchToLocker();
-
-        // 找到物品栏中的物品
-        String itemImagePath = LOCKER_ITEM_SLOT_PREFIX + itemName;
+        // 找到物品栏中的物品, 找到物品证明修改生效
+        String itemImagePath = COMMON_FOLDER + itemName;
         Point itemPoint = findImage(itemImagePath);
         if (itemPoint == null) {
             LogUtil.error("未找到物品：{}", itemImagePath);
@@ -229,26 +170,22 @@ public class LockerController extends CommonController {
 
         LogUtil.info("找到物品坐标：({}, {})", itemPoint.x, itemPoint.y);
 
-        // 移动到物品坐标，右键点击
-        automation.robot.mouseMove(itemPoint.x, itemPoint.y);
-        automation.delay(ITEM_DROP_DELAY);
-        automation.robot.mousePress(InputEvent.BUTTON2_DOWN_MASK);
-        automation.delay(50);
-        automation.robot.mouseRelease(InputEvent.BUTTON2_DOWN_MASK);
-        automation.delay(ITEM_DROP_DELAY);
-
-        // 移动到丢弃点 2
-        Point dropPoint2 = findImage(DROP_POINT_2);
-        if (dropPoint2 == null) {
-            LogUtil.error("未找到丢弃点 2");
+        // 找到小偷左上角的标记点坐标
+        Point flagPoint = findImage(THIEF_LEFT_TOP_FLAG);
+        // 判断坐标点是否存在
+        if (flagPoint == null) {
+            LogUtil.error("未找到小偷左上角的标记点");
             return false;
         }
 
-        LogUtil.info("移动到丢弃点 2 坐标：({}, {})", dropPoint2.x, dropPoint2.y);
-        automation.click(dropPoint2.x, dropPoint2.y);
+        // 移动到物品坐标，右键点击
+        automation.rightClick(itemPoint.x, itemPoint.y);
         automation.delay(CLICK_DELAY);
-
-        LogUtil.info("物品{}已丢弃到丢弃点 2", itemName);
+        // 移动到 flagPoint, 点击
+        automation.click(flagPoint.x, flagPoint.y);
+        // 放入小偷储物栏成功
+        // 延迟1s
+        automation.delay(1000);
         return true;
     }
 
@@ -288,31 +225,35 @@ public class LockerController extends CommonController {
     /**
      * 完整的储物柜第一次操作流程
      * （小偷第一次购买武器后的修改流程）
-     * 1. 拾取小偷丢弃的物品
+     * 1. 拾取小偷丢弃的物品(舍弃, 现在是小偷直接将物品放入储物柜中, 不需要储物柜进行拾取操作)
      * 2. 切换到修改器修改物品
      * 3. 将修改后的物品丢弃到丢弃点 2
-     * @param targetItemName 目标物品名称
      * @return 是否成功
      */
-    // TODO: 需要与 ThiefController 和 ModifierController 配合
-    public boolean executeFirstModificationProcess(String targetItemName) {
+    public boolean executeFirstModificationProcess() {
         LogUtil.info("=== 储物柜第一次修改流程开始 ===");
+        // 初始化储物柜
+        if (!initialize()) {
+            LogUtil.error("储物柜初始化失败");
+            return false;
+        }
 
         try {
-            // 1. 拾取丢弃点的物品
-            if (!pickupItemFromDropPoint()) {
-                return false;
-            }
+            // 1. 切换到储物柜
+            switchToLocker();
 
-            // 2. 修改物品（单个物品）
-            List<String> itemNames = List.of(targetItemName);
+            // 2. 修改物品, 将 父类中的 FIRST_ITEM_NAMES 是第一次需要修改的物品
+            // 将string[] 转为 List
+            List<String> itemNames = Arrays.stream(FIRST_ITEM_NAMES).toList();
             if (!modifyItems(itemNames)) {
                 return false;
             }
 
-            // 3. 将修改后的物品丢弃到丢弃点 2
-            if (!dropItemFromLocker(targetItemName)) {
-                return false;
+            // 3. 将修改后的物品丢弃到小偷物品栏中
+            for (String itemName : itemNames) {
+                if (!dropItemFromLocker(itemName)) {
+                    return false;
+                }
             }
 
             LogUtil.info("储物柜第一次修改流程完成");
@@ -331,16 +272,23 @@ public class LockerController extends CommonController {
      * 1. 购买 5 本晕锤技能书
      * 2. 切换到修改器修改 5 个物品
      * 3. 将 5 件修改后的物品丢弃到丢弃点 2
-     * @param itemNames 5 个物品名称列表
+     * @param delayTime 延迟时间
      * @return 是否成功
      */
     // TODO: 需要与 ThiefController 和 ModifierController 配合
-    public boolean executeSecondModificationProcess(List<String> itemNames) {
-        LogUtil.info("=== 储物柜第二次修改流程开始（5 件物品） ===");
-
+    public boolean executeSecondModificationProcess(int delayTime) {
+        LogUtil.info("=== 储物柜第二次修改流程开始 ===");
+        // 延迟delayTime ms, 等待获取足够金币
+        automation.delay(delayTime);
         try {
+            // 1. 切换到储物柜
+            switchToLocker();
+
+            // 2. 修改物品, 将 父类中的 SECOND_ITEM_NAMES 是第二次需要修改的物品
+            // 将string[] 转为 List
+            List<String> itemNames = Arrays.stream(SECOND_ITEM_NAMES).toList();
             if (itemNames.size() != 5) {
-                LogUtil.error("物品数量必须为 5，实际：{}", itemNames.size());
+                LogUtil.error("物品数量必须为 5，实际：{" + itemNames.size() + "}");
                 return false;
             }
 

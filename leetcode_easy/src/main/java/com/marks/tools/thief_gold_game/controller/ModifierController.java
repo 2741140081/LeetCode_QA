@@ -2,6 +2,7 @@ package com.marks.tools.thief_gold_game.controller;
 
 
 import com.marks.tools.kkplatform.ImageRecognitionAutomation;
+import com.marks.tools.kkplatform.WindowSwitcherUtils;
 import com.marks.utils.LogUtil;
 
 import java.awt.*;
@@ -28,6 +29,7 @@ public class ModifierController extends CommonController {
 
     public ModifierController(ImageRecognitionAutomation automation) {
         super(automation);
+        this.windowSwitcher = WindowSwitcherUtils.getInstance();
     }
 
     /**

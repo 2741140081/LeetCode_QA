@@ -4,6 +4,13 @@ import com.marks.tools.kkplatform.ImageRecognitionAutomation;
 import com.marks.tools.kkplatform.PrepareRoom;
 import com.marks.tools.kkplatform.WindowSwitcherUtils;
 import com.marks.utils.LogUtil;
+import com.sun.jna.platform.win32.WinDef;
+
+import java.awt.event.KeyEvent;
+import java.util.List;
+
+import static com.marks.tools.kkplatform.common.KingOfBeastsConstants.PREPARE_ROOM_TITLE;
+
 /**
  * <p>项目名称: LeetCode_QA </p>
  * <p>文件名称: GameFlowController </p>
@@ -20,7 +27,6 @@ import com.marks.utils.LogUtil;
  */
 public class GameFlowController {
     private ImageRecognitionAutomation automation;
-    private WindowSwitcherUtils windowSwitcher;
     private PrepareRoom prepareRoom;
     private DifficultyController difficultyController;
     private ThiefController thiefController;
@@ -32,13 +38,10 @@ public class GameFlowController {
 
     // 游戏时间控制
     private long gameStartTime;
-    private static final int GAME_MAIN_DURATION = 15 * 60 * 1000; // 15 分钟
-    private static final int FINAL_BOSS_DURATION = 2 * 60 * 1000; // 2 分钟
     private static final int ARCHIVER_BOSS_DURATION = 3 * 60 * 1000; // 3 分钟
 
     public GameFlowController(ImageRecognitionAutomation automation) {
         this.automation = automation;
-        this.windowSwitcher = WindowSwitcherUtils.getInstance();
         initializeControllers();
     }
 
@@ -50,7 +53,7 @@ public class GameFlowController {
         this.prepareRoom = new PrepareRoom(automation);
         this.difficultyController = new DifficultyController(automation);
         this.thiefController = new ThiefController(automation);
-        this.lockerController = new LockerController(automation);
+        this.lockerController = new LockerController(automation, modifierController);
         this.bossChallengeController = new BossChallengeController(automation);
         this.strengthenAttributeController = new StrengthenAttributeController(automation);
         this.modifierController = new ModifierController(automation);
@@ -66,27 +69,31 @@ public class GameFlowController {
         try {
             LogUtil.info("=== 开始游戏流程 ===");
 
-            // 步骤 1: 准备房间并开始游戏
+            // 步骤 1: 准备房间并开始游戏, [done]
             if (!prepareRoomAndStart()) {
                 LogUtil.error("准备房间失败，终止游戏");
                 return;
             }
 
-            // 步骤 2: 选择难度、模式、挑战
+            // 步骤 2: 选择难度、模式、挑战, [done]
             if (!selectDifficulty(difficultyNumber)) {
                 LogUtil.error("选择难度失败，终止游戏");
                 return;
             }
 
-            // 步骤 3: 记录游戏开始时间
+            // 步骤 3: 记录游戏开始时间, [done]
             gameStartTime = System.currentTimeMillis();
             LogUtil.info("游戏正式开始时间：" + gameStartTime);
 
             // 步骤 4: 游戏主体流程（15 分钟）
-            executeMainGame();
+            if (!executeMainGame()) {
+                return;
+            }
 
             // 步骤 5: 最终 BOSS 挑战
-            executeFinalBossChallenge();
+            if (!executeFinalBossChallenge()) {
+                return;
+            }
 
             // 步骤 6: 存档 BOSS 挑战
             executeArchiverBossChallenge();
@@ -105,8 +112,16 @@ public class GameFlowController {
      */
     private boolean prepareRoomAndStart() {
         LogUtil.info("=== 步骤 1: 准备房间 ===");
+        // 切换到准备窗口
+        if (!prepareRoom.switchToPrepareRoom()) {
+            return false;
+        }
+        // 延迟1s
+        automation.delay(1000);
+        // 点击准备房间的"开始游戏"按钮
         return prepareRoom.startGame();
     }
+
 
     /**
      * 步骤 2: 选择难度
@@ -119,173 +134,84 @@ public class GameFlowController {
     /**
      * 步骤 4: 执行游戏主流程（15 分钟）
      */
-    private void executeMainGame() {
+    private boolean executeMainGame() {
         LogUtil.info("=== 步骤 4: 游戏主体流程开始 ===");
 
         // 初始设置：编号、属性强化、购买武器等
         initialGameSetup();
 
-        // 主循环：每 10 秒检查一次时间，执行相应操作
-        while (true) {
-            long elapsed = System.currentTimeMillis() - gameStartTime;
-            long remaining = GAME_MAIN_DURATION - elapsed;
-
-            if (remaining <= 0) {
-                LogUtil.info("15 分钟游戏时间已到");
-                break;
-            }
-
-            LogUtil.info("游戏已进行：" + (elapsed / 1000 / 60) + "分钟，剩余：" + (remaining / 1000 / 60) + "分钟");
-
-            // 执行游戏内操作
-            executeGameCycle(remaining);
-
-            // 每隔 10 秒检查一次
-            automation.delay(10000);
+        // 开始执行小偷第一次修改装备流程
+        if (!thiefController.executeThiefProcess()) {
+            LogUtil.error("小偷流程执行失败，终止游戏");
+            return false;
         }
+        // 开启自动挑战金币怪
+        bossChallengeController.startAutoChallengeMonster();
+
+        int delayTime = 120000; // 两分钟等待时间
+        // 储物柜第二次修改物品
+        if (!lockerController.executeSecondModificationProcess(delayTime)) {
+            LogUtil.error("储物柜第二次修改失败，终止游戏");
+            return false;
+        }
+        LogUtil.info("执行第二次修改物品成功, 验证物品栏是否存在相应物品");
+        // 验证小偷物品栏中物品是否存在
+        if (!thiefController.verifyItemInSlot()) {
+            LogUtil.error("物品验证失败");
+            return false;
+        }
+        // 开启十连点击操作
+        if (!strengthenAttributeController.openTenClicks()) {
+            LogUtil.error("开启十连点击失败，终止游戏");
+            return false;
+        }
+        // 开始强化属性
+        if (!strengthenAttributeController.loopExecuteEnhancedProcess()) {
+            return false;
+        }
+        return true;
     }
 
     /**
      * 游戏初始设置
+     * 1. 对小偷人物进行编号为1, 并且按下 A键 攻击 金矿
+     * 2. 对挑战boss建筑进行编号
      */
     private void initialGameSetup() {
         LogUtil.info("=== 游戏初始设置 ===");
 
-        // 1. 对人物和建筑物进行编号
-        assignNumbers();
+        // 1.1 对人物小偷编号
+        thiefController.initialize(lockerController);
+        // 1.2 小偷攻击金矿
+        thiefController.attackGoldMine();
+        // 小偷初始化完成
 
-        // 2. 开启自动挑战金币怪
-        bossChallengeController.startAutoChallengeGoldMonster();
+        // 2 对挑战boss建筑编号
+        bossChallengeController.initialize();
 
-        // 3. 属性强化（攻速）TODO
-//        strengthenAttributeController.strengthenAttackSpeed();
+        // 3. 对属性强化建筑编号, 并且设置开始时间
+        strengthenAttributeController.initialize(gameStartTime);
 
-        // 4. 等待购买武器（约 1 分钟）
-        waitForBuyWeapon();
-
-        // 5. 小偷丢弃武器，储物柜拾取并修改
-        modifyFirstWeapon();
+        // 初始化完成
     }
 
-    /**
-     * 分配编号（Ctrl + 1~4）
-     */
-    private void assignNumbers() {
-        LogUtil.info("=== 分配编号 ===");
-        // 1 - 小偷英雄
-        CommonController commonController = new CommonController(automation);
-        commonController.selectNumber(1);
-        automation.delay(500);
-
-        // 2 - 储物柜
-        commonController.selectNumber(2);
-        automation.delay(500);
-
-        // 3 - BOSS 挑战建筑
-        commonController.selectNumber(3);
-        automation.delay(500);
-
-        // 4 - 属性强化建筑
-        commonController.selectNumber(4);
-        automation.delay(500);
-
-        LogUtil.info("编号分配完成");
-    }
-
-    /**
-     * 等待购买武器
-     */
-    private void waitForBuyWeapon() {
-        LogUtil.info("等待金币足够购买武器（约 1 分钟）");
-        automation.delay(60000);
-    }
-
-    /**
-     * 修改第一件武器
-     */
-    private void modifyFirstWeapon() {
-        LogUtil.info("=== 修改第一件武器 ===");
-
-        // 小偷丢弃武器 TODO
-//        thiefController.dropWeapon();
-//
-//        // 储物柜拾取
-//        lockerController.pickupDroppedItem();
-//
-//        // 修改器修改物品
-//        modifierController.findItemInfo();
-//        modifierController.modifyItemTo("I291");
-//
-//        // 储物柜丢弃修改后的物品
-//        lockerController.dropModifiedItem();
-//
-//        // 小偷拾取
-//        thiefController.pickupInRange();
-
-        LogUtil.info("第一件武器修改完成");
-    }
-
-    /**
-     * 执行游戏循环内的操作
-     * @param remainingTime 剩余时间（毫秒）
-     */
-    private void executeGameCycle(long remainingTime) {
-        // 检查是否需要强化属性（每分钟一次） TODO
-//        strengthenAttributeController.strengthenAttributesPeriodically(gameStartTime);
-//
-//        // 检查是否需要购买晕锤技能书（1000 金币后）
-//        checkAndBuyStunHammer();
-//
-//        // 继续攻击金矿获取金币
-//        thiefController.attackMine();
-    }
-
-    /**
-     * 检查并购买晕锤技能书
-     */
-    private void checkAndBuyStunHammer() {
-        // TODO: 实现金币检查和购买逻辑
-        // 当金币达到 1000 时，切换到储物柜购买 5 次晕锤技能书
-        // 然后修改这 5 件物品
-    }
 
     /**
      * 步骤 5: 最终 BOSS 挑战
      */
-    private void executeFinalBossChallenge() {
+    private boolean executeFinalBossChallenge() {
         LogUtil.info("=== 步骤 5: 最终 BOSS 挑战 ===");
-
         // 开启最终 BOSS 挑战
         bossChallengeController.startFinalBossChallenge();
-
-        // 等待 1 分钟
-        automation.delay(60000);
-
-        // 每 10 秒检查游戏胜利按钮
-        boolean victoryDetected = waitForVictory();
-
-        if (victoryDetected) {
-            LogUtil.info("检测到游戏胜利按钮，进入存档 BOSS 挑战");
+        // 等待 1s
+        automation.delay(1000);
+        // 执行检测胜利逻辑
+        int maxWaitTime = 1000 * 60 * 3; // 最多检测3分钟
+        if (!bossChallengeController.checkVictoryPeriodically(maxWaitTime)) {
+            LogUtil.error("最终 BOSS 挑战失败，终止游戏");
+            return false;
         }
-    }
-
-    /**
-     * 等待游戏胜利
-     * TODO
-     * @return 是否检测到胜利
-     */
-    private boolean waitForVictory() {
-        LogUtil.info("等待游戏胜利...");
-        int timeout = FINAL_BOSS_DURATION;
-        long startTime = System.currentTimeMillis();
-
-        while (System.currentTimeMillis() - startTime < timeout) {
-//            if (bossChallengeController.checkVictoryButton()) {
-//                return true;
-//            }
-            automation.delay(10000);
-        }
-        return false;
+        return true;
     }
 
     /**
@@ -308,7 +234,13 @@ public class GameFlowController {
      */
     private void exitGame() {
         LogUtil.info("=== 退出游戏 ===");
-        // TODO: 实现退出游戏逻辑
-        // 可能包括：点击退出按钮、关闭窗口等
+        // 使用组合键退出游戏, 先按 F10 键, 再按 E 键, 再按 X 键, 最后再按 X, 然后等待10s, 即可完全退出游戏
+        automation.pressFunctionKey(KeyEvent.VK_F10);
+        automation.pressFunctionKey(KeyEvent.VK_E);
+        automation.pressFunctionKey(KeyEvent.VK_X);
+        automation.pressFunctionKey(KeyEvent.VK_X);
+        // 等待5s
+        automation.delay(5000);
+        LogUtil.info("已点击退出游戏按钮");
     }
 }

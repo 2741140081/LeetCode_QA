@@ -6,6 +6,8 @@ import com.marks.utils.LogUtil;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.util.List;
+
 /**
  * <p>项目名称: LeetCode_QA </p>
  * <p>文件名称: ThiefController </p>
@@ -24,7 +26,8 @@ import java.awt.event.KeyEvent;
  * 11. 等待储物柜[步骤10中储物柜操作]再次修改物品的返回值, 如果成功, 则执行步骤8的操作.然后判断最后一件修改后的物品图片是否在小偷的物品栏中.
  * 12 再次 'A' 金矿. 小偷流程执行完成
  * 13. 将两个丢弃点区分, 使用丢弃点1 和丢弃点2 来区分
- *
+ * update: 2026/3/12
+ * 小偷流程基本完成
  * @author marks
  * @version v1.0
  * @date 2026/3/12 9:20
@@ -36,7 +39,6 @@ public class ThiefController extends CommonController {
 
     // 技能图片
     private static final String THIEF_DROP_SKILL = "1/drop_skill";        // 丢弃物品技能
-    private static final String THIEF_PICKUP_SKILL = "1/pickup_skill";     // 范围拾取技能
 
     // 金矿图片
     private static final String GOLD_MINE = "common/gold_mine";
@@ -45,15 +47,11 @@ public class ThiefController extends CommonController {
     private static final String SHOP_BUILDING = "common/shop_building";     // 商店最左上角物品
     private static final String BUY_EQUIPMENT_BOX = "5/buy_equipment_box";             // 购买确认按钮
 
-
-    private static final String ITEM_NAME_I291 = "common/ItemName_I291";           // 验证第一次拾取的物品
-    private static final String ITEM_NAME_I294 = "common/ItemName_I294";           // 验证最后一次修改的物品
-
     // 等待时间配置（毫秒）
     private static final int WAIT_FOR_SHOP_TIME = 60000;                 // 等待 1 分钟去商店
-    private static final int WAIT_FOR_GOLD_TIME = 120000;                // 等待 2 分钟偷取金币
 
     private SpecialHandel specialHandel;
+    private LockerController lockerController;
 
     public ThiefController(ImageRecognitionAutomation automation) {
         super(automation);
@@ -64,16 +62,15 @@ public class ThiefController extends CommonController {
      * 小偷初始化流程
      * 1. 给小偷编号 1
      * 2. 开始攻击金矿
-     * @return 是否成功
      */
-    public boolean initialize() {
+    public void initialize(LockerController lockerController) {
         LogUtil.info("=== 小偷初始化流程开始 ===");
         // 1. 给小偷编号 1
         selectNumber(THIEF_NUMBER);
-        LogUtil.info("小偷编号为：{}", THIEF_NUMBER);
-
-        LogUtil.info("小偷初始化完成");
-        return true;
+        LogUtil.info("小偷编号为：["+ THIEF_NUMBER +"]");
+        // 延迟1s
+        automation.delay(1000);
+        this.lockerController = lockerController;
     }
 
     /**
@@ -118,7 +115,7 @@ public class ThiefController extends CommonController {
         LogUtil.info("=== 前往商店购买物品 ===");
 
         // 等待 1 分钟
-        LogUtil.info("等待{}毫秒，准备前往商店", WAIT_FOR_SHOP_TIME);
+        LogUtil.info("等待" + WAIT_FOR_SHOP_TIME + "毫秒，准备前往商店");
         automation.delay(WAIT_FOR_SHOP_TIME);
 
         // 找到商店坐标
@@ -127,8 +124,6 @@ public class ThiefController extends CommonController {
             LogUtil.error("未找到商店");
             return false;
         }
-
-        LogUtil.info("找到商店坐标：({}, {})", shopPoint.x, shopPoint.y);
 
         // 点击商店
         automation.click(shopPoint.x, shopPoint.y);
@@ -149,165 +144,122 @@ public class ThiefController extends CommonController {
     }
 
     /**
-     * 丢弃物品到指定丢弃点
-     * @param dropPointName 丢弃点图片名称 ("drop_point_1" 或 "drop_point_2")
+     * 丢弃物品到储物柜
+     * 1. 移动视角使得储物柜显示在主页面
      * @return 是否成功
      */
-    public boolean dropItem(String dropPointName) {
+    public boolean dropItem() {
         LogUtil.info("=== 丢弃物品到丢弃点 ===");
+
+        // 1. 移动视角使得储物柜显示在主页面
+        pressKey(KeyEvent.VK_DOWN);
+        automation.delay(CLICK_DELAY);
+        pressKey(KeyEvent.VK_DOWN);
+        automation.delay(CLICK_DELAY);
+
+        // 2. 找到储物柜坐标点
+        Point lockerPoint = findImage(LOCKER_BUILDING);
+        if (lockerPoint == null) {
+            LogUtil.error("未找到储物柜");
+            return false;
+        }
 
         // 确保当前是小偷
         pressKey(THIEF_NUMBER);
 
+        // 3. 获取 THIEF_DROP_SKILL 的坐标, 然后计算第一件物品的坐标值
         // 点击丢弃物品技能
         Point dropSkillPoint = findImage(THIEF_DROP_SKILL);
         if (dropSkillPoint == null) {
             LogUtil.error("未找到丢弃物品技能");
             return false;
         }
+        // 通过计算, 得到第一件物品的坐标, y 值保持不变, x 值减去 150 px
+        Point itemPoint = new Point(dropSkillPoint.x - 150, dropSkillPoint.y);
 
+        // 点击 itemPoint, 相当于移动操作
+        automation.click(itemPoint.x, itemPoint.y);
+        automation.delay(CLICK_DELAY);
+
+        // 右键点击, 等同于拿起物品操作
+        automation.rightClick(itemPoint.x, itemPoint.y);
+
+        // 移动到储物柜坐标点并点击
+        automation.click(lockerPoint.x, lockerPoint.y);
+        automation.delay(CLICK_DELAY);
+        // 延迟1s
+        automation.delay(1000);
+
+        // 4. 将小偷物品栏可能剩余的物品进行丢弃
+        // 点击丢弃按钮
         automation.click(dropSkillPoint.x, dropSkillPoint.y);
-        automation.delay(CLICK_DELAY);
-
-        // 找到丢弃点坐标
-        Point dropPoint = findImage(dropPointName);
-        if (dropPoint == null) {
-            LogUtil.error("未找到丢弃点：{}", dropPointName);
-            return false;
-        }
-
-        LogUtil.info("找到丢弃点坐标：({}, {})", dropPoint.x, dropPoint.y);
-
-        // 移动到丢弃点并点击
+        // 在储物柜坐标点基础上, x值不变, y 值减去 150 px, 设置新丢弃点
+        Point dropPoint = new Point(lockerPoint.x, lockerPoint.y - 150);
+        // 移动到新丢弃点并点击
         automation.click(dropPoint.x, dropPoint.y);
         automation.delay(CLICK_DELAY);
-
-        LogUtil.info("物品已丢弃到{}", dropPointName);
-        return true;
-    }
-
-    /**
-     * 从丢弃点拾取修改后的物品
-     * @param dropPointName 丢弃点图片名称
-     * @return 是否成功
-     */
-    public boolean pickupModifiedItem(String dropPointName) {
-        LogUtil.info("=== 拾取修改后的物品 ===");
-
-        // 确保当前是小偷
-        pressKey(THIEF_NUMBER);
-
-        // 点击范围拾取技能
-        Point pickupSkillPoint = findImage(THIEF_PICKUP_SKILL);
-        if (pickupSkillPoint == null) {
-            LogUtil.error("未找到范围拾取技能");
-            return false;
-        }
-
-        automation.click(pickupSkillPoint.x, pickupSkillPoint.y);
-        automation.delay(CLICK_DELAY);
-
-        // 找到丢弃点坐标
-        Point dropPoint = findImage(dropPointName);
-        if (dropPoint == null) {
-            LogUtil.error("未找到丢弃点：{}", dropPointName);
-            return false;
-        }
-
-        LogUtil.info("找到丢弃点坐标：({}, {})", dropPoint.x, dropPoint.y);
-
-        // 移动到丢弃点并点击
-        automation.click(dropPoint.x, dropPoint.y);
-        automation.delay(CLICK_DELAY);
-
-        LogUtil.info("已从{}拾取物品", dropPointName);
+        // 延迟1s
+        automation.delay(1000);
+        LogUtil.info("物品丢弃完成");
         return true;
     }
 
     /**
      * 验证物品是否在物品栏中
-     * @param itemName 物品名称（图片名）
      * @return 是否存在
      */
-    public boolean verifyItemInSlot(String itemName) {
-        LogUtil.info("=== 验证物品是否存在：{} ===", itemName);
-
+    public boolean verifyItemInSlot() {
+        List<String> itemNames = getAllItemNames();
         // 在物品栏区域查找物品图片
-        Point itemPoint = findImage(itemName);
-
-        if (itemPoint != null) {
-            LogUtil.info("物品{}存在于物品栏中", itemName);
-            return true;
-        } else {
-            LogUtil.info("物品{}未在物品栏中找到", itemName);
-            return false;
+        for (String itemName : itemNames) {
+            itemName = COMMON_FOLDER + itemName;
+            Point itemPoint = findImage(itemName);
+            if (itemPoint == null) {
+                LogUtil.info("物品{}未在物品栏中找到", itemName);
+                return false;
+            }
         }
+        LogUtil.info("物品已全部在物品栏中");
+        return true;
     }
 
     /**
      * 完整的小偷操作流程
      * 包含：攻击金矿 -> 等 1 分钟去商店 -> 丢弃物品 -> 等待储物柜修改 -> 拾取物品 -> 验证 -> 继续攻击金矿
-     * @param dropPointName 使用的丢弃点名称
-     * @param expectedItemName 期望获得的物品名称
+     * 1. 攻击金矿是重复操作, 在 initialize() 中重复执行, 当前该操作可以省略
+     * 2. 通过编号切换到小偷
+     * 3. 点击2次"向下键", 移动视角到储物柜(使得储物柜显示在主页面上)
      * @return 是否成功
      */
-    // TODO: 这个方法需要与 LockerController 配合，目前先实现框架
-    public boolean executeFullProcess(String dropPointName, String expectedItemName) {
-        LogUtil.info("=== 小偷完整操作流程开始 ===");
+    public boolean executeThiefProcess() {
+        LogUtil.info("=== 小偷操作流程开始 ===");
 
         try {
-            // 1. 攻击金矿
-            if (!attackGoldMine()) {
-                return false;
-            }
-
-            // 2. 等待 1 分钟并去商店购买
+            // 1. 等待 1 分钟并去商店购买
             if (!goToShopAndBuy()) {
                 return false;
             }
 
-            // 3. 丢弃物品到指定点, 丢弃到点 1
-            if (!dropItem(DROP_POINT_1)) {
+            // 2. 切换到小偷, 并且按下空格键调整中心点
+            pressKey(THIEF_NUMBER);
+            automation.delay(CLICK_DELAY);
+            pressKey(KeyEvent.VK_SPACE);
+            automation.delay(CLICK_DELAY);
+
+            // 3. 移动视角到储物柜, 并且将身上物品转移到储物柜
+            if (!dropItem()) {
                 return false;
             }
 
-            // TODO: 4. 等待储物柜拾取并修改物品
-            // 这里需要调用 LockerController 的方法
+            // 4. 从新攻击金矿
+            attackGoldMine();
 
-            LogUtil.info("等待储物柜操作完成...");
-            automation.delay(5000); // 临时等待时间
-
-            // 5. 拾取修改后的物品
-            if (!pickupModifiedItem(dropPointName)) {
-                return false;
+            // 5. 执行第一次物品修改
+            if (!lockerController.executeFirstModificationProcess()) {
+                LogUtil.info("第一次物品修改流程执行失败");
             }
 
-            // 6. 验证物品是否正确, 验证物品 I291
-            if (!verifyItemInSlot(ITEM_NAME_I291)) {
-                LogUtil.error("物品验证失败：{}", ITEM_NAME_I291);
-                return false;
-            }
-
-            // 7. 重新攻击金矿
-            if (!attackGoldMine()) {
-                return false;
-            }
-
-            // 8. 等待储物柜购买技能物品并且修改
-            // TODO 8: 这里需要调用 LockerController 的方法
-
-            // 9. 再次拾取修改后的物品
-            if (!pickupModifiedItem(DROP_POINT_2)) {
-                return false;
-            }
-
-            // 10. 验证物品是否正确, 验证物品 I294
-            if (!verifyItemInSlot(ITEM_NAME_I294)) {
-                LogUtil.error("物品验证失败：{}", ITEM_NAME_I294);
-                return false;
-            }
-
-            LogUtil.info("小偷完整操作流程完成");
+            LogUtil.info("小偷操作流程完成");
             return true;
 
         } catch (Exception e) {

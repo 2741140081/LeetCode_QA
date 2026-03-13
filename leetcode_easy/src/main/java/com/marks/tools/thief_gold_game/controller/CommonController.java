@@ -9,8 +9,10 @@ import java.awt.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.nio.file.Paths;
-
-import static com.marks.tools.kkplatform.common.KingOfBeastsConstants.TEMPLATE_DIR;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * <p>项目名称: LeetCode_QA </p>
@@ -32,6 +34,7 @@ public class CommonController {
     // 图片路径常量
     protected static final String TEMPLATE_DIR = "D:/images/automation/thief_gold";
     protected static final String OUTPUT_DIR = "D:/images/automation/thief_gold/results";
+    protected static final String COMMON_FOLDER = "common/";  // 物品图片放置在common/ 文件夹下, 名称是 w291.png 类似
 
     // 窗口标题常量
     protected static final String GAME_TITLE = "小偷偷金 TD";
@@ -40,6 +43,14 @@ public class CommonController {
     // 丢弃点, 小偷 和 储物柜共享丢弃点
     protected static final String DROP_POINT_1 = "drop_point_1";           // 丢弃点 1
     protected static final String DROP_POINT_2 = "drop_point_2";           // 丢弃点 2
+
+    protected static final String LOCKER_BUILDING = "common/locker_building";
+    protected static final String THIEF_LEFT_TOP_FLAG = "common/thief_left_top_flag"; // 小偷左上角标志图片
+    protected static final String TEN_CLICK_BTN = "common/ten_click_btn"; // 10连点击开启按钮
+    protected static final String VICTORY_BUTTON = "common/victory_button"; // 游戏胜利按钮
+
+    protected static final String[] FIRST_ITEM_NAMES = {"w291"};
+    protected static final String[] SECOND_ITEM_NAMES = {"w291", "w290", "w290", "w293", "w293"};
 
     public CommonController(ImageRecognitionAutomation automation) {
         this.automation = automation;
@@ -240,5 +251,14 @@ public class CommonController {
      */
     public void delay(int milliseconds) {
         automation.delay(milliseconds);
+    }
+
+    public List<String> getAllItemNames() {
+        Set<String> itemNames = new HashSet<>();
+        // 遍历第一次和第二次的物品名称, 添加到 itemNames 中
+        itemNames.addAll(Arrays.asList(FIRST_ITEM_NAMES));
+        itemNames.addAll(Arrays.asList(SECOND_ITEM_NAMES));
+        // 将 itemNames 转换为List
+        return itemNames.stream().toList();
     }
 }

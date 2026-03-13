@@ -109,7 +109,7 @@ public class DifficultyController extends CommonController {
     public boolean executeDifficultySelection(int difficultyNumber) {
         LogUtil.info("=== 开始难度选择流程 ===");
 
-        // 选择难度
+        // 选择难度, 包含选择难度范围和具体难度
         if (!selectDifficulty(difficultyNumber)) {
             return false;
         }

@@ -103,25 +103,4 @@ public class ArchiverChallengeController extends CommonController {
 
         return allSuccess;
     }
-
-    /**
-     * 等待 3 分钟左右结束游戏
-     */
-    public void waitForCompletion() {
-        LogUtil.info("=== 等待 3 分钟，让小偷 kill 所有存档 BOSS ===");
-        automation.delay(3 * 60 * 1000);
-        LogUtil.info("等待完成");
-    }
-
-    /**
-     * 执行完整的存档挑战流程
-     */
-    public void executeArchiverChallenge() {
-        LogUtil.info("=== 执行存档挑战流程 ===");
-
-        challengeAllArchivers();
-        waitForCompletion();
-
-        LogUtil.info("存档挑战流程完成");
-    }
 }
