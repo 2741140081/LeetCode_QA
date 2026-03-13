@@ -2,11 +2,12 @@ package com.marks.tools.thief_gold_game.controller;
 
 
 import com.marks.tools.kkplatform.ImageRecognitionAutomation;
+import com.marks.tools.thief_gold_game.entity.ImageInfo;
 import com.marks.utils.LogUtil;
 
 import java.awt.*;
 import java.io.File;
-import java.io.FilenameFilter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -21,21 +22,14 @@ import java.util.List;
  * @update [序号][日期YYYY-MM-DD] [更改人姓名][变更描述]
  */
 public class ArchiverChallengeController extends CommonController {
-    private static final String ARCHIVER_BUILDING_1 = "common/archiver_building_1"; // 存档挑战1的建筑图片
-    private static final String ARCHIVER_BUILDING_2 = "common/archiver_building_2";
-    private static final String ARCHIVER_BUILDING_3 = "common/archiver_building_3";
-    private static final String ARCHIVER_BUILDING_4 = "common/archiver_building_4";
+    // 存档建筑图片基础路径
+    private static final String ARCHIVER_BUILDING_BASE = "common/archiver_building_";
 
-    private static final String ARCHIVER_1_FOLDER = "archiver_1/"; // 存档挑战1的文件夹, 存放boss 图片
-    private static final String ARCHIVER_2_FOLDER = "archiver_2/"; // 存档挑战2的文件夹, 存放boss 图片
-    private static final String ARCHIVER_3_FOLDER = "archiver_3/"; // 存档挑战3的文件夹, 存放boss 图片
-    private static final String ARCHIVER_4_FOLDER = "archiver_4/"; // 存档挑战4的文件夹, 存放boss 图片
+    // 存档文件夹基础路径
+    private static final String ARCHIVER_FOLDER_BASE = "archiver_";
 
-    // 存档建筑编号（6-9）
-    private static final int ARCHIVER_NUMBER_1 = 6;
-    private static final int ARCHIVER_NUMBER_2 = 7;
-    private static final int ARCHIVER_NUMBER_3 = 8;
-    private static final int ARCHIVER_NUMBER_4 = 9;
+    // 存档编号数组
+    private static final int[] ARCHIVER_NUMBERS = {1, 2, 3, 4};
 
     // 坐标微调参数
     private static final int X_OFFSET = -150;  // X 坐标向左微调 150px
@@ -68,34 +62,11 @@ public class ArchiverChallengeController extends CommonController {
             }
 
             // 2. 依次挑战每个存档 BOSS
-            LogUtil.info("开始挑战第 1 个存档 BOSS");
-            if (!challengeArchiver(ARCHIVER_NUMBER_1, ARCHIVER_1_FOLDER)) {
-                LogUtil.error("挑战第 1 个存档 BOSS 失败");
-                allSuccess = false;
-            }
-
-            LogUtil.info("开始挑战第 2 个存档 BOSS");
-            if (!challengeArchiver(ARCHIVER_NUMBER_2, ARCHIVER_2_FOLDER)) {
-                LogUtil.error("挑战第 2 个存档 BOSS 失败");
-                allSuccess = false;
-            }
-
-            LogUtil.info("开始挑战第 3 个存档 BOSS");
-            if (!challengeArchiver(ARCHIVER_NUMBER_3, ARCHIVER_3_FOLDER)) {
-                LogUtil.error("挑战第 3 个存档 BOSS 失败");
-                allSuccess = false;
-            }
-
-            LogUtil.info("开始挑战第 4 个存档 BOSS");
-            if (!challengeArchiver(ARCHIVER_NUMBER_4, ARCHIVER_4_FOLDER)) {
-                LogUtil.error("挑战第 4 个存档 BOSS 失败");
-                allSuccess = false;
-            }
-
-            if (allSuccess) {
-                LogUtil.info("=== 所有存档 BOSS 挑战成功 ===");
-            } else {
-                LogUtil.warn("部分存档 BOSS 挑战失败");
+            LogUtil.info("开始挑战 BOSS");
+            for (int number : ARCHIVER_NUMBERS) {
+                LogUtil.info("开始挑战第{}个存档 BOSS", number);
+                String bossFolder = ARCHIVER_FOLDER_BASE + number;
+                challengeArchiver(number, bossFolder);
             }
 
         } catch (Exception e) {
@@ -115,45 +86,20 @@ public class ArchiverChallengeController extends CommonController {
         LogUtil.info("=== 开始圈选所有存档建筑 ===");
 
         try {
-            // 处理第 1 个存档建筑
-            Point building1Point = findAndAdjustPoint(ARCHIVER_BUILDING_1);
-            if (building1Point != null && circleSelectAndNumber(building1Point, ARCHIVER_NUMBER_1)) {
-                LogUtil.info("第 1 个存档建筑圈选并编号成功");
-            } else {
-                LogUtil.error("第 1 个存档建筑处理失败");
-                return false;
-            }
+            for (int number : ARCHIVER_NUMBERS) {
+                String buildingImage = ARCHIVER_BUILDING_BASE + number;
+                Point buildingPoint = findAndAdjustPoint(buildingImage);
 
-            // 处理第 2 个存档建筑
-            Point building2Point = findAndAdjustPoint(ARCHIVER_BUILDING_2);
-            if (building2Point != null && circleSelectAndNumber(building2Point, ARCHIVER_NUMBER_2)) {
-                LogUtil.info("第 2 个存档建筑圈选并编号成功");
-            } else {
-                LogUtil.error("第 2 个存档建筑处理失败");
-                return false;
-            }
-
-            // 处理第 3 个存档建筑
-            Point building3Point = findAndAdjustPoint(ARCHIVER_BUILDING_3);
-            if (building3Point != null && circleSelectAndNumber(building3Point, ARCHIVER_NUMBER_3)) {
-                LogUtil.info("第 3 个存档建筑圈选并编号成功");
-            } else {
-                LogUtil.error("第 3 个存档建筑处理失败");
-                return false;
-            }
-
-            // 处理第 4 个存档建筑
-            Point building4Point = findAndAdjustPoint(ARCHIVER_BUILDING_4);
-            if (building4Point != null && circleSelectAndNumber(building4Point, ARCHIVER_NUMBER_4)) {
-                LogUtil.info("第 4 个存档建筑圈选并编号成功");
-            } else {
-                LogUtil.error("第 4 个存档建筑处理失败");
-                return false;
+                if (buildingPoint != null && circleSelectAndNumber(buildingPoint, number)) {
+                    LogUtil.info("第{}个存档建筑圈选并编号成功", number);
+                } else {
+                    LogUtil.error("第{}个存档建筑处理失败", number);
+                    return false;
+                }
             }
 
             LogUtil.info("所有存档建筑圈选并编号完成");
             return true;
-
         } catch (Exception e) {
             LogUtil.error("圈选存档建筑异常：{}", e.getMessage());
             e.printStackTrace();
@@ -177,7 +123,7 @@ public class ArchiverChallengeController extends CommonController {
 
         LogUtil.info("找到建筑原始坐标：({}, {})", originalPoint.x, originalPoint.y);
 
-        // 微调坐标：X 不变，Y 减少 150px
+        // 微调坐标左移：，X 减少 150px, Y 不变
         Point adjustedPoint = new Point(originalPoint.x + X_OFFSET, originalPoint.y );
         LogUtil.info("调整后坐标：({}, {})", adjustedPoint.x, adjustedPoint.y);
 
@@ -223,7 +169,7 @@ public class ArchiverChallengeController extends CommonController {
      * @param bossFolder 存放 BOSS 图片的文件夹
      * @return 是否成功
      */
-    private boolean challengeArchiver(int archiverNumber, String bossFolder) {
+    private void challengeArchiver(int archiverNumber, String bossFolder) {
         LogUtil.info("=== 开始挑战存档{}的 BOSS ===", archiverNumber);
 
         try {
@@ -233,22 +179,19 @@ public class ArchiverChallengeController extends CommonController {
             LogUtil.info("已选择存档建筑编号：{}", archiverNumber);
 
             // 2. 获取文件夹中的所有 BOSS 图片
-            List<String> bossImages = getBossImagesFromFolder(bossFolder);
+            List<ImageInfo> bossImages = getBossImagesFromFolder(bossFolder);
             if (bossImages.isEmpty()) {
                 LogUtil.error("存档{}文件夹中没有 BOSS 图片", bossFolder);
-                return false;
             }
 
             LogUtil.info("存档{}共有{}个 BOSS 需要挑战", bossFolder, bossImages.size());
 
             // 3. 依次挑战每个 BOSS
-            boolean allBossDefeated = true;
-            for (String bossImage : bossImages) {
+            for (ImageInfo bossImage : bossImages) {
                 LogUtil.info("正在挑战 BOSS: {}", bossImage);
 
                 if (!defeatBoss(bossImage)) {
                     LogUtil.error("挑战 BOSS {} 失败", bossImage);
-                    allBossDefeated = false;
                 } else {
                     LogUtil.info("BOSS {} 挑战成功", bossImage);
                 }
@@ -256,18 +199,9 @@ public class ArchiverChallengeController extends CommonController {
                 automation.delay(500);
             }
 
-            if (allBossDefeated) {
-                LogUtil.info("存档{}的所有 BOSS 挑战成功", bossFolder);
-                return true;
-            } else {
-                LogUtil.warn("存档{}的部分 BOSS 挑战失败", bossFolder);
-                return false;
-            }
-
         } catch (Exception e) {
             LogUtil.error("挑战存档 BOSS 异常：{}", e.getMessage());
             e.printStackTrace();
-            return false;
         }
     }
 
@@ -276,8 +210,8 @@ public class ArchiverChallengeController extends CommonController {
      * @param folderName 文件夹名称
      * @return BOSS 图片列表
      */
-    private List<String> getBossImagesFromFolder(String folderName) {
-        String fullPath = TEMPLATE_DIR + "/" + folderName;
+    private List<ImageInfo> getBossImagesFromFolder(String folderName) {
+        String fullPath = TEMPLATE_DIR + File.separator + folderName;
         File folder = new File(fullPath);
 
         if (!folder.exists() || !folder.isDirectory()) {
@@ -286,36 +220,35 @@ public class ArchiverChallengeController extends CommonController {
         }
 
         // 过滤出所有.png 图片文件
-        String[] imageFiles = folder.list(new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String name) {
-                return name.toLowerCase().endsWith(".png");
-            }
-        });
+        String[] imageFiles = folder.list((dir, name) -> name.toLowerCase().endsWith(".png"));
 
         if (imageFiles == null) {
             LogUtil.error("无法读取文件夹内容：{}", fullPath);
             return Arrays.asList();
         }
 
+        // 构建 ImageInfo 列表
+        List<ImageInfo> imageInfos = new ArrayList<>();
+        for (String fileName : imageFiles) {
+            String imageName = fileName.replace(".png", "");
+            String imagePath = fullPath + File.separator + fileName;
+            imageInfos.add(new ImageInfo(imageName, imagePath));
+        }
+
         // 去除扩展名，返回图片名称列表
-        return Arrays.stream(imageFiles)
-                .map(name -> folderName + name.replace(".png", ""))
-                .toList();
+        return imageInfos;
     }
 
     /**
      * 击败单个 BOSS
-     * @param bossImage BOSS 图片名称
+     * @param bossInfo BOSS 图片名称
      * @return 是否成功
      */
-    private boolean defeatBoss(String bossImage) {
-        LogUtil.info("正在查找并点击 BOSS: {}", bossImage);
-
+    private boolean defeatBoss(ImageInfo bossInfo) {
         // 查找并点击 BOSS 图片
-        Point bossPoint = findImage(bossImage);
+        Point bossPoint = findImage(bossInfo.getImageName(), bossInfo.getImagePath(), false);
         if (bossPoint == null) {
-            LogUtil.error("未找到 BOSS 图片：{}", bossImage);
+            LogUtil.error("未找到 BOSS 图片：{}", bossInfo.getImageName());
             return false;
         }
 
@@ -325,7 +258,7 @@ public class ArchiverChallengeController extends CommonController {
         automation.click(bossPoint.x, bossPoint.y);
         automation.delay(CLICK_DELAY);
 
-        LogUtil.info("已点击 BOSS: {}", bossImage);
+        LogUtil.info("已点击 BOSS: {}", bossInfo.getImageName());
         return true;
     }
 }

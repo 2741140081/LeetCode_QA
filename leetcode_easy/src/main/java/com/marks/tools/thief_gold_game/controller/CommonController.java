@@ -8,11 +8,15 @@ import com.marks.utils.LogUtil;
 import java.awt.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.io.File;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import static com.marks.tools.kkplatform.common.KingOfBeastsConstants.GAME_TITLE;
+import static com.marks.tools.kkplatform.common.KingOfBeastsConstants.MODIFIER_TITLE;
 
 /**
  * <p>项目名称: LeetCode_QA </p>
@@ -35,14 +39,6 @@ public class CommonController {
     protected static final String TEMPLATE_DIR = "D:/images/automation/thief_gold";
     protected static final String OUTPUT_DIR = "D:/images/automation/thief_gold/results";
     protected static final String COMMON_FOLDER = "common/";  // 物品图片放置在common/ 文件夹下, 名称是 w291.png 类似
-
-    // 窗口标题常量
-    protected static final String GAME_TITLE = "小偷偷金 TD";
-    protected static final String MODIFIER_TITLE = "修改器";
-
-    // 丢弃点, 小偷 和 储物柜共享丢弃点
-    protected static final String DROP_POINT_1 = "drop_point_1";           // 丢弃点 1
-    protected static final String DROP_POINT_2 = "drop_point_2";           // 丢弃点 2
 
     protected static final String LOCKER_BUILDING = "common/locker_building";
     protected static final String THIEF_LEFT_TOP_FLAG = "common/thief_left_top_flag"; // 小偷左上角标志图片
@@ -99,7 +95,16 @@ public class CommonController {
     public Point findImage(String imageName, boolean isNecessary) {
         // 构建模板图片完整路径
         String templatePath = Paths.get(TEMPLATE_DIR, imageName + ".png").toString();
-        return automation.findImage(imageName, templatePath, isNecessary);
+        File templateFile = new File(templatePath);
+        if (!templateFile.exists()) {
+            throw new RuntimeException("模板图片不存在：" + templatePath);
+        }
+        imageName = templateFile.getName();
+        return findImage(imageName, templatePath, isNecessary);
+    }
+
+    public Point findImage(String imageName, String imagePath, boolean isNecessary) {
+        return automation.findImage(imageName, imagePath, isNecessary);
     }
 
     /**
