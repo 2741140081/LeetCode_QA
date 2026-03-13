@@ -1,0 +1,40 @@
+update: 2026-03-13
+尚未完成的代码:
+1. ModifierController: 编辑修改物品相关的操作
+2. ArchiverChallengeController: 存档boss 挑战相关操作
+
+处理 ModifierController 类:
+1. 需要切换窗口的修改器窗口
+2. 有两次编辑物品操作, 传入的参数是 List<String> itemNames;
+3. itemNames 存储修改后的物品名称
+4. 点击'查找游戏' 按钮, 修改器app 自动获取储物柜的物品栏信息(不需要我们写代码, 只需要点击查找游戏按钮即可)
+5. 找到'物品信息' 图片，返回坐标信息, 根据该坐标点, 通过计算得到第一件物品的坐标点, (x 坐标增加 10 px, y 坐标增加 45 px),
+需要根据实际情况调整.
+6. 获取 itemNames.size() 大小 int n = itemNames.size(); 执行 for -> n 循环
+7. 对于循环体中的每个 i, 由于物品信息是纵向排布的, 所有物品的 y 值相同, x + (i * height); width 是物品栏的高度,
+先默认是 15 px(后续实际情况修改)
+8. 得到第 i 件物品的坐标点 itemPoint, 双击该坐标点, Ctrl + A 全选, 然后type name = itemNames.get(i);
+然后点击修改按钮, 完成第 i 件物品的修改
+9. 修改完成后需要切换回到游戏主体窗口
+
+ModifierController 暂时先这样处理
+
+
+
+ArchiverChallengeController 处理
+1. 点击游戏胜利窗口后, 等待3s, 游戏内会自动切换到游戏中间存档区域的视角
+2. 先通过common/archiver_building_{number}.png 找到各个存档boss 挑战的建筑图片, 返回坐标
+3. 微调各个存档建筑返回的坐标, y 值竖直保持不变, x 值减少 150px(向左移动 150px), 微调后的点作为各个建筑物的起点 startPoint
+4. 使用圈选来选择各个存档建筑, 圈选的矩阵大小为 100px * 100px(按实际情况调整), 可以得到圈选的终点 endPoint = (startPoint.x + 100, startPoint.y + 100)
+5. 执行圈选, 圈选: 在startPoint 处按下鼠标左键, 移动鼠标(写一个方法, 对角线移动) 到endPoint 处, 释放鼠标左键, 延迟1s, 然后给各个存档建筑物编号(6, 7, 8, 9)
+圈选功能方法: automation.moveMouseWithLeftUp(Point start, Point end, int spendTime)
+6. 开始执行每一个存档boss建筑中的挑战, 可以使用循环来处理, 使用集合存储待挑战的存档建筑, 每个存档文件夹 archiver_1/, 都存放了该存档建筑可供挑战的boss 图片,
+需要读取文件夹中的图片, 然后匹配图片, 并且点击, 完成挑战
+7. 由于已经给存档建筑编号, 可以通过 pressKey(number) 来选择对应的建筑物
+
+
+
+
+
+
+

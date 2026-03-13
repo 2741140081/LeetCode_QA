@@ -38,7 +38,7 @@ public class GameFlowController {
 
     // 游戏时间控制
     private long gameStartTime;
-    private static final int ARCHIVER_BOSS_DURATION = 3 * 60 * 1000; // 3 分钟
+    private static final int ARCHIVER_BOSS_DURATION = 2 * 60 * 1000; // 2 分钟
 
     public GameFlowController(ImageRecognitionAutomation automation) {
         this.automation = automation;
@@ -206,7 +206,7 @@ public class GameFlowController {
         // 等待 1s
         automation.delay(1000);
         // 执行检测胜利逻辑
-        int maxWaitTime = 1000 * 60 * 3; // 最多检测3分钟
+        int maxWaitTime = 1000 * 60 * 2; // 最多检测2分钟
         if (!bossChallengeController.checkVictoryPeriodically(maxWaitTime)) {
             LogUtil.error("最终 BOSS 挑战失败，终止游戏");
             return false;
@@ -223,7 +223,7 @@ public class GameFlowController {
         // 依次挑战 4 个存档 BOSS
         archiverChallengeController.challengeAllArchivers();
 
-        // 等待 3 分钟
+        // 等待 2 分钟
         automation.delay(ARCHIVER_BOSS_DURATION);
 
         LogUtil.info("存档 BOSS 挑战完成");

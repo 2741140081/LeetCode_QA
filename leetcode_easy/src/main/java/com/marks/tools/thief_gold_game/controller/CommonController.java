@@ -214,11 +214,11 @@ public class CommonController {
 
     /**
      * 编号操作（Ctrl + 数字键）
-     * @param number 编号 1-4
+     * @param number 编号 1-9
      */
     public void selectNumber(int number) {
-        if (number < 1 || number > 4) {
-            LogUtil.error("编号必须在 1-4 之间");
+        if (number < 1 || number > 9) {
+            LogUtil.error("编号必须在 1-9 之间");
             return;
         }
         int keyCode = KeyEvent.getExtendedKeyCodeForChar(Character.forDigit(number, 10));

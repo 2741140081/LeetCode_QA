@@ -413,6 +413,80 @@ public class ImageRecognitionAutomation {
     }
 
     /**
+     * 圈选功能
+     * 1. 鼠标移动到start点
+     * 2. 左键按下(不立即释放)
+     * 3. 鼠标移动到end 点
+     * 4. 释放左键
+     */
+    public void moveMouseWithLeftUp(Point start, Point end, int spendTime) {
+        try {
+            // 1. 鼠标移动到起始点
+            robot.mouseMove((int) start.x, (int) start.y);
+            delay(100); // 短暂延迟，确保鼠标到位
+
+            // 2. 左键按下（不立即释放）
+            robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
+            delay(200); // 等待按下稳定
+
+            // 3. 鼠标平滑移动到结束点
+            smoothMouseMove(start, end, spendTime);
+
+            // 4. 释放左键
+            robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
+            delay(100); // 释放后短暂延迟
+
+            LogUtil.info(String.format("圈选操作完成：从 (%d, %d) 到 (%d, %d), 耗时 %dms",
+                    (int) start.x, (int) start.y,
+                    (int) end.x, (int) end.y,
+                    spendTime));
+
+        } catch (Exception e) {
+            LogUtil.error("圈选操作失败：" + e.getMessage());
+            // 确保释放鼠标左键（防止卡住）
+            robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 平滑移动鼠标（模拟人类行为）
+     * @param start 起始点
+     * @param end 结束点
+     * @param totalDuration 总耗时（毫秒）
+     */
+    private void smoothMouseMove(Point start, Point end, int totalDuration) {
+        double distance = Math.sqrt(
+                Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2)
+        );
+
+        // 计算需要移动的步数（每 20 像素一步）
+        int steps = (int) (distance / 20);
+        if (steps < 1) {
+            steps = 1;
+        }
+
+        // 计算每步的延迟
+        int delayPerStep = totalDuration / steps;
+        if (delayPerStep < 1) {
+            delayPerStep = 1;
+        }
+
+        // 计算每步的增量
+        double dx = (end.x - start.x) / (double) steps;
+        double dy = (end.y - start.y) / (double) steps;
+
+        // 逐步移动鼠标
+        for (int i = 0; i <= steps; i++) {
+            int x = (int) (start.x + dx * i);
+            int y = (int) (start.y + dy * i);
+
+            robot.mouseMove(x, y);
+            delay(delayPerStep);
+        }
+    }
+
+    /**
      * 输入文本
      */
     public void typeText(String text) {

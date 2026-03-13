@@ -118,7 +118,6 @@ public class LockerController extends CommonController {
      * @param itemNames 要修改的物品名称列表
      * @return 是否成功
      */
-    // TODO: 需要与 ModifierController 配合
     public boolean modifyItems(List<String> itemNames) {
         LogUtil.info("=== 储物柜：修改物品，数量：{" + itemNames.size() + "} ===");
 
@@ -126,30 +125,7 @@ public class LockerController extends CommonController {
             LogUtil.error("ModifierController 未设置");
             return false;
         }
-
-        try {
-            // 切换到修改器窗口 TODO: 添加 switchToModifiersWindow 方法 在 CommonController 中
-//            if (!switchToModifiersWindow()) {
-//                LogUtil.error("切换到修改器窗口失败");
-//                return false;
-//            }
-
-            // 调用修改器修改物品 TODO: 添加 modifyItems 方法 在 ModifierController 中
-//            boolean result = modifierController.modifyItems(itemNames);
-
-            // 切换回游戏窗口
-            switchToGameWindow();
-            // 延迟1s
-            automation.delay(1000);
-
-            // 返回结果, TODO
-            return false;
-
-        } catch (Exception e) {
-            LogUtil.error("修改物品异常：{}", e.getMessage());
-            e.printStackTrace();
-            return false;
-        }
+        return modifierController.modifyItems(itemNames);
     }
 
     /**

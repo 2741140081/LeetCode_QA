@@ -7,6 +7,7 @@ import com.marks.utils.LogUtil;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.util.List;
 /**
  * <p>项目名称: LeetCode_QA </p>
  * <p>文件名称: ModifierController </p>
@@ -22,159 +23,131 @@ public class ModifierController extends CommonController {
     private static final String ITEM_INFO_LABEL = "modifier/item_info_label";
     private static final String MODIFY_BUTTON = "modifier/modify_btn";
 
-    private static final int ITEM_CELL_WIDTH = 100;
-    private static final int ITEM_CELL_HEIGHT = 30;
-    private static final int FIRST_ITEM_X_OFFSET = 50;
-    private static final int FIRST_ITEM_Y_OFFSET = 50;
+    // 物品栏偏移量配置
+    private static final int ITEM_X_OFFSET = 10;      // X 坐标偏移量 (px)
+    private static final int ITEM_Y_OFFSET = 45;      // Y 坐标偏移量 (px)
+    private static final int ITEM_HEIGHT = 15;        // 物品栏高度 (px)
+
 
     public ModifierController(ImageRecognitionAutomation automation) {
         super(automation);
-        this.windowSwitcher = WindowSwitcherUtils.getInstance();
     }
 
     /**
-     * 找到'物品信息'信息栏，返回坐标
-     * @return 物品信息栏坐标，未找到返回 null
+     * 修改物品完整流程
+     * 1. 切换到修改器窗口
+     * 2. 点击查找游戏按钮
+     * 3. 找到物品信息标签，计算第一件物品坐标
+     * 4. 循环修改每个物品
+     * 5. 切换回游戏窗口
+     * @param itemNames 要修改的物品名称列表
+     * @return 是否成功
      */
-    public Point findItemInfoLabel() {
-        LogUtil.info("=== 查找物品信息栏 ===");
-        return findImage(ITEM_INFO_LABEL);
-    }
+    public boolean modifyItems(List<String> itemNames) {
+        LogUtil.info("=== 修改器：开始修改物品，数量：{"+ itemNames.size() +"} ===");
 
-    /**
-     * 计算并定位物品坐标
-     * @param basePoint 基础坐标点（物品信息栏）
-     * @param itemIndex 物品索引（0-4）
-     * @return 物品坐标
-     */
-    public Point calculateItemPosition(Point basePoint, int itemIndex) {
-        if (basePoint == null) {
-            LogUtil.error("基础坐标点为空");
-            return null;
+        if (itemNames.isEmpty()) {
+            LogUtil.error("物品名称列表为空");
+            return false;
         }
 
-        int x = basePoint.x + FIRST_ITEM_X_OFFSET;
-        int y = basePoint.y + FIRST_ITEM_Y_OFFSET + (itemIndex * ITEM_CELL_HEIGHT);
+        try {
+            // 1. 切换到修改器窗口
+            if (!switchToModifierWindow()) {
+                LogUtil.error("切换到修改器窗口失败");
+                return false;
+            }
+            automation.delay(CLICK_DELAY);
 
-        LogUtil.info("计算物品坐标，索引：" + itemIndex + ", 坐标：(" + x + ", " + y + ")");
+            // 2. 点击查找游戏按钮，让修改器自动获取储物柜物品栏信息
+            if (!findAndClickImage(FIND_GAME_BUTTON)) {
+                LogUtil.error("点击查找游戏按钮失败");
+                return false;
+            }
+            automation.delay(500);
+
+            // 3. 找到物品信息标签，获取基准坐标
+            Point itemInfoPoint = findImage(ITEM_INFO_LABEL);
+            if (itemInfoPoint == null) {
+                LogUtil.error("未找到物品信息标签");
+                return false;
+            }
+            LogUtil.info("找到物品信息标签，坐标：({" + itemInfoPoint.x + "}, {" + itemInfoPoint.y + "})");
+
+            // 4. 计算第一件物品的坐标点
+            // 根据物品信息坐标，通过计算得到第一件物品的坐标点
+            Point firstItemPoint = calculateFirstItemPoint(itemInfoPoint);
+            LogUtil.info("计算得到第一件物品坐标：({" + firstItemPoint.x + "}, {" + firstItemPoint.x + "})");
+
+            // 5. 循环修改每个物品
+            for (int i = 0; i < itemNames.size(); i++) {
+                String itemName = itemNames.get(i);
+                LogUtil.info("正在修改第{" + (i + 1) + "}件物品：{ "+ itemName +"}");
+
+                // 计算第 i 件物品的坐标点
+                Point itemPoint = calculateItemPoint(firstItemPoint, i);
+                LogUtil.info("计算得到第{" + (i + 1) + "}件物品坐标：({" + itemPoint.x + "}, {" + itemPoint.x + "})");
+
+                // 双击该坐标点
+                doubleClick(itemPoint.x, itemPoint.y);
+                automation.delay(200);
+
+                // Ctrl + A 全选
+                pressCombinationKey(KeyEvent.VK_CONTROL, KeyEvent.VK_A);
+                automation.delay(500);
+
+                // 输入新的物品名称
+                inputText(itemName);
+                automation.delay(200);
+
+                // 点击修改按钮
+                if (!findAndClickImage(MODIFY_BUTTON)) {
+                    LogUtil.error("点击修改按钮失败");
+                    return false;
+                }
+                // 延迟1s
+                automation.delay(1000);
+            }
+
+            LogUtil.info("所有物品修改完成，共{" + itemNames.size() + "}件");
+
+            return true;
+        } catch (Exception e) {
+            LogUtil.error("修改物品异常: "+ e.getMessage());
+            e.printStackTrace();
+            return false;
+        } finally {
+            LogUtil.info("=== 修改器：修改物品结束 ===");
+            // 6. 切换回游戏主体窗口
+            switchToGameWindow();
+            automation.delay(CLICK_DELAY);
+        }
+    }
+
+    /**
+     * 计算第一件物品的坐标点
+     * 基于物品信息标签的坐标，加上固定的偏移量
+     * @param itemInfoPoint 物品信息标签坐标
+     * @return 第一件物品的坐标点
+     */
+    private Point calculateFirstItemPoint(Point itemInfoPoint) {
+        int x = itemInfoPoint.x + ITEM_X_OFFSET;
+        int y = itemInfoPoint.y + ITEM_Y_OFFSET;
         return new Point(x, y);
     }
 
     /**
-     * 修改物品值
-     * @param itemName 物品名称（如 I291）
-     * @return 是否成功
+     * 计算第 i 件物品的坐标点
+     * 物品的 y 值相同，x 坐标按物品栏高度递增
+     * @param firstItemPoint 第一件物品的坐标点
+     * @param index 物品索引 (从 0 开始)
+     * @return 第 i 件物品的坐标点
      */
-    public boolean modifyItemValue(String itemName) {
-        LogUtil.info("=== 修改物品值：" + itemName + " ===");
-
-        Point itemInfoPoint = findItemInfoLabel();
-        if (itemInfoPoint == null) {
-            LogUtil.error("未找到物品信息栏");
-            return false;
-        }
-
-        moveTo(itemInfoPoint.x, itemInfoPoint.y);
-        automation.delay(300);
-
-        pressCombinationKey(KeyEvent.VK_CONTROL, KeyEvent.VK_A);
-        automation.delay(200);
-
-        inputText(itemName);
-        automation.delay(300);
-
-        Point modifyButtonPoint = findImage(MODIFY_BUTTON);
-        if (modifyButtonPoint == null) {
-            LogUtil.error("未找到修改按钮");
-            return false;
-        }
-
-        automation.click(modifyButtonPoint.x, modifyButtonPoint.y);
-        automation.delay(500);
-
-        LogUtil.info("修改物品值完成：" + itemName);
-        return true;
+    private Point calculateItemPoint(Point firstItemPoint, int index) {
+        int x = firstItemPoint.x + (index * ITEM_HEIGHT);
+        int y = firstItemPoint.y;
+        return new Point(x, y);
     }
 
-    /**
-     * 批量修改 5 个物品
-     * @param itemNames 物品名称数组（如 ["I290", "I293", ...]）
-     * @return 是否全部成功
-     */
-    public boolean modifyMultipleItems(String[] itemNames) {
-        LogUtil.info("=== 批量修改 5 个物品 ===");
 
-        Point basePoint = findItemInfoLabel();
-        if (basePoint == null) {
-            return false;
-        }
-
-        boolean allSuccess = true;
-
-        for (int i = 0; i < itemNames.length && i < 5; i++) {
-            Point itemPoint = calculateItemPosition(basePoint, i);
-            if (itemPoint == null) {
-                allSuccess = false;
-                continue;
-            }
-
-            moveTo(itemPoint.x, itemPoint.y);
-            automation.delay(300);
-
-            pressCombinationKey(KeyEvent.VK_CONTROL, KeyEvent.VK_A);
-            automation.delay(200);
-
-            inputText(itemNames[i]);
-            automation.delay(300);
-
-            Point modifyButtonPoint = findImage(MODIFY_BUTTON);
-            if (modifyButtonPoint != null) {
-                automation.click(modifyButtonPoint.x, modifyButtonPoint.y);
-                automation.delay(500);
-                LogUtil.info("第 " + (i + 1) + " 个物品修改完成：" + itemNames[i]);
-            } else {
-                allSuccess = false;
-                LogUtil.error("未找到修改按钮，第 " + (i + 1) + " 个物品修改失败");
-            }
-        }
-
-        return allSuccess;
-    }
-
-    /**
-     * 执行完整的修改器操作流程
-     * 1. 切换到修改器窗口
-     * 2. 点击'查找游戏' 按钮
-     * 3. 找到'物品信息' 栏
-     * 4. 修改物品值
-     * 5. 返回游戏窗口
-     * @param itemNames 要修改的物品名称数组
-     * @return 是否成功
-     */
-    public boolean executeModifierOperation(String[] itemNames) {
-        LogUtil.info("=== 执行修改器操作流程 ===");
-
-        if (!switchToModifierWindow()) {
-            return false;
-        }
-
-        automation.delay(500);
-
-        if (!findAndClickImage(FIND_GAME_BUTTON)) {
-            LogUtil.error("点击查找游戏按钮失败");
-            return false;
-        }
-
-        automation.delay(1000);
-
-        if (!modifyMultipleItems(itemNames)) {
-            return false;
-        }
-
-        switchToGameWindow();
-        automation.delay(500);
-
-        LogUtil.info("修改器操作流程完成");
-        return true;
-    }
 }
