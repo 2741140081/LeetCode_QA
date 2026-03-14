@@ -32,7 +32,7 @@ public class CommonController {
     protected ImageRecognitionAutomation automation;
     protected WindowSwitcherUtils windowSwitcher;
 
-    protected static final int CLICK_DELAY = 500;
+    protected static final int CLICK_DELAY = 250;
     protected static final int RETRY_TIMES = 3;
 
     // 图片路径常量
@@ -42,11 +42,18 @@ public class CommonController {
 
     protected static final String LOCKER_BUILDING = "common/locker_building";
     protected static final String THIEF_LEFT_TOP_FLAG = "common/thief_left_top_flag"; // 小偷左上角标志图片
-    protected static final String TEN_CLICK_BTN = "common/ten_click_btn"; // 10连点击开启按钮
     protected static final String VICTORY_BUTTON = "common/victory_button"; // 游戏胜利按钮
 
-    protected static final String[] FIRST_ITEM_NAMES = {"w291"};
-    protected static final String[] SECOND_ITEM_NAMES = {"w291", "w290", "w290", "w293", "w293"};
+    // 可能在GameFlowController 中使用, 使用 public 访问权限，方便 GameFlowController 中使用
+    public static final String[] FIRST_ITEM_NAMES = {"w291"};
+    public static final String[] SECOND_ITEM_NAMES = {"w293", "w293", "w290", "w290", "w291"};
+    public static final String[] CONSUMER_ITEM_NAMES = {"ys04", "ys04", "ys04", "ys04", "ys04", "ys04"}; // 消费者的名称
+    public static final String[] PRODUCER_ITEM_NAMES = {"w293", "w293", "w293", "w293", "w293", "w293"}; // 生产者的名称
+
+    // 等待时间配置（毫秒）
+    protected static int WAIT_FOR_SHOP_TIME = 7000;     // 等待 10 s去商店
+    protected static boolean isChallenge5 = false;
+
 
     public CommonController(ImageRecognitionAutomation automation) {
         this.automation = automation;
@@ -107,24 +114,29 @@ public class CommonController {
         return automation.findImage(imageName, imagePath, isNecessary);
     }
 
+
+    public boolean waitForImage(String imageName, int timeout, int delayTime) {
+        return getPointByWait(imageName, timeout, delayTime) != null;
+    }
+
     /**
      * 等待图片出现
      * @param imageName 图片名称
      * @param timeout 超时时间（毫秒）
      * @return 是否找到
      */
-    public boolean waitForImage(String imageName, int timeout) {
+    public Point getPointByWait(String imageName, int timeout, int delayTime) {
         long startTime = System.currentTimeMillis();
         while (System.currentTimeMillis() - startTime < timeout) {
             Point point = findImage(imageName, false);
             if (point != null) {
                 LogUtil.info("找到图片：" + imageName);
-                return true;
+                return point;
             }
-            automation.delay(3000);
+            automation.delay(delayTime);
         }
         LogUtil.info("等待图片超时：" + imageName);
-        return false;
+        return null;
     }
 
     /**

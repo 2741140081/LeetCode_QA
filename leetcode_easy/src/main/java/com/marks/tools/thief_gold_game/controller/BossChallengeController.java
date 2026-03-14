@@ -92,11 +92,11 @@ public class BossChallengeController extends CommonController {
         // 拿到startTime, 每隔3秒, 判断是否超过15分钟, 如果超过, 点击Final Boss Challenge
         long currentTime = System.currentTimeMillis();
         // 计算剩余等待时间, gameStartTime + 游戏运行15 分钟 - 当前时间
-        long delayTime = gameStartTime + 15 * 60 * 1000 - currentTime - 20000; // 剩余的等待时间
+        long delayTime = gameStartTime + 15 * 60 * 1000 - currentTime - 10000; // 剩余的等待时间
         LogUtil.info("等待时间：{} ms, 挑战最终boss, currentTime: {}, gameStartTime: {}", delayTime, currentTime, gameStartTime);
         // 判断 delayTime
         automation.delay((int) delayTime);
-        if (waitForImage(FINAL_BOSS_CHALLENGE, maxWaitTime)) {
+        if (waitForImage(FINAL_BOSS_CHALLENGE, maxWaitTime, 3000)) {
             return findAndClickImage(FINAL_BOSS_CHALLENGE);
         }
         LogUtil.error("等待最终 BOSS 挑战超时");
@@ -111,7 +111,7 @@ public class BossChallengeController extends CommonController {
      */
     public boolean checkVictoryPeriodically(int maxWaitTime) {
         LogUtil.info("=== 检查游戏胜利 ===");
-        if (waitForImage(VICTORY_BUTTON, maxWaitTime)) {
+        if (waitForImage(VICTORY_BUTTON, maxWaitTime, 3000)) {
             return findAndClickImage(VICTORY_BUTTON);
         }
 

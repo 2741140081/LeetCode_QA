@@ -1,7 +1,11 @@
 package com.marks.tools.thief_gold_game.controller;
 
 import com.marks.tools.kkplatform.ImageRecognitionAutomation;
+import com.marks.tools.thief_gold_game.entity.Challenge;
 import com.marks.utils.LogUtil;
+
+import java.util.PriorityQueue;
+
 /**
  * <p>项目名称: LeetCode_QA </p>
  * <p>文件名称: DifficultyController </p>
@@ -15,17 +19,43 @@ import com.marks.utils.LogUtil;
 public class DifficultyController extends CommonController {
     private static final String DIFFICULTY = "start/difficulty_";
     private static final String MODE_4 = "start/mode_4";
+    private static final String CHALLENGE_BASE = "start/challenge_";
+    private static final int[] CHALLENGE_NUMBER = {1, 2, 3, 4, 5, 6};
     private static final String CHALLENGE_1 = "start/challenge_1";
     private static final String CHALLENGE_2 = "start/challenge_2";
     private static final String CHALLENGE_3 = "start/challenge_3";
     private static final String CHALLENGE_4 = "start/challenge_4";
+    private static final String CHALLENGE_5 = "start/challenge_5";
+    private static final String CHALLENGE_6 = "start/challenge_6";
     private static final String START_GAME_BUTTON = "start/start_game_btn";
-    private static final String ELEMENTARY_DIFFICULTY_BUTTON = "start/elementary_difficulty_btn"; // 初等难度按钮
-    private static final String MEDIUM_DIFFICULTY_BUTTON = "start/medium_difficulty_btn"; // 中等难度按钮
-    private static final String HIGH_DIFFICULTY_BUTTON = "start/high_difficulty_btn"; // 高级难度按钮
+    private static final String ELEMENTARY_LEVEL_DIFFICULTY_BUTTON = "start/elementary_level_difficulty_btn"; // 初等难度按钮(1~10)
+    private static final String MEDIUM_LEVEL_DIFFICULTY_BUTTON = "start/medium_level_difficulty_btn"; // 中等难度按钮(11~20)
+    private static final String HIGH_LEVEL_DIFFICULTY_BUTTON = "start/high_level_difficulty_btn"; // 高级难度按钮(21~30)
+    private static final String EXPERT_LEVEL_DIFFICULTY_BUTTON = "start/expert_level_difficulty_btn"; // 专家级难度按钮(31~40)
+    // 后续级别可以填写: 大师级, 宗师级, 传奇级; 这些级别应该够用了
 
     public DifficultyController(ImageRecognitionAutomation automation) {
         super(automation);
+    }
+
+    /**
+     * 初始化挑战队列，设置优先级和次数
+     * @return 优先队列
+     */
+    public PriorityQueue<Challenge> initializeChallengeQueue() {
+        PriorityQueue<Challenge> queue = new PriorityQueue<>();
+        // 便利challengeNumber
+        for (int i = 0; i < CHALLENGE_NUMBER.length; i++) {
+            if (i == 4) {
+                continue;
+            }
+            queue.offer(new Challenge(i, CHALLENGE_NUMBER[i], CHALLENGE_BASE + CHALLENGE_NUMBER[i], 4));
+        }
+        // 不挑战 CHALLENGE_5, forever, 减少一半的偷钱太难受了, 等以后存档上来以后在挑战
+//        queue.offer(new Challenge(0, 5, CHALLENGE_5, 4));
+
+
+        return queue;
     }
 
     /**
@@ -35,19 +65,22 @@ public class DifficultyController extends CommonController {
      */
     public boolean selectDifficulty(int difficultyNumber) {
         // 选择难度范围
-        if (difficultyNumber < 1 || difficultyNumber > 30) {
+        if (difficultyNumber < 1 || difficultyNumber > 40) {
             LogUtil.error("难度选择范围：1~30");
             return false;
         }
         if (difficultyNumber <= 10) {
             LogUtil.info("=== 选择难度：初级 ===");
-            findAndClickImage(ELEMENTARY_DIFFICULTY_BUTTON);
+            findAndClickImage(ELEMENTARY_LEVEL_DIFFICULTY_BUTTON);
         } else if (difficultyNumber <= 20) {
             LogUtil.info("=== 选择难度：中级 ===");
-            findAndClickImage(MEDIUM_DIFFICULTY_BUTTON);
-        } else {
+            findAndClickImage(MEDIUM_LEVEL_DIFFICULTY_BUTTON);
+        } else if (difficultyNumber <= 30) {
             LogUtil.info("=== 选择难度：高级 ===");
-            findAndClickImage(HIGH_DIFFICULTY_BUTTON);
+            findAndClickImage(HIGH_LEVEL_DIFFICULTY_BUTTON);
+        } else {
+            LogUtil.error("=== 选择难度：超级 ===");
+            findAndClickImage(EXPERT_LEVEL_DIFFICULTY_BUTTON);
         }
         // 延迟1s
         automation.delay(1000);
@@ -67,30 +100,45 @@ public class DifficultyController extends CommonController {
     }
 
     /**
-     * 选择挑战（挑战 1~挑战 4）
+     * 选择挑战（挑战 1~挑战 6）
      * 不需要返回值, 选择挑战失败不影响整体游戏流程
      */
-    public void selectChallenges() {
-        LogUtil.info("=== 选择挑战：挑战 1-4 ===");
+    public void selectChallenges(PriorityQueue<Challenge> challengeQueue) {
+        LogUtil.info("=== 选择挑战：挑战 1-6 ===");
+        // 拷贝一份challengeQueue
+        PriorityQueue<Challenge> tempQueue = new PriorityQueue<>();
+        while (!challengeQueue.isEmpty()) {
+            Challenge challenge = challengeQueue.poll();
+            LogUtil.info("点击挑战{} (优先级:{}, 剩余次数:{})",
+                    challenge.getChallengeNumber(),
+                    challenge.getPriority(),
+                    challenge.getRemainingCount());
 
-        if (!findAndClickImage(CHALLENGE_4)) {
-            LogUtil.error("选择挑战 1 失败");
-        }
-        automation.delay(500);
+            if (!clickChallenge(challenge)) {
+                LogUtil.error("点击挑战{}失败", challenge.getChallengeNumber());
+            }
 
-        if (!findAndClickImage(CHALLENGE_3)) {
-            LogUtil.error("选择挑战 2 失败");
+            challenge.setRemainingCount(challenge.getRemainingCount() - 1);
+            if (challenge.getRemainingCount() > 0) {
+                tempQueue.offer(challenge);
+            }
+            automation.delay(500);
         }
-        automation.delay(500);
+        challengeQueue.addAll(tempQueue);
+    }
 
-        if (!findAndClickImage(CHALLENGE_2)) {
-            LogUtil.error("选择挑战 3 失败");
+    /**
+     * 点击挑战
+     * @param challenge 挑战对象
+     * @return 是否成功
+     */
+    private boolean clickChallenge(Challenge challenge) {
+        String imageName = challenge.getImageName();
+        if (imageName.equals(CHALLENGE_5)) {
+            // 由于模式5下, 金币获取数量减半, 需要增加部分等待时间
+            isChallenge5 = true;
         }
-        automation.delay(500);
-
-        if (!findAndClickImage(CHALLENGE_1)) {
-            LogUtil.error("选择挑战 4 失败");
-        }
+        return findAndClickImage(challenge.getImageName());
     }
 
     /**
@@ -106,7 +154,7 @@ public class DifficultyController extends CommonController {
      * 完整的难度选择流程
      * @return 是否成功
      */
-    public boolean executeDifficultySelection(int difficultyNumber) {
+    public boolean executeDifficultySelection(int difficultyNumber, PriorityQueue<Challenge> challengeQueue) {
         LogUtil.info("=== 开始难度选择流程 ===");
 
         // 选择难度, 包含选择难度范围和具体难度
@@ -122,7 +170,7 @@ public class DifficultyController extends CommonController {
         automation.delay(1000);
 
         // 选择挑战
-        selectChallenges();
+        selectChallenges(challengeQueue);
 
         automation.delay(1000);
 

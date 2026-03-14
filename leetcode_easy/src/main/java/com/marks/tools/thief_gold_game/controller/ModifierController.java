@@ -27,7 +27,7 @@ public class ModifierController extends CommonController {
     // 物品栏偏移量配置
     private static final int ITEM_X_OFFSET = 50;      // X 坐标偏移量 (px)
     private static final int ITEM_Y_OFFSET = 12;      // Y 坐标偏移量 (px)
-    private static final int ITEM_HEIGHT = 12;        // 物品栏高度 (px)
+    private static final int ITEM_HEIGHT = 14;        // 物品栏高度 (px)
 
 
     public ModifierController(ImageRecognitionAutomation automation) {
@@ -65,7 +65,7 @@ public class ModifierController extends CommonController {
                 LogUtil.error("点击查找游戏按钮失败");
                 return false;
             }
-            automation.delay(500);
+            automation.delay(CLICK_DELAY);
 
             // 3. 找到物品信息标签，获取基准坐标
             Point itemInfoPoint = findImage(ITEM_INFO_LABEL);
@@ -91,7 +91,7 @@ public class ModifierController extends CommonController {
 
                 // 双击该坐标点
                 automation.click(itemPoint.x, itemPoint.y);
-                automation.delay(200);
+                automation.delay(CLICK_DELAY);
 
                 // 找到目标值标签
                 Point targetValuePoint = findImage(TARGET_VALUE_LABEL);
@@ -105,11 +105,25 @@ public class ModifierController extends CommonController {
 
                 // Ctrl + A 全选
                 pressCombinationKey(KeyEvent.VK_CONTROL, KeyEvent.VK_A);
-                automation.delay(500);
+                automation.delay(CLICK_DELAY);
 
                 // 输入新的物品名称
                 inputText(itemName);
-                automation.delay(200);
+                automation.delay(CLICK_DELAY);
+
+                // 判断 itemName 是否等于 ys04, 如果等于 ys04, 需要修改物品数量
+                if (itemName.equals("ys04")) {
+                    targetValuePoint.y += 20; // 下移20px
+                    // 点击
+                    automation.click(targetValuePoint.x, targetValuePoint.y);
+                    automation.delay(CLICK_DELAY);
+                    // Ctrl + A 全选
+                    pressCombinationKey(KeyEvent.VK_CONTROL, KeyEvent.VK_A);
+                    automation.delay(CLICK_DELAY);
+                    // 输入物品数量
+                    inputText("1");
+                    automation.delay(CLICK_DELAY);
+                }
 
                 // 点击修改按钮
                 if (!findAndClickImage(MODIFY_BUTTON)) {
@@ -117,7 +131,7 @@ public class ModifierController extends CommonController {
                     return false;
                 }
                 // 延迟1s
-                automation.delay(1000);
+                automation.delay(CLICK_DELAY);
             }
 
             LogUtil.info("所有物品修改完成，共{" + itemNames.size() + "}件");

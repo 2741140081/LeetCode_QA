@@ -29,7 +29,7 @@ public class ArchiverChallengeController extends CommonController {
     private static final String ARCHIVER_FOLDER_BASE = "archiver_";
 
     // 存档编号数组
-    private static final int[] ARCHIVER_NUMBERS = {1, 2, 3, 4};
+    private static final int[] ARCHIVER_NUMBERS = {1, 2, 3, 4, 5};
 
     // 坐标微调参数
     private static final int X_OFFSET = -30;  // X 坐标向左微调 150px
@@ -86,9 +86,10 @@ public class ArchiverChallengeController extends CommonController {
         LogUtil.info("=== 开始圈选所有存档建筑 ===");
 
         try {
+            int maxTimeout = 30000;
             for (int number : ARCHIVER_NUMBERS) {
                 String buildingImage = ARCHIVER_BUILDING_BASE + number;
-                Point buildingPoint = findAndAdjustPoint(buildingImage);
+                Point buildingPoint = findAndAdjustPoint(buildingImage, maxTimeout);
 
                 if (buildingPoint != null && circleSelectAndNumber(buildingPoint, number)) {
                     LogUtil.info("第{}个存档建筑圈选并编号成功", number);
@@ -112,14 +113,14 @@ public class ArchiverChallengeController extends CommonController {
      * @param buildingImage 建筑图片名称
      * @return 调整后的坐标点
      */
-    private Point findAndAdjustPoint(String buildingImage) {
+    private Point findAndAdjustPoint(String buildingImage, int maxTimeout) {
         LogUtil.info("正在查找建筑图片：{}", buildingImage);
 
-        Point originalPoint = findImage(buildingImage);
-        if (originalPoint == null) {
+        if (!waitForImage(buildingImage, maxTimeout, 1000)) {
             LogUtil.error("未找到建筑图片：{}", buildingImage);
             return null;
         }
+        Point originalPoint = findImage(buildingImage);
 
         LogUtil.info("找到建筑原始坐标：({}, {})", originalPoint.x, originalPoint.y);
 

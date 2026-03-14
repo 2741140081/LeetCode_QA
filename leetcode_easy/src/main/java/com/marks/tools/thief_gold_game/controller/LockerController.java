@@ -4,7 +4,6 @@ import com.marks.tools.kkplatform.ImageRecognitionAutomation;
 import com.marks.utils.LogUtil;
 
 import java.awt.*;
-import java.awt.event.InputEvent;
 import java.util.Arrays;
 import java.util.List;
 
@@ -37,6 +36,7 @@ public class LockerController extends CommonController {
 
     // 技能相关图片
     private static final String LOCKER_SKILL_BOOK = "2/skill_book";          // 晕锤技能书
+    private static final String ICE_HALO_BOOK = "2/ice_halo_book";          // 晕锤技能书
 
     // 操作延迟配置（毫秒）
     private static final int SKILL_BOOK_DELAY = 500;                       // 技能书点击间隔
@@ -69,8 +69,8 @@ public class LockerController extends CommonController {
      * 点击 5 次技能书，每次间隔 500ms
      * @return 是否成功
      */
-    public boolean buySkillBooks() {
-        LogUtil.info("=== 储物柜购买晕锤技能书（5 次） ===");
+    public boolean buySkillBooks(int n) {
+        LogUtil.info("=== 储物柜购买晕锤技能书{} 次 ===", n);
 
         // 切换到储物柜
         switchToLocker();
@@ -81,8 +81,8 @@ public class LockerController extends CommonController {
             LogUtil.error("未找到技能书");
             return false;
         }
-        // 购买 5 次技能书
-        for (int i = 0; i < 5; i++) {
+        // 购买 n 次技能书
+        for (int i = 0; i < n; i++) {
             automation.click(skillBookPoint.x, skillBookPoint.y);
             // 每次购买后延迟1s
             automation.delay(SKILL_BOOK_DELAY);
@@ -90,6 +90,27 @@ public class LockerController extends CommonController {
 
         LogUtil.info("晕锤技能书购买完成，共 5 本");
         return true;
+    }
+
+    /**
+     * 购买寒冰光环
+     * 点击 5 次技能书，每次间隔 500ms
+     * @return 是否成功
+     */
+    public void buyIceHalo() {
+        LogUtil.info("=== 储物柜购买寒冰光环 ===");
+
+        // 切换到储物柜
+        switchToLocker();
+        // 延迟1s
+        automation.delay(1000);
+        Point skillBookPoint = findImage(ICE_HALO_BOOK);
+        if (skillBookPoint == null) {
+            LogUtil.error("未找到技能书");
+        } else {
+            automation.click(skillBookPoint.x, skillBookPoint.y);
+            automation.delay(CLICK_DELAY);
+        }
     }
 
     /**
@@ -227,46 +248,40 @@ public class LockerController extends CommonController {
      * 1. 购买 5 本晕锤技能书
      * 2. 切换到修改器修改 5 个物品
      * 3. 将 5 件修改后的物品丢弃到丢弃点 2
-     * @param delayTime 延迟时间
+     * @param itemNames 延迟时间
      * @return 是否成功
      */
-    public boolean executeSecondModificationProcess(int delayTime) {
-        LogUtil.info("=== 储物柜第二次修改流程开始, 等待{} s 获取金币===", delayTime);
+    public boolean executeModificationProcess(List<String> itemNames) {
+        LogUtil.info("=== 储物柜修改流程开始===");
         try {
-            // 延迟delayTime ms, 等待获取足够金币
-            automation.delay(delayTime);
-
             // 1. 切换到储物柜
             switchToLocker();
-
-            // 2. 修改物品, 将 父类中的 SECOND_ITEM_NAMES 是第二次需要修改的物品
-            // 将string[] 转为 List
-            List<String> itemNames = Arrays.stream(SECOND_ITEM_NAMES).toList();
-            if (itemNames.size() != 5) {
-                LogUtil.error("物品数量必须为 5，实际：{" + itemNames.size() + "}");
-                return false;
-            }
-
+            // 延迟 500 ms
+            automation.delay(CLICK_DELAY);
             // 1. 购买 5 本技能书
-            if (!buySkillBooks()) {
+            if (!buySkillBooks(itemNames.size())) {
                 return false;
             }
-
+            // 延迟 500 ms
+            automation.delay(CLICK_DELAY);
             // 2. 修改 5 个物品
             if (!modifyItems(itemNames)) {
                 return false;
             }
-
-            // 3. 批量丢弃 5 件物品
+            // 延迟 500 ms
+            automation.delay(CLICK_DELAY);
+            // 3. 批量丢弃物品
             if (!dropMultipleItems(itemNames)) {
                 return false;
             }
+            // 延迟 500 ms
+            automation.delay(CLICK_DELAY);
 
-            LogUtil.info("储物柜第二次修改流程完成");
+            LogUtil.info("储物柜修改流程完成");
             return true;
 
         } catch (Exception e) {
-            LogUtil.error("储物柜第二次修改流程异常：{}", e.getMessage());
+            LogUtil.error("储物柜修改流程异常：{}", e.getMessage());
             e.printStackTrace();
             return false;
         }

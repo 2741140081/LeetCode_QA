@@ -2,14 +2,18 @@ package com.marks.tools.thief_gold_game.controller;
 
 import com.marks.tools.kkplatform.ImageRecognitionAutomation;
 import com.marks.tools.kkplatform.PrepareRoom;
-import com.marks.tools.kkplatform.WindowSwitcherUtils;
+import com.marks.tools.thief_gold_game.entity.Challenge;
 import com.marks.utils.LogUtil;
-import com.sun.jna.platform.win32.WinDef;
 
 import java.awt.event.KeyEvent;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.List;
+import java.util.PriorityQueue;
 
-import static com.marks.tools.kkplatform.common.KingOfBeastsConstants.PREPARE_ROOM_TITLE;
+import static com.marks.tools.thief_gold_game.controller.CommonController.PRODUCER_ITEM_NAMES;
+import static com.marks.tools.thief_gold_game.controller.CommonController.SECOND_ITEM_NAMES;
 
 /**
  * <p>项目名称: LeetCode_QA </p>
@@ -38,7 +42,12 @@ public class GameFlowController {
 
     // 游戏时间控制
     private long gameStartTime;
-    private static final int ARCHIVER_BOSS_DURATION = 60 * 1000; // 1 分钟
+    private static final int ARCHIVER_BOSS_DURATION = 2 * 60 * 1000; // 30 秒
+    // 装备吞噬次数
+    private static final int THIEF_EAT_TIMES = 6;
+
+    // 优先队列
+    private PriorityQueue<Challenge> challengeQueue;
 
     public GameFlowController(ImageRecognitionAutomation automation) {
         this.automation = automation;
@@ -60,7 +69,11 @@ public class GameFlowController {
         this.archiverChallengeController = new ArchiverChallengeController(automation);
         this.lockerController = new LockerController(automation, modifierController);
         LogUtil.info("控制器初始化完成");
+        // 获取初始化的优先队列
+        this.challengeQueue = difficultyController.initializeChallengeQueue();
     }
+
+
 
     /**
      * 完整的游戏流程入口
@@ -100,7 +113,12 @@ public class GameFlowController {
             // 步骤 6: 存档 BOSS 挑战
             executeArchiverBossChallenge();
 
-            // 步骤 7: 退出游戏
+            // 步骤 7:  截取退出前的游戏画面, 文件名称使用难度 + 时间(_年月日_时分秒)
+            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+            String fileName = "difficulty_" + difficultyNumber + "_" + timestamp;
+            // D:\images\automation\thief_gold\archiver_result
+            automation.captureScreen("D:\\images\\automation\\thief_gold\\archiver_result\\" + fileName + ".png");
+            // 步骤 8: 退出游戏
             exitGame();
 
             LogUtil.info("=== 游戏流程全部完成 ===");
@@ -131,13 +149,13 @@ public class GameFlowController {
      */
     private boolean selectDifficulty(int difficultyNumber) {
         LogUtil.info("=== 步骤 2: 选择难度 ===");
-        return difficultyController.executeDifficultySelection(difficultyNumber);
+        return difficultyController.executeDifficultySelection(difficultyNumber, challengeQueue);
     }
 
     /**
-     * 步骤 4: 执行游戏主流程（15 分钟）
+     * 步骤 4: 执行游戏主流程
      */
-    private boolean executeMainGame() throws InterruptedException {
+    private boolean executeMainGame() {
         LogUtil.info("=== 步骤 4: 游戏主体流程开始 ===");
 
         // 初始设置：编号、属性强化、购买武器等
@@ -149,9 +167,11 @@ public class GameFlowController {
             return false;
         }
 
-        int delayTime = 15000; // 10s等待时间
+        int delayTime = 3000; // 4s等待时间
+        automation.delay(delayTime);
         // 储物柜第二次修改物品
-        if (!lockerController.executeSecondModificationProcess(delayTime)) {
+        List<String> itemNames = Arrays.asList(SECOND_ITEM_NAMES);
+        if (!lockerController.executeModificationProcess(itemNames)) {
             LogUtil.error("储物柜第二次修改失败，终止游戏");
             return false;
         }
@@ -166,11 +186,48 @@ public class GameFlowController {
             LogUtil.error("开启十连点击失败，终止游戏");
             return false;
         }
+        // 等待 15s, 获取足够金币来强化属性
+        automation.delay(10000);
         // 开始强化属性
         if (!strengthenAttributeController.loopExecuteEnhancedProcess()) {
             return false;
         }
+        if (upAttackByDevourEquipment()) return false;
+
+        // 添加一个储物柜购买 寒冰光环的方法 buyIceHalo
+        lockerController.buyIceHalo();
+
+        if (!strengthenAttributeController.loopExecuteEnhancedProcess()) {
+            return false;
+        }
         return true;
+    }
+
+    private boolean upAttackByDevourEquipment() {
+        // 获取 PRODUCER_ITEM_NAMES List
+        List<String> producerItemNames = Arrays.asList(PRODUCER_ITEM_NAMES);
+        // 开始吞噬装备方法
+        for (int i = 0; i < THIEF_EAT_TIMES; i++) {
+            // 计算一次花费的时间, 方便判断能够执行吞噬操作的次数
+            long cTime = System.currentTimeMillis();
+            // 执行小偷中的吞噬方法
+            if (!thiefController.devourEquipment()) {
+                LogUtil.error("吞噬装备失败，终止游戏");
+                return true;
+            }
+            // 延迟 3 s
+            automation.delay(500);
+            // 执行储物柜中的修改方法
+            if (!lockerController.executeModificationProcess(producerItemNames)) {
+                LogUtil.error("储物柜修改失败，终止游戏");
+                return true;
+            }
+            // 延迟 3 s
+            automation.delay(500);
+            long eTime = System.currentTimeMillis();
+            LogUtil.info("第 " + (i + 1) + " 次吞噬成功, 耗时：" + (eTime - cTime) / 1000 + "s");
+        }
+        return false;
     }
 
     /**
@@ -182,7 +239,7 @@ public class GameFlowController {
         LogUtil.info("=== 游戏初始设置 ===");
 
         // 1.1 对人物小偷编号
-        thiefController.initialize(lockerController);
+        thiefController.initialize(lockerController, modifierController);
         // 延迟5s, 等待文字消失
         automation.delay(5000);
         // 1.2 小偷攻击金矿
@@ -225,13 +282,10 @@ public class GameFlowController {
      */
     private void executeArchiverBossChallenge() {
         LogUtil.info("=== 步骤 6: 存档 BOSS 挑战 ===");
-
-        // 依次挑战 4 个存档 BOSS
+        // 依次挑战 所有 个存档 BOSS
         archiverChallengeController.challengeAllArchivers();
-
         // 等待 2 分钟
         automation.delay(ARCHIVER_BOSS_DURATION);
-
         LogUtil.info("存档 BOSS 挑战完成");
     }
 

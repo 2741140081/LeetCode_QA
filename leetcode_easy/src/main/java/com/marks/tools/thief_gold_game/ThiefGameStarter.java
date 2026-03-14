@@ -36,11 +36,10 @@ public class ThiefGameStarter {
 
             // 创建游戏流程控制器
             GameFlowController gameFlowController = new GameFlowController(automation);
-
             // 启动游戏流程, 循环执行游戏主体
-            int count = 1;
-            int maxCount = 10; // 执行10次
-            while (count <= maxCount) {
+            int count = 0;
+            int maxCount = 1; // 执行10次
+            while (count < maxCount) {
                 LogUtil.info("第 " + count + " 次执行游戏");
                 if (!gameFlowController.startGame(difficulty)) {
                     LogUtil.info("第{}轮游戏流程执行失败, 退出程序", count);

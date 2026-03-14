@@ -111,8 +111,10 @@ public class StrengthenAttributeController extends CommonController {
 
     /**
      * 强化攻击力（1-4）
+     * 已过时的方法
      * @return 是否成功
      */
+    @Deprecated
     public boolean upgradeAttack() {
         LogUtil.info("=== 强化攻击力 ===");
 
@@ -135,7 +137,7 @@ public class StrengthenAttributeController extends CommonController {
      * 执行一次完整的属性强化
      * @return 是否成功
      */
-    public boolean performUpgrade() {
+    private boolean performUpgrade() {
         LogUtil.info("=== 执行属性强化 ===");
         // 切换到属性强化建筑编号
         pressNumber(STRENGTHEN_ATTRIBUTE_NUMBER);
@@ -143,56 +145,37 @@ public class StrengthenAttributeController extends CommonController {
         automation.delay(500);
 
         boolean success = true;
-
-        if (!upgradeAttackSpeed()) {
-            success = false;
+        for (int i = 0; i < 3; i++) {
+            // 强化攻击速度
+            if (!upgradeAttackSpeed()) {
+                success = false;
+            }
+            // 强化射程
+            if (!upgradeRange()) {
+                success = false;
+            }
+            automation.delay(500);
         }
 
-        if (!upgradeRange()) {
-            success = false;
-        }
-        automation.delay(500);
-
+        // 强化多重射击
         if (!upgradeMultiShot()) {
             success = false;
         }
         automation.delay(500);
 
-        if (!upgradeAttack()) {
-            success = false;
-        }
-
         return success;
-    }
-
-
-    /**
-     * 检查游戏是否已经运行了 13 分钟
-     * 1. 由于内部执行的是一个中断方法, 不会实时检测时间, 需要提前一个 3 分钟判断
-     * @return 是否达到 13 分钟
-     */
-    public boolean isGameTimeReached15Minutes() {
-        long currentTime = System.currentTimeMillis();
-        long elapsedGameTime = currentTime - gameStartTime;
-        return elapsedGameTime >= 13 * 60 * 1000;
     }
 
     /**
      * 循环执行强化流程，
      */
-    public boolean loopExecuteEnhancedProcess() throws InterruptedException {
-        LogUtil.info("=== 开始循环强化属性，直到 15 分钟 ===");
-        while (!isGameTimeReached15Minutes()) {
-            // 执行强化操作
-            if (!performUpgrade()) {
-                LogUtil.error("属性强化失败");
-                return false;
-            }
-            // 每2分钟执行一次强化操作
-            Thread.sleep(120000);
+    public boolean loopExecuteEnhancedProcess() {
+        LogUtil.info("=== 开始强化属性 ===");
+        if (!performUpgrade()) {
+            LogUtil.error("属性强化失败");
+            return false;
         }
 
-        LogUtil.info("游戏时间已达到 15 分钟，停止强化");
         return true;
     }
 
