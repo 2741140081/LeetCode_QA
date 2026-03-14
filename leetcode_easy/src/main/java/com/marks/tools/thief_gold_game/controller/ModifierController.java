@@ -22,11 +22,12 @@ public class ModifierController extends CommonController {
     private static final String FIND_GAME_BUTTON = "modifier/find_game_btn";
     private static final String ITEM_INFO_LABEL = "modifier/item_info_label";
     private static final String MODIFY_BUTTON = "modifier/modify_btn";
+    private static final String TARGET_VALUE_LABEL = "modifier/target_value_label";
 
     // 物品栏偏移量配置
-    private static final int ITEM_X_OFFSET = 10;      // X 坐标偏移量 (px)
-    private static final int ITEM_Y_OFFSET = 45;      // Y 坐标偏移量 (px)
-    private static final int ITEM_HEIGHT = 15;        // 物品栏高度 (px)
+    private static final int ITEM_X_OFFSET = 50;      // X 坐标偏移量 (px)
+    private static final int ITEM_Y_OFFSET = 12;      // Y 坐标偏移量 (px)
+    private static final int ITEM_HEIGHT = 12;        // 物品栏高度 (px)
 
 
     public ModifierController(ImageRecognitionAutomation automation) {
@@ -89,8 +90,18 @@ public class ModifierController extends CommonController {
                 LogUtil.info("计算得到第{" + (i + 1) + "}件物品坐标：({" + itemPoint.x + "}, {" + itemPoint.x + "})");
 
                 // 双击该坐标点
-                doubleClick(itemPoint.x, itemPoint.y);
+                automation.click(itemPoint.x, itemPoint.y);
                 automation.delay(200);
+
+                // 找到目标值标签
+                Point targetValuePoint = findImage(TARGET_VALUE_LABEL);
+                if (targetValuePoint == null) {
+                    LogUtil.error("未找到目标值标签");
+                    return false;
+                }
+                targetValuePoint.y += 12;
+                // 点击
+                automation.click(targetValuePoint.x, targetValuePoint.y);
 
                 // Ctrl + A 全选
                 pressCombinationKey(KeyEvent.VK_CONTROL, KeyEvent.VK_A);
@@ -144,8 +155,8 @@ public class ModifierController extends CommonController {
      * @return 第 i 件物品的坐标点
      */
     private Point calculateItemPoint(Point firstItemPoint, int index) {
-        int x = firstItemPoint.x + (index * ITEM_HEIGHT);
-        int y = firstItemPoint.y;
+        int x = firstItemPoint.x;
+        int y = firstItemPoint.y + (index * ITEM_HEIGHT);
         return new Point(x, y);
     }
 

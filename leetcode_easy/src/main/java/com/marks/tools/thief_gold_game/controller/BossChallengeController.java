@@ -21,9 +21,9 @@ public class BossChallengeController extends CommonController {
 
     private static final String AUTO_CHALLENGE_GOLD_MONSTER = "3/auto_challenge_gold_monster"; // 自动挑战金币怪
     private static final String AUTO_CHALLENGE_WOOD_MONSTER = "3/auto_challenge_WOOD_monster"; // 自动挑战木头怪
-    private static final String FINAL_BOSS_CHALLENGE = "3/final_boss_challenge";
+    private static final String FINAL_BOSS_CHALLENGE = "common/final_boss_challenge";
     private static final String BOSS_CHALLENGE_BUILDING = "common/boss_challenge_building";
-
+    private long gameStartTime;
 
     public BossChallengeController(ImageRecognitionAutomation automation) {
         super(automation);
@@ -34,7 +34,8 @@ public class BossChallengeController extends CommonController {
      * 找到boss 挑战 建筑物坐标并点击
      *
      */
-    public boolean initialize() {
+    public boolean initialize(long startTime) {
+        gameStartTime = startTime;
         // 识别并返回坐标
         Point bossChallengePoint = findImage(BOSS_CHALLENGE_BUILDING);
         if (bossChallengePoint == null) {
@@ -55,13 +56,14 @@ public class BossChallengeController extends CommonController {
     }
 
     /**
-     * 开启自动挑战金币怪
+     * 开启自动挑战金币怪, 可以舍弃
      * @return 是否成功
      */
+    @Deprecated
     public boolean startAutoChallengeMonster() {
         LogUtil.info("=== 开启自动挑战金币怪 ===");
         // 切换到挑战建筑
-        pressKey(BOSS_CHALLENGE_NUMBER);
+        pressNumber(BOSS_CHALLENGE_NUMBER);
         // 延迟1s
         automation.delay(1000);
         // 开启自动挑战金币怪
@@ -83,46 +85,34 @@ public class BossChallengeController extends CommonController {
      * 开启最终 BOSS 挑战
      * @return 是否成功
      */
-    public boolean startFinalBossChallenge() {
+    public boolean startFinalBossChallenge(int maxWaitTime) {
         LogUtil.info("=== 开启最终 BOSS 挑战 ===");
         // 切换到挑战建筑
-        pressKey(BOSS_CHALLENGE_NUMBER);
-        // 延迟1s
-        automation.delay(1000);
-        return findAndClickImage(FINAL_BOSS_CHALLENGE);
+        pressNumber(BOSS_CHALLENGE_NUMBER);
+        // 拿到startTime, 每隔3秒, 判断是否超过15分钟, 如果超过, 点击Final Boss Challenge
+        long currentTime = System.currentTimeMillis();
+        // 计算剩余等待时间, gameStartTime + 游戏运行15 分钟 - 当前时间
+        long delayTime = gameStartTime + 15 * 60 * 1000 - currentTime - 20000; // 剩余的等待时间
+        LogUtil.info("等待时间：{} ms, 挑战最终boss, currentTime: {}, gameStartTime: {}", delayTime, currentTime, gameStartTime);
+        // 判断 delayTime
+        automation.delay((int) delayTime);
+        if (waitForImage(FINAL_BOSS_CHALLENGE, maxWaitTime)) {
+            return findAndClickImage(FINAL_BOSS_CHALLENGE);
+        }
+        LogUtil.error("等待最终 BOSS 挑战超时");
+        return false;
     }
 
-    /**
-     * 检查游戏胜利按钮是否存在
-     * @return 是否存在
-     */
-    public boolean isVictoryButtonExists() {
-        LogUtil.info("=== 检查游戏胜利按钮 ===");
-        return isImageExists(VICTORY_BUTTON);
-    }
 
     /**
      * 每隔 5 秒判断游戏胜利按钮是否存在
      * @param maxWaitTime 最大等待时间（毫秒）
      * @return 是否胜利
      */
-    public boolean checkVictoryPeriodically(long maxWaitTime) {
+    public boolean checkVictoryPeriodically(int maxWaitTime) {
         LogUtil.info("=== 检查游戏胜利 ===");
-
-        long startTime = System.currentTimeMillis();
-
-        while (System.currentTimeMillis() - startTime < maxWaitTime) {
-            if (isVictoryButtonExists()) {
-                LogUtil.info("游戏胜利按钮已出现！");
-                // 点击胜利按钮
-                findAndClickImage(VICTORY_BUTTON);
-                // 延迟1s
-                automation.delay(1000);
-                return true;
-            }
-
-            LogUtil.info("未检测到游戏胜利，等待 5 秒...");
-            automation.delay(5000);
+        if (waitForImage(VICTORY_BUTTON, maxWaitTime)) {
+            return findAndClickImage(VICTORY_BUTTON);
         }
 
         LogUtil.error("等待游戏胜利超时");

@@ -7,6 +7,8 @@ import org.opencv.imgproc.Imgproc;
 
 import java.awt.*;
 import java.awt.Point;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
@@ -487,12 +489,24 @@ public class ImageRecognitionAutomation {
     }
 
     /**
-     * 输入文本
+     * 输入文本（使用复制粘贴方式，避免输入法问题）
      */
     public void typeText(String text) {
         LogUtil.info("输入文本：" + text);
-        for (char c : text.toCharArray()) {
-            typeCharacter(c);
+        // 使用复制粘贴方式输入，避免输入法干扰
+        try {
+            StringSelection selection = new StringSelection(text);
+            Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+            clipboard.setContents(selection, selection);
+            // Ctrl+V 粘贴
+            robot.keyPress(KeyEvent.VK_CONTROL);
+            robot.keyPress(KeyEvent.VK_V);
+            robot.delay(50);
+            robot.keyRelease(KeyEvent.VK_V);
+            robot.keyRelease(KeyEvent.VK_CONTROL);
+            robot.delay(100);
+        } catch (Exception e) {
+            LogUtil.error("文本输入失败：" + text, e);
         }
     }
 
@@ -634,7 +648,20 @@ public class ImageRecognitionAutomation {
      * 延迟
      */
     public void delay(int milliseconds) {
-        robot.delay(milliseconds);
+        // 做一个检验
+        if (milliseconds < 0) {
+            milliseconds = 0;
+        }
+        if (milliseconds < 60000) {
+            robot.delay(milliseconds);
+        } else {
+            // 使用线程中的sleep 方法
+            try {
+                Thread.sleep(milliseconds);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     /**

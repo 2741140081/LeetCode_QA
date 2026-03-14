@@ -4,6 +4,7 @@ import com.marks.tools.kkplatform.ImageRecognitionAutomation;
 import com.marks.utils.LogUtil;
 
 import java.awt.*;
+import java.awt.event.KeyEvent;
 
 /**
  * <p>项目名称: LeetCode_QA </p>
@@ -27,14 +28,10 @@ public class StrengthenAttributeController extends CommonController {
     private static final String ATTACK_4_UP = "4/attack_4_up";
     private static final String STRENGTHEN_ATTRIBUTE_BUILDING = "common/strengthen_attribute_building";
 
-
     private long gameStartTime;
-    private long lastUpgradeTime;
 
     public StrengthenAttributeController(ImageRecognitionAutomation automation) {
         super(automation);
-        this.gameStartTime = System.currentTimeMillis();
-        this.lastUpgradeTime = System.currentTimeMillis();
     }
 
     /**
@@ -69,11 +66,16 @@ public class StrengthenAttributeController extends CommonController {
 
     /**
      * 开启 10连点击按钮
+     * 可以通过快捷键 T 来触发
      * @return 是否成功
      */
     public boolean openTenClicks() {
         LogUtil.info("=== 开启 10连点击按钮 ===");
-        return findAndClickImage(TEN_CLICK_BTN);
+        // 点击键盘 T 键
+        pressKey(KeyEvent.VK_T);
+        // 延迟
+        automation.delay(CLICK_DELAY);
+        return true;
     }
 
     /**
@@ -116,25 +118,15 @@ public class StrengthenAttributeController extends CommonController {
 
         boolean success = true;
 
-        if (!findAndClickImage(ATTACK_1_UP)) {
+        if (!findAndClickImage(ATTACK_4_UP)) {
             success = false;
         }
-        automation.delay(1000);
-
-        if (!findAndClickImage(ATTACK_2_UP)) {
-            success = false;
-        }
-        automation.delay(1000);
+        automation.delay(500);
 
         if (!findAndClickImage(ATTACK_3_UP)) {
             success = false;
         }
-        automation.delay(1000);
-
-        if (!findAndClickImage(ATTACK_4_UP)) {
-            success = false;
-        }
-        automation.delay(1000);
+        automation.delay(500);
 
         return success;
     }
@@ -146,9 +138,9 @@ public class StrengthenAttributeController extends CommonController {
     public boolean performUpgrade() {
         LogUtil.info("=== 执行属性强化 ===");
         // 切换到属性强化建筑编号
-        pressKey(STRENGTHEN_ATTRIBUTE_NUMBER);
+        pressNumber(STRENGTHEN_ATTRIBUTE_NUMBER);
         // 延迟1s
-        automation.delay(1000);
+        automation.delay(500);
 
         boolean success = true;
 
@@ -159,12 +151,12 @@ public class StrengthenAttributeController extends CommonController {
         if (!upgradeRange()) {
             success = false;
         }
-        automation.delay(1000);
+        automation.delay(500);
 
         if (!upgradeMultiShot()) {
             success = false;
         }
-        automation.delay(1000);
+        automation.delay(500);
 
         if (!upgradeAttack()) {
             success = false;
@@ -175,19 +167,20 @@ public class StrengthenAttributeController extends CommonController {
 
 
     /**
-     * 检查游戏是否已经运行了 15 分钟
-     * @return 是否达到 15 分钟
+     * 检查游戏是否已经运行了 13 分钟
+     * 1. 由于内部执行的是一个中断方法, 不会实时检测时间, 需要提前一个 3 分钟判断
+     * @return 是否达到 13 分钟
      */
     public boolean isGameTimeReached15Minutes() {
         long currentTime = System.currentTimeMillis();
         long elapsedGameTime = currentTime - gameStartTime;
-        return elapsedGameTime >= 15 * 60 * 1000;
+        return elapsedGameTime >= 13 * 60 * 1000;
     }
 
     /**
      * 循环执行强化流程，
      */
-    public boolean loopExecuteEnhancedProcess() {
+    public boolean loopExecuteEnhancedProcess() throws InterruptedException {
         LogUtil.info("=== 开始循环强化属性，直到 15 分钟 ===");
         while (!isGameTimeReached15Minutes()) {
             // 执行强化操作
@@ -195,8 +188,8 @@ public class StrengthenAttributeController extends CommonController {
                 LogUtil.error("属性强化失败");
                 return false;
             }
-            // 每3分钟执行一次强化操作
-            automation.delay(180000);
+            // 每2分钟执行一次强化操作
+            Thread.sleep(120000);
         }
 
         LogUtil.info("游戏时间已达到 15 分钟，停止强化");

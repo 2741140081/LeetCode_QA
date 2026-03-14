@@ -121,7 +121,7 @@ public class CommonController {
                 LogUtil.info("找到图片：" + imageName);
                 return true;
             }
-            automation.delay(1000);
+            automation.delay(3000);
         }
         LogUtil.info("等待图片超时：" + imageName);
         return false;
@@ -215,6 +215,12 @@ public class CommonController {
         automation.robot.keyRelease(keyCode);
         automation.delay(CLICK_DELAY);
         LogUtil.info("按下功能键：" + KeyEvent.getKeyText(keyCode));
+    }
+
+
+    public void pressNumber(int number) {
+        int keyCode = KeyEvent.getExtendedKeyCodeForChar(Character.forDigit(number, 10));
+        pressKey(keyCode);
     }
 
     /**

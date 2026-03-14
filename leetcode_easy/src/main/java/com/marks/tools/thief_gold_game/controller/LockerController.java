@@ -36,15 +36,7 @@ public class LockerController extends CommonController {
     private static final int LOCKER_NUMBER = 2;
 
     // 技能相关图片
-    private static final String LOCKER_SKILL_BOOK = "skill_book";          // 晕锤技能书
-    private static final String LOCKER_SKILL_BUTTON = "skill_button";      // 储物柜技能按钮
-
-    // 宝箱图片
-    private static final String GREEN_CHEST = "green_chest";               // 绿色宝箱
-    private static final String RED_CHEST = "red_chest";                   // 红色宝箱
-
-    // 物品栏相关
-
+    private static final String LOCKER_SKILL_BOOK = "2/skill_book";          // 晕锤技能书
 
     // 操作延迟配置（毫秒）
     private static final int SKILL_BOOK_DELAY = 500;                       // 技能书点击间隔
@@ -82,31 +74,18 @@ public class LockerController extends CommonController {
 
         // 切换到储物柜
         switchToLocker();
-
-        // 点击技能按钮
-        Point skillButtonPoint = findImage(LOCKER_SKILL_BUTTON);
-        if (skillButtonPoint == null) {
-            LogUtil.error("未找到技能按钮");
+        // 延迟1s
+        automation.delay(1000);
+        Point skillBookPoint = findImage(LOCKER_SKILL_BOOK);
+        if (skillBookPoint == null) {
+            LogUtil.error("未找到技能书");
             return false;
         }
-
-        automation.click(skillButtonPoint.x, skillButtonPoint.y);
-        automation.delay(CLICK_DELAY);
-
         // 购买 5 次技能书
-        for (int i = 1; i <= 5; i++) {
-            Point skillBookPoint = findImage(LOCKER_SKILL_BOOK);
-            if (skillBookPoint == null) {
-                LogUtil.error("第{}次购买：未找到技能书", i);
-                return false;
-            }
-
-            LogUtil.info("第{}次点击技能书，坐标：({}, {})", i, skillBookPoint.x, skillBookPoint.y);
+        for (int i = 0; i < 5; i++) {
             automation.click(skillBookPoint.x, skillBookPoint.y);
-
-            if (i < 5) {
-                automation.delay(SKILL_BOOK_DELAY);
-            }
+            // 每次购买后延迟1s
+            automation.delay(SKILL_BOOK_DELAY);
         }
 
         LogUtil.info("晕锤技能书购买完成，共 5 本");
@@ -195,7 +174,7 @@ public class LockerController extends CommonController {
      */
     public void switchToLocker() {
         LogUtil.info("=== 切换到储物柜（编号 2） ===");
-        pressKey(LOCKER_NUMBER);
+        pressNumber(LOCKER_NUMBER);
     }
 
     /**
@@ -251,12 +230,12 @@ public class LockerController extends CommonController {
      * @param delayTime 延迟时间
      * @return 是否成功
      */
-    // TODO: 需要与 ThiefController 和 ModifierController 配合
     public boolean executeSecondModificationProcess(int delayTime) {
-        LogUtil.info("=== 储物柜第二次修改流程开始 ===");
-        // 延迟delayTime ms, 等待获取足够金币
-        automation.delay(delayTime);
+        LogUtil.info("=== 储物柜第二次修改流程开始, 等待{} s 获取金币===", delayTime);
         try {
+            // 延迟delayTime ms, 等待获取足够金币
+            automation.delay(delayTime);
+
             // 1. 切换到储物柜
             switchToLocker();
 

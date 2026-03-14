@@ -8,6 +8,7 @@ import com.marks.tools.thief_gold_game.controller.GameFlowController;
 import com.marks.utils.LogUtil;
 
 import java.awt.*;
+import java.io.File;
 
 /**
  * <p>项目名称: LeetCode_QA </p>
@@ -41,7 +42,14 @@ public class ThiefGameStarter {
             int maxCount = 10; // 执行10次
             while (count <= maxCount) {
                 LogUtil.info("第 " + count + " 次执行游戏");
-                gameFlowController.startGame(difficulty);
+                if (!gameFlowController.startGame(difficulty)) {
+                    LogUtil.info("第{}轮游戏流程执行失败, 退出程序", count);
+                    break;
+                } else {
+                    LogUtil.info("第{}轮游戏流程执行成功", count);
+                    // 删除 result 目录下的所有文件，防止无用截图太多了，目标目录:D:\images\automation\results
+                    deleteFilesInDirectory("D:\\images\\automation\\results");
+                }
                 count++;
                 Thread.sleep(5000);
             }
@@ -91,5 +99,40 @@ public class ThiefGameStarter {
 
         LogUtil.info("自动化环境初始化完成");
         return automation;
+    }
+
+    /**
+     * 删除指定目录下的所有文件
+     * @param directoryPath 目录路径
+     */
+    private static void deleteFilesInDirectory(String directoryPath) {
+        try {
+            File directory = new File(directoryPath);
+            if (!directory.exists() || !directory.isDirectory()) {
+                LogUtil.warn("目录不存在或不是目录：{}", directoryPath);
+                return;
+            }
+
+            File[] files = directory.listFiles();
+            if (files == null || files.length == 0) {
+                LogUtil.info("目录为空，无需删除：{}", directoryPath);
+                return;
+            }
+
+            int deletedCount = 0;
+            for (File file : files) {
+                if (file.isFile()) {
+                    if (file.delete()) {
+                        deletedCount++;
+                    } else {
+                        LogUtil.error("删除文件失败：{}", file.getAbsolutePath());
+                    }
+                }
+            }
+
+            LogUtil.info("已删除 {} 个文件，目录：{}", deletedCount, directoryPath);
+        } catch (Exception e) {
+            LogUtil.error("删除文件时发生错误：" + e.getMessage(), e);
+        }
     }
 }

@@ -32,10 +32,10 @@ public class ArchiverChallengeController extends CommonController {
     private static final int[] ARCHIVER_NUMBERS = {1, 2, 3, 4};
 
     // 坐标微调参数
-    private static final int X_OFFSET = -150;  // X 坐标向左微调 150px
-    private static final int SELECTION_SIZE = 100;  // 圈选区域大小 100x100px
+    private static final int X_OFFSET = -30;  // X 坐标向左微调 150px
+    private static final int SELECTION_SIZE = 30;  // 圈选区域大小 100x100px
     private static final int SELECTION_TIME = 1000;  // 圈选耗时 1s
-    private static final int WAIT_AFTER_WIN = 3000;  // 胜利后等待 3s
+    private static final int WAIT_AFTER_WIN = 1000;  // 胜利后等待 3s
 
     public ArchiverChallengeController(ImageRecognitionAutomation automation) {
         super(automation);
@@ -124,7 +124,7 @@ public class ArchiverChallengeController extends CommonController {
         LogUtil.info("找到建筑原始坐标：({}, {})", originalPoint.x, originalPoint.y);
 
         // 微调坐标左移：，X 减少 150px, Y 不变
-        Point adjustedPoint = new Point(originalPoint.x + X_OFFSET, originalPoint.y );
+        Point adjustedPoint = new Point(originalPoint.x + X_OFFSET, originalPoint.y + X_OFFSET );
         LogUtil.info("调整后坐标：({}, {})", adjustedPoint.x, adjustedPoint.y);
 
         return adjustedPoint;
@@ -174,7 +174,7 @@ public class ArchiverChallengeController extends CommonController {
 
         try {
             // 1. 选择对应的存档建筑
-            pressKey(archiverNumber);
+            pressNumber(archiverNumber);
             automation.delay(500);
             LogUtil.info("已选择存档建筑编号：{}", archiverNumber);
 

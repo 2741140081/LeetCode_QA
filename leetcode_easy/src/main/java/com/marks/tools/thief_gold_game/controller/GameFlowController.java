@@ -38,7 +38,7 @@ public class GameFlowController {
 
     // 游戏时间控制
     private long gameStartTime;
-    private static final int ARCHIVER_BOSS_DURATION = 2 * 60 * 1000; // 2 分钟
+    private static final int ARCHIVER_BOSS_DURATION = 60 * 1000; // 1 分钟
 
     public GameFlowController(ImageRecognitionAutomation automation) {
         this.automation = automation;
@@ -53,11 +53,12 @@ public class GameFlowController {
         this.prepareRoom = new PrepareRoom(automation);
         this.difficultyController = new DifficultyController(automation);
         this.thiefController = new ThiefController(automation);
-        this.lockerController = new LockerController(automation, modifierController);
+        this.modifierController = new ModifierController(automation);
+        this.modifierController = new ModifierController(automation);
         this.bossChallengeController = new BossChallengeController(automation);
         this.strengthenAttributeController = new StrengthenAttributeController(automation);
-        this.modifierController = new ModifierController(automation);
         this.archiverChallengeController = new ArchiverChallengeController(automation);
+        this.lockerController = new LockerController(automation, modifierController);
         LogUtil.info("控制器初始化完成");
     }
 
@@ -65,20 +66,21 @@ public class GameFlowController {
      * 完整的游戏流程入口
      * @param difficultyNumber 难度等级 (1-30)
      */
-    public void startGame(int difficultyNumber) {
+    public boolean startGame(int difficultyNumber) {
         try {
             LogUtil.info("=== 开始游戏流程 ===");
 
             // 步骤 1: 准备房间并开始游戏, [done]
             if (!prepareRoomAndStart()) {
                 LogUtil.error("准备房间失败，终止游戏");
-                return;
+                return false;
             }
-
+            // 延迟15s, 目前是由于时间不够, 后续的难度选择还没出现在页面
+            automation.delay(10000);
             // 步骤 2: 选择难度、模式、挑战, [done]
             if (!selectDifficulty(difficultyNumber)) {
                 LogUtil.error("选择难度失败，终止游戏");
-                return;
+                return false;
             }
 
             // 步骤 3: 记录游戏开始时间, [done]
@@ -87,12 +89,12 @@ public class GameFlowController {
 
             // 步骤 4: 游戏主体流程（15 分钟）
             if (!executeMainGame()) {
-                return;
+                return false;
             }
 
             // 步骤 5: 最终 BOSS 挑战
             if (!executeFinalBossChallenge()) {
-                return;
+                return false;
             }
 
             // 步骤 6: 存档 BOSS 挑战
@@ -105,6 +107,7 @@ public class GameFlowController {
         } catch (Exception e) {
             LogUtil.error("游戏执行异常：" + e.getMessage(), e);
         }
+        return true;
     }
 
     /**
@@ -134,7 +137,7 @@ public class GameFlowController {
     /**
      * 步骤 4: 执行游戏主流程（15 分钟）
      */
-    private boolean executeMainGame() {
+    private boolean executeMainGame() throws InterruptedException {
         LogUtil.info("=== 步骤 4: 游戏主体流程开始 ===");
 
         // 初始设置：编号、属性强化、购买武器等
@@ -145,10 +148,8 @@ public class GameFlowController {
             LogUtil.error("小偷流程执行失败，终止游戏");
             return false;
         }
-        // 开启自动挑战金币怪
-        bossChallengeController.startAutoChallengeMonster();
 
-        int delayTime = 120000; // 两分钟等待时间
+        int delayTime = 15000; // 10s等待时间
         // 储物柜第二次修改物品
         if (!lockerController.executeSecondModificationProcess(delayTime)) {
             LogUtil.error("储物柜第二次修改失败，终止游戏");
@@ -182,12 +183,14 @@ public class GameFlowController {
 
         // 1.1 对人物小偷编号
         thiefController.initialize(lockerController);
+        // 延迟5s, 等待文字消失
+        automation.delay(5000);
         // 1.2 小偷攻击金矿
         thiefController.attackGoldMine();
         // 小偷初始化完成
 
         // 2 对挑战boss建筑编号
-        bossChallengeController.initialize();
+        bossChallengeController.initialize(gameStartTime);
 
         // 3. 对属性强化建筑编号, 并且设置开始时间
         strengthenAttributeController.initialize(gameStartTime);
@@ -201,12 +204,15 @@ public class GameFlowController {
      */
     private boolean executeFinalBossChallenge() {
         LogUtil.info("=== 步骤 5: 最终 BOSS 挑战 ===");
+        int maxWaitTime = 1000 * 60 * 2; // 最多检测2分钟
         // 开启最终 BOSS 挑战
-        bossChallengeController.startFinalBossChallenge();
+        if (!bossChallengeController.startFinalBossChallenge(maxWaitTime)) {
+            return false;
+        }
         // 等待 1s
         automation.delay(1000);
         // 执行检测胜利逻辑
-        int maxWaitTime = 1000 * 60 * 2; // 最多检测2分钟
+
         if (!bossChallengeController.checkVictoryPeriodically(maxWaitTime)) {
             LogUtil.error("最终 BOSS 挑战失败，终止游戏");
             return false;

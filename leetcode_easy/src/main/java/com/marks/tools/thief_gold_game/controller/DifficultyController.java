@@ -73,22 +73,22 @@ public class DifficultyController extends CommonController {
     public void selectChallenges() {
         LogUtil.info("=== 选择挑战：挑战 1-4 ===");
 
-        if (!findAndClickImage(CHALLENGE_1)) {
+        if (!findAndClickImage(CHALLENGE_4)) {
             LogUtil.error("选择挑战 1 失败");
         }
         automation.delay(500);
 
-        if (!findAndClickImage(CHALLENGE_2)) {
+        if (!findAndClickImage(CHALLENGE_3)) {
             LogUtil.error("选择挑战 2 失败");
         }
         automation.delay(500);
 
-        if (!findAndClickImage(CHALLENGE_3)) {
+        if (!findAndClickImage(CHALLENGE_2)) {
             LogUtil.error("选择挑战 3 失败");
         }
         automation.delay(500);
 
-        if (!findAndClickImage(CHALLENGE_4)) {
+        if (!findAndClickImage(CHALLENGE_1)) {
             LogUtil.error("选择挑战 4 失败");
         }
     }

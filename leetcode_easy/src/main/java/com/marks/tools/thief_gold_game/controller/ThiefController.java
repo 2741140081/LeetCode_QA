@@ -1,7 +1,6 @@
 package com.marks.tools.thief_gold_game.controller;
 
 import com.marks.tools.kkplatform.ImageRecognitionAutomation;
-import com.marks.tools.kkplatform.SpecialHandel;
 import com.marks.utils.LogUtil;
 
 import java.awt.*;
@@ -44,18 +43,16 @@ public class ThiefController extends CommonController {
     private static final String GOLD_MINE = "common/gold_mine";
 
     // 商店相关
-    private static final String SHOP_BUILDING = "common/shop_building";     // 商店最左上角物品
-    private static final String BUY_EQUIPMENT_BOX = "5/buy_equipment_box";             // 购买确认按钮
+    private static final String SHOP_BUILDING = "common/shop_building";     // 商店建筑物
+    private static final String BUY_EQUIPMENT_BOX = "common/buy_equipment_box";  // 购买确认按钮
 
     // 等待时间配置（毫秒）
-    private static final int WAIT_FOR_SHOP_TIME = 60000;                 // 等待 1 分钟去商店
+    private static final int WAIT_FOR_SHOP_TIME = 15000;                 // 等待 14 s去商店
 
-    private SpecialHandel specialHandel;
     private LockerController lockerController;
 
     public ThiefController(ImageRecognitionAutomation automation) {
         super(automation);
-        specialHandel = new SpecialHandel();
     }
 
     /**
@@ -81,26 +78,34 @@ public class ThiefController extends CommonController {
     public boolean attackGoldMine() {
         LogUtil.info("=== 开始攻击金矿 ===");
 
-        // 找到金矿坐标
-        Point goldMinePoint = findImage(GOLD_MINE);
+        Point goldMinePoint = null;
+        // 在找3次, 每次间隔3s
+        for (int i = 0; i < RETRY_TIMES; i++) {
+            goldMinePoint = findImage(GOLD_MINE, false);
+            if (goldMinePoint != null) {
+                break;
+            }
+            // 延迟3s
+            automation.delay(3000);
+        }
+
         if (goldMinePoint == null) {
             LogUtil.error("未找到金矿");
             return false;
         }
 
         LogUtil.info("找到金矿坐标：({}, {})", goldMinePoint.x, goldMinePoint.y);
-
-        // 按下 A 键
-        automation.robot.keyPress(KeyEvent.VK_A);
+        // 调整goldMinePoint, 保持水平方向增加 100 px, 竖向增加 53px
+//        goldMinePoint.x += 100;
+        goldMinePoint.y += 80;
+        // 点击 A 键
+        pressKey(KeyEvent.VK_A);
         automation.delay(CLICK_DELAY);
 
         // 移动鼠标到金矿坐标并点击
         automation.click(goldMinePoint.x, goldMinePoint.y);
         automation.delay(CLICK_DELAY);
 
-        // 释放 A 键
-        automation.robot.keyRelease(KeyEvent.VK_A);
-        automation.delay(CLICK_DELAY);
 
         LogUtil.info("金矿攻击完成");
         return true;
@@ -124,13 +129,15 @@ public class ThiefController extends CommonController {
             LogUtil.error("未找到商店");
             return false;
         }
-
+        // 微调 shopPoint, 水平不变, 竖直方向增加50px
+        shopPoint.x += 100;
+        shopPoint.y += 80;
         // 点击商店
         automation.click(shopPoint.x, shopPoint.y);
         automation.delay(CLICK_DELAY);
 
-        // 通过 SpecialHandel 来购买商店左上角的商品
-        Point thingPoint = specialHandel.findImage(BUY_EQUIPMENT_BOX);
+        // 直接购买来购买商店左上角的商品
+        Point thingPoint = findImage(BUY_EQUIPMENT_BOX);
         if (thingPoint == null) {
             LogUtil.error("购买确认失败");
             return false;
@@ -154,8 +161,6 @@ public class ThiefController extends CommonController {
         // 1. 移动视角使得储物柜显示在主页面
         pressKey(KeyEvent.VK_DOWN);
         automation.delay(CLICK_DELAY);
-        pressKey(KeyEvent.VK_DOWN);
-        automation.delay(CLICK_DELAY);
 
         // 2. 找到储物柜坐标点
         Point lockerPoint = findImage(LOCKER_BUILDING);
@@ -165,7 +170,7 @@ public class ThiefController extends CommonController {
         }
 
         // 确保当前是小偷
-        pressKey(THIEF_NUMBER);
+        pressNumber(THIEF_NUMBER);
 
         // 3. 获取 THIEF_DROP_SKILL 的坐标, 然后计算第一件物品的坐标值
         // 点击丢弃物品技能
@@ -174,15 +179,18 @@ public class ThiefController extends CommonController {
             LogUtil.error("未找到丢弃物品技能");
             return false;
         }
-        // 通过计算, 得到第一件物品的坐标, y 值保持不变, x 值减去 150 px
-        Point itemPoint = new Point(dropSkillPoint.x - 150, dropSkillPoint.y);
+        // 通过计算, 得到第一件物品的坐标, x 值减去 180 px, y 值增加20 px
+        Point itemPoint = new Point(dropSkillPoint.x - 230, dropSkillPoint.y + 20);
 
         // 点击 itemPoint, 相当于移动操作
         automation.click(itemPoint.x, itemPoint.y);
         automation.delay(CLICK_DELAY);
+        // 延迟
+        automation.delay(1000);
 
         // 右键点击, 等同于拿起物品操作
         automation.rightClick(itemPoint.x, itemPoint.y);
+        automation.delay(1000);
 
         // 移动到储物柜坐标点并点击
         automation.click(lockerPoint.x, lockerPoint.y);
@@ -209,6 +217,10 @@ public class ThiefController extends CommonController {
      * @return 是否存在
      */
     public boolean verifyItemInSlot() {
+        // 需要先切换到小偷
+        pressNumber(THIEF_NUMBER);
+        // 延迟1s
+        automation.delay(1000);
         List<String> itemNames = getAllItemNames();
         // 在物品栏区域查找物品图片
         for (String itemName : itemNames) {
@@ -241,7 +253,7 @@ public class ThiefController extends CommonController {
             }
 
             // 2. 切换到小偷, 并且按下空格键调整中心点
-            pressKey(THIEF_NUMBER);
+            pressNumber(THIEF_NUMBER);
             automation.delay(CLICK_DELAY);
             pressKey(KeyEvent.VK_SPACE);
             automation.delay(CLICK_DELAY);
@@ -250,9 +262,6 @@ public class ThiefController extends CommonController {
             if (!dropItem()) {
                 return false;
             }
-
-            // 4. 从新攻击金矿
-            attackGoldMine();
 
             // 5. 执行第一次物品修改
             if (!lockerController.executeFirstModificationProcess()) {
