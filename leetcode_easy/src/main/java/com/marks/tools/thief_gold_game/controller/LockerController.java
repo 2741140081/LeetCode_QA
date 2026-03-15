@@ -58,7 +58,6 @@ public class LockerController extends CommonController {
             return false;
         }
         automation.click(lockerPoint.x, lockerPoint.y);
-        automation.delay(CLICK_DELAY);
         // 对储物柜进行编号
         selectNumber(LOCKER_NUMBER);
         return true;
@@ -74,8 +73,6 @@ public class LockerController extends CommonController {
 
         // 切换到储物柜
         switchToLocker();
-        // 延迟1s
-        automation.delay(1000);
         Point skillBookPoint = findImage(LOCKER_SKILL_BOOK);
         if (skillBookPoint == null) {
             LogUtil.error("未找到技能书");
@@ -84,11 +81,7 @@ public class LockerController extends CommonController {
         // 购买 n 次技能书
         for (int i = 0; i < n; i++) {
             automation.click(skillBookPoint.x, skillBookPoint.y);
-            // 每次购买后延迟1s
-            automation.delay(SKILL_BOOK_DELAY);
         }
-
-        LogUtil.info("晕锤技能书购买完成，共 5 本");
         return true;
     }
 
@@ -102,14 +95,11 @@ public class LockerController extends CommonController {
 
         // 切换到储物柜
         switchToLocker();
-        // 延迟1s
-        automation.delay(1000);
         Point skillBookPoint = findImage(ICE_HALO_BOOK);
         if (skillBookPoint == null) {
             LogUtil.error("未找到技能书");
         } else {
             automation.click(skillBookPoint.x, skillBookPoint.y);
-            automation.delay(CLICK_DELAY);
         }
     }
 
@@ -159,9 +149,6 @@ public class LockerController extends CommonController {
         automation.delay(CLICK_DELAY);
         // 移动到 flagPoint, 点击
         automation.click(flagPoint.x, flagPoint.y);
-        // 放入小偷储物栏成功
-        // 延迟1s
-        automation.delay(1000);
         return true;
     }
 
@@ -196,6 +183,7 @@ public class LockerController extends CommonController {
     public void switchToLocker() {
         LogUtil.info("=== 切换到储物柜（编号 2） ===");
         pressNumber(LOCKER_NUMBER);
+        automation.delay(CLICK_DELAY);
     }
 
     /**
@@ -217,9 +205,7 @@ public class LockerController extends CommonController {
         try {
             // 1. 切换到储物柜
             switchToLocker();
-
-            // 2. 修改物品, 将 父类中的 FIRST_ITEM_NAMES 是第一次需要修改的物品
-            // 将string[] 转为 List
+            // 2. 修改物品, 将 父类中的 FIRST_ITEM_NAMES 是第一次需要修改的物品, 将string[] 转为 List
             List<String> itemNames = Arrays.stream(FIRST_ITEM_NAMES).toList();
             if (!modifyItems(itemNames)) {
                 return false;
@@ -231,10 +217,8 @@ public class LockerController extends CommonController {
                     return false;
                 }
             }
-
             LogUtil.info("储物柜第一次修改流程完成");
             return true;
-
         } catch (Exception e) {
             LogUtil.error("储物柜第一次修改流程异常：{}", e.getMessage());
             e.printStackTrace();
@@ -254,32 +238,26 @@ public class LockerController extends CommonController {
     public boolean executeModificationProcess(List<String> itemNames) {
         LogUtil.info("=== 储物柜修改流程开始===");
         try {
-            // 1. 切换到储物柜
+            // 切换到储物柜
             switchToLocker();
-            // 延迟 500 ms
-            automation.delay(CLICK_DELAY);
-            // 1. 购买 5 本技能书
+
+            // 1. 购买 itemNames.size() 本技能书
             if (!buySkillBooks(itemNames.size())) {
                 return false;
             }
-            // 延迟 500 ms
-            automation.delay(CLICK_DELAY);
-            // 2. 修改 5 个物品
+
+            // 2. 修改 itemNames 个物品
             if (!modifyItems(itemNames)) {
                 return false;
             }
-            // 延迟 500 ms
-            automation.delay(CLICK_DELAY);
-            // 3. 批量丢弃物品
+
+            // 3. 批量转移物品到小偷
             if (!dropMultipleItems(itemNames)) {
                 return false;
             }
-            // 延迟 500 ms
-            automation.delay(CLICK_DELAY);
 
             LogUtil.info("储物柜修改流程完成");
             return true;
-
         } catch (Exception e) {
             LogUtil.error("储物柜修改流程异常：{}", e.getMessage());
             e.printStackTrace();

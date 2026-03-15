@@ -91,8 +91,6 @@ public class ModifierController extends CommonController {
 
                 // 双击该坐标点
                 automation.click(itemPoint.x, itemPoint.y);
-                automation.delay(CLICK_DELAY);
-
                 // 找到目标值标签
                 Point targetValuePoint = findImage(TARGET_VALUE_LABEL);
                 if (targetValuePoint == null) {
@@ -102,27 +100,20 @@ public class ModifierController extends CommonController {
                 targetValuePoint.y += 12;
                 // 点击
                 automation.click(targetValuePoint.x, targetValuePoint.y);
-
                 // Ctrl + A 全选
                 pressCombinationKey(KeyEvent.VK_CONTROL, KeyEvent.VK_A);
-                automation.delay(CLICK_DELAY);
-
                 // 输入新的物品名称
                 inputText(itemName);
-                automation.delay(CLICK_DELAY);
 
                 // 判断 itemName 是否等于 ys04, 如果等于 ys04, 需要修改物品数量
                 if (itemName.equals("ys04")) {
                     targetValuePoint.y += 20; // 下移20px
                     // 点击
                     automation.click(targetValuePoint.x, targetValuePoint.y);
-                    automation.delay(CLICK_DELAY);
                     // Ctrl + A 全选
                     pressCombinationKey(KeyEvent.VK_CONTROL, KeyEvent.VK_A);
-                    automation.delay(CLICK_DELAY);
                     // 输入物品数量
                     inputText("1");
-                    automation.delay(CLICK_DELAY);
                 }
 
                 // 点击修改按钮
@@ -133,7 +124,6 @@ public class ModifierController extends CommonController {
                 // 延迟1s
                 automation.delay(CLICK_DELAY);
             }
-
             LogUtil.info("所有物品修改完成，共{" + itemNames.size() + "}件");
 
             return true;

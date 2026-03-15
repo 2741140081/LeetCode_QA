@@ -22,7 +22,7 @@ import java.io.File;
  */
 public class ThiefGameStarter {
 
-    private static final int DEFAULT_DIFFICULTY = 16; // 默认难度 16
+    private static final int DEFAULT_DIFFICULTY = 28; // 默认难度 28
 
     public static void main(String[] args) {
         LogUtil.info("=== 《小偷偷金 TD》自动化脚本启动 ===");
@@ -72,7 +72,7 @@ public class ThiefGameStarter {
         if (args.length > 0) {
             try {
                 int difficulty = Integer.parseInt(args[0]);
-                if (difficulty >= 1 && difficulty <= 30) {
+                if (difficulty >= 1 && difficulty <= 40) {
                     LogUtil.info("使用自定义难度：" + difficulty);
                     return difficulty;
                 } else {

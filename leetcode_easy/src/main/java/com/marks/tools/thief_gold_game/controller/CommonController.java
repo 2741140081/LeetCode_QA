@@ -51,7 +51,7 @@ public class CommonController {
     public static final String[] PRODUCER_ITEM_NAMES = {"w293", "w293", "w293", "w293", "w293", "w293"}; // 生产者的名称
 
     // 等待时间配置（毫秒）
-    protected static int WAIT_FOR_SHOP_TIME = 7000;     // 等待 10 s去商店
+    protected static int WAIT_FOR_SHOP_TIME = 4500;     // 等待 10 s去商店
     protected static boolean isChallenge5 = false;
 
 
@@ -80,11 +80,10 @@ public class CommonController {
             Point point = findImage(imageName, false);
             if (point != null) {
                 automation.click(point.x, point.y);
-                automation.delay(CLICK_DELAY);
                 LogUtil.info("成功点击图片：" + imageName);
                 return true;
             }
-            automation.delay(1000);
+            automation.delay(500);
         }
         LogUtil.info("未找到图片：" + imageName);
         return false;
@@ -223,10 +222,9 @@ public class CommonController {
      */
     public void pressKey(int keyCode) {
         automation.robot.keyPress(keyCode);
-        automation.delay(50);
+        automation.delay(100);
         automation.robot.keyRelease(keyCode);
-        automation.delay(CLICK_DELAY);
-        LogUtil.info("按下功能键：" + KeyEvent.getKeyText(keyCode));
+        automation.delay(50);
     }
 
 

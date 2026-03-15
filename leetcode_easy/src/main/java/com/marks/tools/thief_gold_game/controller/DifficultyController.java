@@ -47,14 +47,11 @@ public class DifficultyController extends CommonController {
         // 便利challengeNumber
         for (int i = 0; i < CHALLENGE_NUMBER.length; i++) {
             if (i == 4) {
+                // 不挑战 CHALLENGE_5, forever, 减少一半的偷钱太难受了, 等以后存档上来以后在挑战
                 continue;
             }
-            queue.offer(new Challenge(i, CHALLENGE_NUMBER[i], CHALLENGE_BASE + CHALLENGE_NUMBER[i], 4));
+//            queue.offer(new Challenge(i, CHALLENGE_NUMBER[i], CHALLENGE_BASE + CHALLENGE_NUMBER[i], 4));
         }
-        // 不挑战 CHALLENGE_5, forever, 减少一半的偷钱太难受了, 等以后存档上来以后在挑战
-//        queue.offer(new Challenge(0, 5, CHALLENGE_5, 4));
-
-
         return queue;
     }
 

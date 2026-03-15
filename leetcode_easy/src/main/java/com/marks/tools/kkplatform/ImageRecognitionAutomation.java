@@ -374,8 +374,9 @@ public class ImageRecognitionAutomation {
         robot.mouseMove(x, y);
         robot.delay(DELAY_SHORT);
         robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
-        robot.delay(50);
+        robot.delay(DELAY_SHORT);
         robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
+        robot.delay(DELAY_SHORT);
     }
 
     /**
@@ -385,8 +386,9 @@ public class ImageRecognitionAutomation {
         robot.mouseMove(x, y);
         robot.delay(DELAY_SHORT);
         robot.mousePress(InputEvent.BUTTON3_DOWN_MASK);
-        robot.delay(50);
+        robot.delay(DELAY_SHORT);
         robot.mouseRelease(InputEvent.BUTTON3_DOWN_MASK);
+        robot.delay(DELAY_SHORT);
     }
 
     /**

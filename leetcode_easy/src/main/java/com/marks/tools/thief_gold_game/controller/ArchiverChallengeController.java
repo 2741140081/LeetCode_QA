@@ -29,7 +29,7 @@ public class ArchiverChallengeController extends CommonController {
     private static final String ARCHIVER_FOLDER_BASE = "archiver_";
 
     // 存档编号数组
-    private static final int[] ARCHIVER_NUMBERS = {1, 2, 3, 4, 5};
+    private static final int[] ARCHIVER_NUMBERS = {1, 2, 3, 4, 5, 6};
 
     // 坐标微调参数
     private static final int X_OFFSET = -30;  // X 坐标向左微调 150px
@@ -43,48 +43,44 @@ public class ArchiverChallengeController extends CommonController {
 
     /**
      * 依次挑战所有存档 BOSS
-     * @return 是否全部成功
+     * 1. 提高健壮性, 找到什么点什么, 没找到的不处理
+     * 2. 修改返回值, 程序不需要返回值
      */
-    public boolean challengeAllArchivers() {
+    public void challengeAllArchivers() {
         LogUtil.info("=== 开始挑战所有存档 BOSS ===");
-
-        boolean allSuccess = true;
 
         try {
             // 等待 3 秒，让游戏自动切换到存档区域视角
             LogUtil.info("等待 3 秒，游戏自动切换到存档区域视角...");
             automation.delay(WAIT_AFTER_WIN);
 
-            // 1. 找到并圈选所有存档建筑
-            if (!selectAndNumberAllArchivers()) {
-                LogUtil.error("圈选存档建筑失败");
-                return false;
-            }
+            // 1. 找到并圈选所有存档建筑, 返回成功列表
+            List<Integer> successNumbers = selectAndNumberAllArchivers();
 
-            // 2. 依次挑战每个存档 BOSS
+            // 2. 依次挑战每个存档 BOSS, 挑战 successNumbers 列表的 BOSS
             LogUtil.info("开始挑战 BOSS");
-            for (int number : ARCHIVER_NUMBERS) {
+            for (int number : successNumbers) {
                 LogUtil.info("开始挑战第{}个存档 BOSS", number);
                 String bossFolder = ARCHIVER_FOLDER_BASE + number;
                 challengeArchiver(number, bossFolder);
+                // 每个存档挑战boss 间隔 10s
+                automation.delay(10000);
             }
 
         } catch (Exception e) {
             LogUtil.error("挑战存档 BOSS 异常：{}", e.getMessage());
             e.printStackTrace();
-            allSuccess = false;
         }
-
-        return allSuccess;
     }
 
     /**
      * 找到并圈选所有存档建筑，然后编号
+     * 1. 返回成功的编号列表
      * @return 是否成功
      */
-    private boolean selectAndNumberAllArchivers() {
+    private List<Integer> selectAndNumberAllArchivers() {
         LogUtil.info("=== 开始圈选所有存档建筑 ===");
-
+        List<Integer> successNumbers = new ArrayList<>();
         try {
             int maxTimeout = 30000;
             for (int number : ARCHIVER_NUMBERS) {
@@ -93,34 +89,38 @@ public class ArchiverChallengeController extends CommonController {
 
                 if (buildingPoint != null && circleSelectAndNumber(buildingPoint, number)) {
                     LogUtil.info("第{}个存档建筑圈选并编号成功", number);
+                    successNumbers.add(number);
                 } else {
                     LogUtil.error("第{}个存档建筑处理失败", number);
-                    return false;
+                    // 不需要处理, 记录日志即可,继续处理下一个
                 }
             }
 
             LogUtil.info("所有存档建筑圈选并编号完成");
-            return true;
         } catch (Exception e) {
             LogUtil.error("圈选存档建筑异常：{}", e.getMessage());
             e.printStackTrace();
-            return false;
+            // 返回空集合
+            return new ArrayList<>();
         }
+        return successNumbers;
     }
 
     /**
      * 找到建筑图片并调整坐标
+     * 1. 修改流程, 由于之前使用 waitForImage 方法，导致图片一开始找到, 但是由于图片是动态变换图,
+     * 后续使用 findImage 方法无法找到, 导致程序报错.
+     * 2. 解决方案改为使用 getPointByWait 方法, 直接返回坐标点, 判定坐标点是 null 来确定是否成功
      * @param buildingImage 建筑图片名称
      * @return 调整后的坐标点
      */
     private Point findAndAdjustPoint(String buildingImage, int maxTimeout) {
         LogUtil.info("正在查找建筑图片：{}", buildingImage);
-
-        if (!waitForImage(buildingImage, maxTimeout, 1000)) {
+        Point originalPoint = getPointByWait(buildingImage, maxTimeout, 500);
+        if (originalPoint == null ) {
             LogUtil.error("未找到建筑图片：{}", buildingImage);
             return null;
         }
-        Point originalPoint = findImage(buildingImage);
 
         LogUtil.info("找到建筑原始坐标：({}, {})", originalPoint.x, originalPoint.y);
 
@@ -176,7 +176,6 @@ public class ArchiverChallengeController extends CommonController {
         try {
             // 1. 选择对应的存档建筑
             pressNumber(archiverNumber);
-            automation.delay(500);
             LogUtil.info("已选择存档建筑编号：{}", archiverNumber);
 
             // 2. 获取文件夹中的所有 BOSS 图片
@@ -193,11 +192,8 @@ public class ArchiverChallengeController extends CommonController {
 
                 if (!defeatBoss(bossImage)) {
                     LogUtil.error("挑战 BOSS {} 失败", bossImage);
-                } else {
-                    LogUtil.info("BOSS {} 挑战成功", bossImage);
                 }
-
-                automation.delay(500);
+                automation.delay(CLICK_DELAY);
             }
 
         } catch (Exception e) {
@@ -252,12 +248,8 @@ public class ArchiverChallengeController extends CommonController {
             LogUtil.error("未找到 BOSS 图片：{}", bossInfo.getImageName());
             return false;
         }
-
-        LogUtil.info("找到 BOSS 坐标：({}, {})", bossPoint.x, bossPoint.y);
-
         // 点击 BOSS
         automation.click(bossPoint.x, bossPoint.y);
-        automation.delay(CLICK_DELAY);
 
         LogUtil.info("已点击 BOSS: {}", bossInfo.getImageName());
         return true;

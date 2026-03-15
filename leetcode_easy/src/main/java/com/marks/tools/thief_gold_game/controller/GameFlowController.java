@@ -42,9 +42,10 @@ public class GameFlowController {
 
     // 游戏时间控制
     private long gameStartTime;
-    private static final int ARCHIVER_BOSS_DURATION = 2 * 60 * 1000; // 30 秒
+    private static final int ARCHIVER_BOSS_DURATION = 100 * 1000; // 进阶难度 2 分 30 秒, 由于每次挑战间隔10s, 所以整体挑战减少60s
+//    private static final int ARCHIVER_BOSS_DURATION = 20 * 1000; // 普通难度(<31) 20 秒
     // 装备吞噬次数
-    private static final int THIEF_EAT_TIMES = 6;
+    private static final int THIEF_EAT_TIMES = 8; // 难度31 需要7次, 难度21需要 5次
 
     // 优先队列
     private PriorityQueue<Challenge> challengeQueue;
@@ -167,7 +168,7 @@ public class GameFlowController {
             return false;
         }
 
-        int delayTime = 3000; // 4s等待时间
+        int delayTime = 1000; // 1s等待时间
         automation.delay(delayTime);
         // 储物柜第二次修改物品
         List<String> itemNames = Arrays.asList(SECOND_ITEM_NAMES);
@@ -186,8 +187,7 @@ public class GameFlowController {
             LogUtil.error("开启十连点击失败，终止游戏");
             return false;
         }
-        // 等待 15s, 获取足够金币来强化属性
-        automation.delay(10000);
+
         // 开始强化属性
         if (!strengthenAttributeController.loopExecuteEnhancedProcess()) {
             return false;

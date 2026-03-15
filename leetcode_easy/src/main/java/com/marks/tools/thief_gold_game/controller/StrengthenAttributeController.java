@@ -51,14 +51,10 @@ public class StrengthenAttributeController extends CommonController {
         } else {
             // 点击属性建筑物
             LogUtil.info("点击属性建筑物");
-            automation.delay(CLICK_DELAY);
             automation.click(attr_point.x, attr_point.y);
-            automation.delay(CLICK_DELAY);
         }
         // 对已选的属性建筑物进行编号
         selectNumber(STRENGTHEN_ATTRIBUTE_NUMBER);
-        // 延迟1s
-        automation.delay(CLICK_DELAY);
         // 设置游戏开始时间
         this.gameStartTime = startTime;
         return true;
@@ -73,8 +69,6 @@ public class StrengthenAttributeController extends CommonController {
         LogUtil.info("=== 开启 10连点击按钮 ===");
         // 点击键盘 T 键
         pressKey(KeyEvent.VK_T);
-        // 延迟
-        automation.delay(CLICK_DELAY);
         return true;
     }
 
@@ -84,11 +78,7 @@ public class StrengthenAttributeController extends CommonController {
      */
     public boolean upgradeAttackSpeed() {
         LogUtil.info("=== 强化攻击速度 ===");
-        if (!findAndClickImage(ATTACK_SPEED_UP)) {
-            return false;
-        }
-        automation.delay(1000);
-        return true;
+        return findAndClickImage(ATTACK_SPEED_UP);
     }
 
     /**
@@ -123,12 +113,12 @@ public class StrengthenAttributeController extends CommonController {
         if (!findAndClickImage(ATTACK_4_UP)) {
             success = false;
         }
-        automation.delay(500);
+        automation.delay(CLICK_DELAY);
 
         if (!findAndClickImage(ATTACK_3_UP)) {
             success = false;
         }
-        automation.delay(500);
+        automation.delay(CLICK_DELAY);
 
         return success;
     }
@@ -141,8 +131,6 @@ public class StrengthenAttributeController extends CommonController {
         LogUtil.info("=== 执行属性强化 ===");
         // 切换到属性强化建筑编号
         pressNumber(STRENGTHEN_ATTRIBUTE_NUMBER);
-        // 延迟1s
-        automation.delay(500);
 
         boolean success = true;
         for (int i = 0; i < 3; i++) {
@@ -154,15 +142,13 @@ public class StrengthenAttributeController extends CommonController {
             if (!upgradeRange()) {
                 success = false;
             }
-            automation.delay(500);
+            automation.delay(CLICK_DELAY);
         }
 
         // 强化多重射击
         if (!upgradeMultiShot()) {
             success = false;
         }
-        automation.delay(500);
-
         return success;
     }
 
