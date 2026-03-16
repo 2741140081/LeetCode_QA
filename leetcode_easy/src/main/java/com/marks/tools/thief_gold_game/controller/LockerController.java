@@ -36,11 +36,9 @@ public class LockerController extends CommonController {
 
     // 技能相关图片
     private static final String LOCKER_SKILL_BOOK = "2/skill_book";          // 晕锤技能书
-    private static final String ICE_HALO_BOOK = "2/ice_halo_book";          // 晕锤技能书
+    private static final String ICE_HALO_BOOK = "2/ice_halo_book";          // 寒冰光环技能书
 
-    // 操作延迟配置（毫秒）
-    private static final int SKILL_BOOK_DELAY = 500;                       // 技能书点击间隔
-    private static final int ITEM_DROP_DELAY = 300;                        // 丢弃物品延迟
+    private Point thiefFlagPoint; // 小偷左上角的标记点, 固定点位
 
     // 修改器引用
     private ModifierController modifierController;
@@ -52,14 +50,19 @@ public class LockerController extends CommonController {
 
     public boolean initialize() {
         // 找到储物柜位置并点击
-        Point lockerPoint = findImage(LOCKER_BUILDING);
-        if (lockerPoint == null) {
+        if (!findAndClickImage(LOCKER_BUILDING, TIMEOUT_5_S)) {
             LogUtil.error("未找到储物柜");
             return false;
         }
-        automation.click(lockerPoint.x, lockerPoint.y);
         // 对储物柜进行编号
         selectNumber(LOCKER_NUMBER);
+        // 找到小偷左上角的标记点坐标, 记录坐标, thiefFlagPoint 是一个固定点, 不会随着镜头改变, 不用每次都找一次
+        thiefFlagPoint = getPointByWait(THIEF_LEFT_TOP_FLAG, TIMEOUT_5_S, CLICK_DELAY);
+        // 判断坐标点是否存在
+        if (thiefFlagPoint == null) {
+            LogUtil.error("未找到小偷左上角的标记点");
+            return false;
+        }
         return true;
     }
 
@@ -73,7 +76,7 @@ public class LockerController extends CommonController {
 
         // 切换到储物柜
         switchToLocker();
-        Point skillBookPoint = findImage(LOCKER_SKILL_BOOK);
+        Point skillBookPoint = getPointByWait(LOCKER_SKILL_BOOK, TIMEOUT_3_S, CLICK_DELAY);
         if (skillBookPoint == null) {
             LogUtil.error("未找到技能书");
             return false;
@@ -95,7 +98,7 @@ public class LockerController extends CommonController {
 
         // 切换到储物柜
         switchToLocker();
-        Point skillBookPoint = findImage(ICE_HALO_BOOK);
+        Point skillBookPoint = getPointByWait(ICE_HALO_BOOK, TIMEOUT_3_S, CLICK_DELAY);
         if (skillBookPoint == null) {
             LogUtil.error("未找到技能书");
         } else {
@@ -128,27 +131,17 @@ public class LockerController extends CommonController {
         switchToLocker();
         // 找到物品栏中的物品, 找到物品证明修改生效
         String itemImagePath = COMMON_FOLDER + itemName;
-        Point itemPoint = findImage(itemImagePath);
+        Point itemPoint = getPointByWait(itemImagePath, TIMEOUT_3_S, CLICK_DELAY);
         if (itemPoint == null) {
             LogUtil.error("未找到物品：{}", itemImagePath);
-            return false;
-        }
-
-        LogUtil.info("找到物品坐标：({}, {})", itemPoint.x, itemPoint.y);
-
-        // 找到小偷左上角的标记点坐标
-        Point flagPoint = findImage(THIEF_LEFT_TOP_FLAG);
-        // 判断坐标点是否存在
-        if (flagPoint == null) {
-            LogUtil.error("未找到小偷左上角的标记点");
             return false;
         }
 
         // 移动到物品坐标，右键点击
         automation.rightClick(itemPoint.x, itemPoint.y);
         automation.delay(CLICK_DELAY);
-        // 移动到 flagPoint, 点击
-        automation.click(flagPoint.x, flagPoint.y);
+        // 移动到 thiefFlagPoint, 点击
+        automation.click(thiefFlagPoint.x, thiefFlagPoint.y);
         return true;
     }
 
@@ -169,7 +162,7 @@ public class LockerController extends CommonController {
                 return false;
             }
 
-            automation.delay(ITEM_DROP_DELAY);
+            automation.delay(CLICK_DELAY);
         }
 
         LogUtil.info("批量丢弃完成，共{}件物品", itemNames.size());

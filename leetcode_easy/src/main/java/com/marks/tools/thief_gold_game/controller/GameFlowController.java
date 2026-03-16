@@ -2,6 +2,7 @@ package com.marks.tools.thief_gold_game.controller;
 
 import com.marks.tools.kkplatform.ImageRecognitionAutomation;
 import com.marks.tools.kkplatform.PrepareRoom;
+import com.marks.tools.kkplatform.WindowSwitcherUtils;
 import com.marks.tools.thief_gold_game.entity.Challenge;
 import com.marks.utils.LogUtil;
 
@@ -12,8 +13,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.PriorityQueue;
 
-import static com.marks.tools.thief_gold_game.controller.CommonController.PRODUCER_ITEM_NAMES;
-import static com.marks.tools.thief_gold_game.controller.CommonController.SECOND_ITEM_NAMES;
+import static com.marks.tools.kkplatform.common.KingOfBeastsConstants.GAME_TITLE;
+import static com.marks.tools.thief_gold_game.controller.CommonController.*;
 
 /**
  * <p>项目名称: LeetCode_QA </p>
@@ -32,6 +33,7 @@ import static com.marks.tools.thief_gold_game.controller.CommonController.SECOND
 public class GameFlowController {
     private ImageRecognitionAutomation automation;
     private PrepareRoom prepareRoom;
+    private WindowSwitcherUtils windowSwitcher;
     private DifficultyController difficultyController;
     private ThiefController thiefController;
     private LockerController lockerController;
@@ -47,6 +49,7 @@ public class GameFlowController {
     // 装备吞噬次数
     private static final int THIEF_EAT_TIMES = 8; // 难度31 需要7次, 难度21需要 5次
 
+    private static final String ARCHIVER_RESULT_DIR = "D:/images/automation/thief_gold/archiver_result/";
     // 优先队列
     private PriorityQueue<Challenge> challengeQueue;
 
@@ -61,6 +64,7 @@ public class GameFlowController {
     private void initializeControllers() {
         LogUtil.info("=== 初始化游戏控制器 ===");
         this.prepareRoom = new PrepareRoom(automation);
+        this.windowSwitcher = WindowSwitcherUtils.getInstance(); // 获取窗口单例
         this.difficultyController = new DifficultyController(automation);
         this.thiefController = new ThiefController(automation);
         this.modifierController = new ModifierController(automation);
@@ -89,8 +93,11 @@ public class GameFlowController {
                 LogUtil.error("准备房间失败，终止游戏");
                 return false;
             }
-            // 延迟15s, 目前是由于时间不够, 后续的难度选择还没出现在页面
-            automation.delay(10000);
+            // 超时时间为 10 秒
+            if (!switchToGameWindow(10000)) {
+                LogUtil.error("切换游戏窗口失败，执行错误处理");
+                return false;
+            }
             // 步骤 2: 选择难度、模式、挑战, [done]
             if (!selectDifficulty(difficultyNumber)) {
                 LogUtil.error("选择难度失败，终止游戏");
@@ -118,7 +125,7 @@ public class GameFlowController {
             String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
             String fileName = "difficulty_" + difficultyNumber + "_" + timestamp;
             // D:\images\automation\thief_gold\archiver_result
-            automation.captureScreen("D:\\images\\automation\\thief_gold\\archiver_result\\" + fileName + ".png");
+            automation.captureScreen(ARCHIVER_RESULT_DIR + fileName + ".png");
             // 步骤 8: 退出游戏
             exitGame();
 
@@ -144,6 +151,27 @@ public class GameFlowController {
         return prepareRoom.startGame();
     }
 
+    /**
+     * 切换到游戏窗口
+     * @param timeout 超时时间
+     * @return 是否成功切换
+     */
+    private boolean switchToGameWindow(int timeout) {
+        LogUtil.info("=== 切换到游戏窗口，超时时间：{}ms ===", timeout);
+        long startTime = System.currentTimeMillis();
+
+        while (System.currentTimeMillis() - startTime < timeout) {
+            if (windowSwitcher.switchToWindow(GAME_TITLE)) {
+                LogUtil.info("成功切换到游戏窗口");
+                return true;
+            }
+            LogUtil.info("未找到游戏窗口，等待 1s 后继续查找");
+            automation.delay(1000);
+        }
+
+        LogUtil.error("切换到游戏窗口超时，耗时：{}ms", System.currentTimeMillis() - startTime);
+        return false;
+    }
 
     /**
      * 步骤 2: 选择难度
@@ -168,8 +196,7 @@ public class GameFlowController {
             return false;
         }
 
-        int delayTime = 1000; // 1s等待时间
-        automation.delay(delayTime);
+        automation.delay(CLICK_DELAY);
         // 储物柜第二次修改物品
         List<String> itemNames = Arrays.asList(SECOND_ITEM_NAMES);
         if (!lockerController.executeModificationProcess(itemNames)) {
@@ -269,7 +296,6 @@ public class GameFlowController {
         // 等待 1s
         automation.delay(1000);
         // 执行检测胜利逻辑
-
         if (!bossChallengeController.checkVictoryPeriodically(maxWaitTime)) {
             LogUtil.error("最终 BOSS 挑战失败，终止游戏");
             return false;

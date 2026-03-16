@@ -66,7 +66,7 @@ public class StrengthenAttributeController extends CommonController {
      * @return 是否成功
      */
     public boolean openTenClicks() {
-        LogUtil.info("=== 开启 10连点击按钮 ===");
+        LogUtil.info("=== 按下T键, 开启10连点击 ===");
         // 点击键盘 T 键
         pressKey(KeyEvent.VK_T);
         return true;

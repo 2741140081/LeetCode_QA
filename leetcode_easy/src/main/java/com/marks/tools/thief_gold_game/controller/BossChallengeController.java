@@ -96,11 +96,7 @@ public class BossChallengeController extends CommonController {
         LogUtil.info("等待时间：{} ms, 挑战最终boss, currentTime: {}, gameStartTime: {}", delayTime, currentTime, gameStartTime);
         // 判断 delayTime
         automation.delay((int) delayTime);
-        if (waitForImage(FINAL_BOSS_CHALLENGE, maxWaitTime, 3000)) {
-            return findAndClickImage(FINAL_BOSS_CHALLENGE);
-        }
-        LogUtil.error("等待最终 BOSS 挑战超时");
-        return false;
+        return findAndClickImage(FINAL_BOSS_CHALLENGE, maxWaitTime);
     }
 
 

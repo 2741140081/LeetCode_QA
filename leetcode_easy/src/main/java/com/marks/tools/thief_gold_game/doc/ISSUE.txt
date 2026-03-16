@@ -1,0 +1,14 @@
+记录所有的ISSUE
+编号: INC20260316001
+日期: 20260316
+描述: ImageRecognitionAutomation.recognizeAndMarkElement(); // line: 162
+由于传入的是模板图片的长和宽:template.cols(), template.rows(),
+这个长宽没有进行缩放操作, 导致 convertToJavaPoint(), 返回的坐标点不是点击在中心点, 而是右下角处.
+例如, template = [100, 100], 修改前: [50, 50], 修改后: [33, 33].
+影响范围:
+ModifierController: 计算物品偏移
+ThiefController: 计算商店偏移, 物品栏中的第一件物品偏移
+findAndAdjustPoint: 存档建筑物坐标偏移, 和圈选大小
+
+
+

@@ -33,7 +33,10 @@ public class CommonController {
     protected WindowSwitcherUtils windowSwitcher;
 
     protected static final int CLICK_DELAY = 250;
-    protected static final int RETRY_TIMES = 3;
+    // 分别配置3s、5s、10s的超时时间
+    protected static final int TIMEOUT_3_S = 3000;
+    protected static final int TIMEOUT_5_S = 5000;
+    protected static final int TIMEOUT_10_S = 10000;
 
     // 图片路径常量
     protected static final String TEMPLATE_DIR = "D:/images/automation/thief_gold";
@@ -66,26 +69,28 @@ public class CommonController {
      * @return 是否成功
      */
     public boolean findAndClickImage(String imageName) {
-        return findAndClickImage(imageName, 30);
+        return findAndClickImage(imageName, TIMEOUT_3_S);
     }
 
     /**
      * 查找并点击图片（支持容差）
      * @param imageName 图片名称
-     * @param tolerance 颜色容差
+     * @param timeout ms 超时时间
      * @return 是否成功
      */
-    public boolean findAndClickImage(String imageName, int tolerance) {
-        for (int i = 0; i < RETRY_TIMES; i++) {
+    public boolean findAndClickImage(String imageName, int timeout) {
+        LogUtil.info("开始查找并点击图片：{}, 超时时间：{}ms", imageName, timeout);
+        long startTime = System.currentTimeMillis();
+
+        while (System.currentTimeMillis() - startTime < timeout) {
             Point point = findImage(imageName, false);
             if (point != null) {
                 automation.click(point.x, point.y);
-                LogUtil.info("成功点击图片：" + imageName);
                 return true;
             }
-            automation.delay(500);
         }
-        LogUtil.info("未找到图片：" + imageName);
+
+        LogUtil.info("未找到图片：{}, 耗时：{}ms", imageName, System.currentTimeMillis() - startTime);
         return false;
     }
 
@@ -198,7 +203,6 @@ public class CommonController {
     public void inputText(String text) {
         automation.typeText(text);
         automation.delay(200);
-        LogUtil.info("输入文本：" + text);
     }
 
     /**
@@ -229,22 +233,31 @@ public class CommonController {
 
 
     public void pressNumber(int number) {
-        int keyCode = KeyEvent.getExtendedKeyCodeForChar(Character.forDigit(number, 10));
+        int keyCode = getNumberKeyCode(number);
         pressKey(keyCode);
     }
 
     /**
      * 编号操作（Ctrl + 数字键）
-     * @param number 编号 1-9
+     * @param number 编号 0-9
      */
     public void selectNumber(int number) {
-        if (number < 1 || number > 9) {
-            LogUtil.error("编号必须在 1-9 之间");
-            return;
-        }
-        int keyCode = KeyEvent.getExtendedKeyCodeForChar(Character.forDigit(number, 10));
+        int keyCode = getNumberKeyCode(number);
         pressCombinationKey(KeyEvent.VK_CONTROL, keyCode);
-        LogUtil.info("选择编号：" + number);
+    }
+
+    /**
+     * 获取数字键的 keyCode
+     * @param number 数字 (0-9)
+     * @return keyCode 值，如果无效返回 KeyEvent.CHAR_UNDEFINED
+     */
+    public int getNumberKeyCode(int number) {
+        if (number < 0 || number > 9) {
+            LogUtil.error("无效的数字：{}，必须在 0-9 之间", number);
+            return KeyEvent.CHAR_UNDEFINED;
+        }
+
+        return KeyEvent.getExtendedKeyCodeForChar(Character.forDigit(number, 10));
     }
 
     /**
@@ -273,6 +286,40 @@ public class CommonController {
     public void delay(int milliseconds) {
         automation.delay(milliseconds);
     }
+
+    /**
+     * 处理坐标点的偏移操作
+     *
+     * @param point   原始坐标点
+     * @param xOffset X 轴偏移量（正数向右，负数向左）
+     * @param yOffset Y 轴偏移量（正数向下，负数向上）
+     */
+    public void offsetPoint(Point point, int xOffset, int yOffset) {
+        if (point == null) {
+            LogUtil.error("坐标点为空");
+            return;
+        }
+
+        point.x += xOffset;
+        point.y += yOffset;
+    }
+
+    /**
+     * 返回基于原始坐标点的偏移后的新坐标点
+     * @param point   原始坐标点参照点
+     * @param xOffset X 轴偏移量（正数向右，负数向左）
+     * @param yOffset Y 轴偏移量（正数向下，负数向上）
+     * @return 新的坐标点
+     */
+    public Point getPointByOffset(Point point, int xOffset, int yOffset) {
+        if (point == null) {
+            LogUtil.error("坐标点为空");
+            return null;
+        }
+
+        return new Point(point.x + xOffset, point.y + yOffset);
+    }
+
 
     public List<String> getAllItemNames() {
         Set<String> itemNames = new HashSet<>();

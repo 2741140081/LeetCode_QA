@@ -68,17 +68,14 @@ public class ModifierController extends CommonController {
             automation.delay(CLICK_DELAY);
 
             // 3. 找到物品信息标签，获取基准坐标
-            Point itemInfoPoint = findImage(ITEM_INFO_LABEL);
+            Point itemInfoPoint = getPointByWait(ITEM_INFO_LABEL, 3000, 250);
             if (itemInfoPoint == null) {
                 LogUtil.error("未找到物品信息标签");
                 return false;
             }
-            LogUtil.info("找到物品信息标签，坐标：({" + itemInfoPoint.x + "}, {" + itemInfoPoint.y + "})");
 
-            // 4. 计算第一件物品的坐标点
-            // 根据物品信息坐标，通过计算得到第一件物品的坐标点
-            Point firstItemPoint = calculateFirstItemPoint(itemInfoPoint);
-            LogUtil.info("计算得到第一件物品坐标：({" + firstItemPoint.x + "}, {" + firstItemPoint.x + "})");
+            // 4. 计算第一件物品的坐标点, 根据物品信息坐标，计算第一件物品的坐标点, TODO: INC20260316001
+            Point firstItemPoint = getPointByOffset(itemInfoPoint, ITEM_X_OFFSET, ITEM_Y_OFFSET);
 
             // 5. 循环修改每个物品
             for (int i = 0; i < itemNames.size(); i++) {
@@ -87,17 +84,17 @@ public class ModifierController extends CommonController {
 
                 // 计算第 i 件物品的坐标点
                 Point itemPoint = calculateItemPoint(firstItemPoint, i);
-                LogUtil.info("计算得到第{" + (i + 1) + "}件物品坐标：({" + itemPoint.x + "}, {" + itemPoint.x + "})");
-
                 // 双击该坐标点
                 automation.click(itemPoint.x, itemPoint.y);
+
                 // 找到目标值标签
-                Point targetValuePoint = findImage(TARGET_VALUE_LABEL);
+                Point targetValuePoint = getPointByWait(TARGET_VALUE_LABEL, 3000, 250);
                 if (targetValuePoint == null) {
                     LogUtil.error("未找到目标值标签");
                     return false;
                 }
-                targetValuePoint.y += 12;
+                // TODO: INC20260316001
+                offsetPoint(targetValuePoint, 0, 12);
                 // 点击
                 automation.click(targetValuePoint.x, targetValuePoint.y);
                 // Ctrl + A 全选
@@ -107,7 +104,8 @@ public class ModifierController extends CommonController {
 
                 // 判断 itemName 是否等于 ys04, 如果等于 ys04, 需要修改物品数量
                 if (itemName.equals("ys04")) {
-                    targetValuePoint.y += 20; // 下移20px
+                    // 下移20px, TODO: INC20260316001
+                    offsetPoint(targetValuePoint, 0, 20);
                     // 点击
                     automation.click(targetValuePoint.x, targetValuePoint.y);
                     // Ctrl + A 全选
@@ -121,7 +119,6 @@ public class ModifierController extends CommonController {
                     LogUtil.error("点击修改按钮失败");
                     return false;
                 }
-                // 延迟1s
                 automation.delay(CLICK_DELAY);
             }
             LogUtil.info("所有物品修改完成，共{" + itemNames.size() + "}件");
@@ -140,28 +137,15 @@ public class ModifierController extends CommonController {
     }
 
     /**
-     * 计算第一件物品的坐标点
-     * 基于物品信息标签的坐标，加上固定的偏移量
-     * @param itemInfoPoint 物品信息标签坐标
-     * @return 第一件物品的坐标点
-     */
-    private Point calculateFirstItemPoint(Point itemInfoPoint) {
-        int x = itemInfoPoint.x + ITEM_X_OFFSET;
-        int y = itemInfoPoint.y + ITEM_Y_OFFSET;
-        return new Point(x, y);
-    }
-
-    /**
      * 计算第 i 件物品的坐标点
-     * 物品的 y 值相同，x 坐标按物品栏高度递增
+     * 物品的 x 值相同，y 坐标按物品栏高度递增
      * @param firstItemPoint 第一件物品的坐标点
      * @param index 物品索引 (从 0 开始)
      * @return 第 i 件物品的坐标点
      */
     private Point calculateItemPoint(Point firstItemPoint, int index) {
-        int x = firstItemPoint.x;
-        int y = firstItemPoint.y + (index * ITEM_HEIGHT);
-        return new Point(x, y);
+        // TODO: INC20260316001
+        return getPointByOffset(firstItemPoint, 0, (index * ITEM_HEIGHT));
     }
 
 

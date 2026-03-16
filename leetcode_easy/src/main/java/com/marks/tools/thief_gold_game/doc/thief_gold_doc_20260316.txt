@@ -1,0 +1,40 @@
+更新日志: 2026-03-16
+1. 由于prepare room 目前是由手动创建的, 现需要通过程序自动化进行创建操作, 具体步骤如下:
+a. 匹配并且点击平台左侧的游戏名称(按钮), 传入一个参数, 游戏名称, 如"斗兽之王", "小偷偷金", 这些游戏名称图片放在"D:/images/automation/game_name" 目录下
+b. 等待 3 s, 找到并且点击 '创建房间' 按钮, 等待 '创建房间设置' 页面弹出
+c. 在创建设置页面, 找到密码选项, 在密码输入框中, 输入房间密码 '123', 然后点击设置页面中的创建按钮
+d. 进入prepare room 后, 找到并且修改观战设置(可选, 不同游戏的准备房间界面的观战选项不同, 有些默认观战选项不可选)
+e. 创建 prepare room 成功
+
+2. 执行 exitGame() 退出游戏后, 视角会回到prepare room 界面, 但是由于平台中退出游戏后, 会进行一次弹窗(类似于发红包之类的活动, 并且是一个窗口红包),
+需要点击关闭这个窗口红包, 添加一个方法, 判断是否存在弹窗, 如果存在, 则找到并且点击关闭弹窗.
+
+java 中使用 openCv 中识别图片, 代码
+Mat screenGray: 屏幕截图, Mat targetGray: 待匹配的目标图片, 两者都被转换为灰度图
+Mat result = new Mat();
+Imgproc.matchTemplate(screenGray, targetGray, result, Imgproc.TM_CCOEFF_NORMED);
+
+result 结果中有哪些数据?
+如果需要得到在屏幕上面匹配的坐标点信息, 如何获取?
+坐标点信息: 例如targetGray 是一个50 * 50 的矩阵, 那么需要返回在屏幕上匹配的起始点, 终点, 同样是 50 * 50 px.
+
+3. 找到了我代码中返回 java.awt.Point 的方法了, 使用:
+org.opencv.core.Point bestLoc = minMaxResult.maxLoc;
+return new Point((int) cvPoint.x + width / 2, (int) cvPoint.y + height / 2);
+返回的是 bestLoc(左上角的点), 然后转换为中心点, 也就是说, 每次findImage, 返回的是image 中心点在屏幕上的位置.
+但是使用的是 template.cols(), template.rows(), 也就是模板的size, 这是错误的, 因为模板是原始大小, 需要进行缩放操作.
+这就导致每次点击都是点击在了右下角的位置处(由于缩放系数是 0.6667), 需要修复这个bug,
+将 template.cols() * BEST_SCALE, template.rows() * BEST_SCALE, 然后在传入 convertToJavaPoint 方法中(已修复)
+
+
+4. 现在可以正常得到所查找图片的中心的坐标, 可以根据这个坐标推算出目标图片其它点位置, 例如红包图片的右上角的关闭按钮位置(符合'X'),
+
+5. 由于之前的一些固定偏移操作是依据(问题3: "右下角坐标点"), 来进行处理的, 现在坐标点更新到中心点,
+需要将这些偏移量进行重新定位(需要根据游戏实际运行情况来更新这些偏移量, 待完成)
+
+
+
+
+
+
+

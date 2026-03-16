@@ -25,6 +25,7 @@ import static com.marks.tools.kkplatform.common.KingOfBeastsConstants.PREPARE_RO
 public class PrepareRoom extends GameOperationCommon {
     private static final String START_GAME_BUTTON = "start_game_btn";
     private static final String ROOM_NUM_FLAG = "room_number_flag"; // 房间编号标识
+    private static final String RED_PACKET_POP_FLAG = "red_packet_pop_up_flag"; // 红包弹窗标识
     private ImageRecognitionAutomation automation;
     private WindowSwitcherUtils windowSwitcher;
 
@@ -57,6 +58,8 @@ public class PrepareRoom extends GameOperationCommon {
      * @Description:
      * 处理同名窗口
      * 1. 遍历窗口列表，将窗口放到前面, 然后截图匹配是否有 ROOM_NUM_FLAG
+     * 2. 由于现在我不确定红包的弹窗是一个独立的窗口还是现有窗口的子窗口
+     * 3. 先关闭红包, 然后再切换到准备房间窗口
      * @param: sameNameWindows
      * @return com.sun.jna.platform.win32.WinDef.HWND
      * @author marks
@@ -64,6 +67,23 @@ public class PrepareRoom extends GameOperationCommon {
      * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
      */
     private User32.HWND getPrepareRoomWindow(List<User32.HWND> sameNameWindows) {
+        // 检测所有窗口是否有红包弹窗
+        LogUtil.info("=== 检测所有窗口是否有红包弹窗 ===");
+        // 遍历窗口列表
+        for (User32.HWND hwnd : sameNameWindows) {
+            windowSwitcher.switchToWindowByHWND(hwnd);
+            // 延迟1s
+            automation.delay(1000);
+            // 判断 RED_PACKET_POP_FLAG
+            Point redPoint = automation.findImage(RED_PACKET_POP_FLAG, false);
+            if (redPoint != null) {
+                // 点击红包弹窗的关闭按钮
+                automation.click(redPoint.x, redPoint.y);
+                // 测试时, 延迟 10s, 方便找到关闭点与当前点击位置的偏移量
+                automation.delay(10000);
+            }
+        }
+
         // 遍历窗口列表
         for (User32.HWND hwnd : sameNameWindows) {
             windowSwitcher.switchToWindowByHWND(hwnd);

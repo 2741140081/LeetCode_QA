@@ -153,12 +153,13 @@ public class ImageRecognitionAutomation {
 
             }
         }
-
+        // resize template
+        Size actualSize = new Size(templateGray.cols() * result.bestScale, templateGray.rows() * result.bestScale);
         // 释放资源
         templateGray.release();
         screenGray.release();
         // 返回结果
-        return result.bestMatchValue >= MATCH_THRESHOLD ? convertToJavaPoint(result.bestLoc, template.cols(), template.rows()) : null;
+        return result.bestMatchValue >= MATCH_THRESHOLD ? convertToJavaPoint(result.bestLoc, actualSize) : null;
     }
 
 
@@ -301,8 +302,8 @@ public class ImageRecognitionAutomation {
     /**
      * 将 OpenCV 的 Point 转换为 Java 的 Point
      */
-    private Point convertToJavaPoint(org.opencv.core.Point cvPoint, int width, int height) {
-        return new Point((int) cvPoint.x + width / 2, (int) cvPoint.y + height / 2);
+    private Point convertToJavaPoint(org.opencv.core.Point cvPoint, Size size) {
+        return new Point((int)(cvPoint.x + size.width / 2), (int) (cvPoint.y + size.height / 2));
     }
 
     /**

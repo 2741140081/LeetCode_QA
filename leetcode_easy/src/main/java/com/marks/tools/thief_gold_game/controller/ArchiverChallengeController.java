@@ -32,7 +32,7 @@ public class ArchiverChallengeController extends CommonController {
     private static final int[] ARCHIVER_NUMBERS = {1, 2, 3, 4, 5, 6};
 
     // 坐标微调参数
-    private static final int X_OFFSET = -30;  // X 坐标向左微调 150px
+    private static final int POINT_OFFSET = -30;  // X 坐标向左微调 150px
     private static final int SELECTION_SIZE = 30;  // 圈选区域大小 100x100px
     private static final int SELECTION_TIME = 1000;  // 圈选耗时 1s
     private static final int WAIT_AFTER_WIN = 1000;  // 胜利后等待 3s
@@ -121,14 +121,9 @@ public class ArchiverChallengeController extends CommonController {
             LogUtil.error("未找到建筑图片：{}", buildingImage);
             return null;
         }
-
-        LogUtil.info("找到建筑原始坐标：({}, {})", originalPoint.x, originalPoint.y);
-
-        // 微调坐标左移：，X 减少 150px, Y 不变
-        Point adjustedPoint = new Point(originalPoint.x + X_OFFSET, originalPoint.y + X_OFFSET );
-        LogUtil.info("调整后坐标：({}, {})", adjustedPoint.x, adjustedPoint.y);
-
-        return adjustedPoint;
+        // 微调坐标 TODO: INC20260316001
+        offsetPoint(originalPoint, POINT_OFFSET, POINT_OFFSET);
+        return originalPoint;
     }
 
     /**
@@ -139,12 +134,9 @@ public class ArchiverChallengeController extends CommonController {
      */
     private boolean circleSelectAndNumber(Point startPoint, int number) {
         LogUtil.info("开始圈选建筑，起点：({}, {}), 编号：{}", startPoint.x, startPoint.y, number);
-
         try {
-            // 计算圈选终点：对角线方向 (startPoint.x + 100, startPoint.y + 100)
-            Point endPoint = new Point(startPoint.x + SELECTION_SIZE, startPoint.y + SELECTION_SIZE);
-            LogUtil.info("圈选终点：({}, {})", endPoint.x, endPoint.y);
-
+            // 计算圈选终点：对角线方向 (startPoint.x + 100, startPoint.y + 100) TODO: INC20260316001
+            Point endPoint = getPointByOffset(startPoint, SELECTION_SIZE, SELECTION_SIZE);
             // 执行圈选操作
             automation.moveMouseWithLeftUp(startPoint, endPoint, SELECTION_TIME);
 
@@ -156,7 +148,6 @@ public class ArchiverChallengeController extends CommonController {
             LogUtil.info("建筑编号完成：{}", number);
 
             return true;
-
         } catch (Exception e) {
             LogUtil.error("圈选建筑异常：{}", e.getMessage());
             e.printStackTrace();
@@ -188,8 +179,6 @@ public class ArchiverChallengeController extends CommonController {
 
             // 3. 依次挑战每个 BOSS
             for (ImageInfo bossImage : bossImages) {
-                LogUtil.info("正在挑战 BOSS: {}", bossImage);
-
                 if (!defeatBoss(bossImage)) {
                     LogUtil.error("挑战 BOSS {} 失败", bossImage);
                 }

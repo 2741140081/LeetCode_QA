@@ -4,6 +4,7 @@ import com.marks.tools.kkplatform.ImageRecognitionAutomation;
 import com.marks.tools.thief_gold_game.entity.Challenge;
 import com.marks.utils.LogUtil;
 
+import java.awt.*;
 import java.util.PriorityQueue;
 
 /**
@@ -21,12 +22,7 @@ public class DifficultyController extends CommonController {
     private static final String MODE_4 = "start/mode_4";
     private static final String CHALLENGE_BASE = "start/challenge_";
     private static final int[] CHALLENGE_NUMBER = {1, 2, 3, 4, 5, 6};
-    private static final String CHALLENGE_1 = "start/challenge_1";
-    private static final String CHALLENGE_2 = "start/challenge_2";
-    private static final String CHALLENGE_3 = "start/challenge_3";
-    private static final String CHALLENGE_4 = "start/challenge_4";
     private static final String CHALLENGE_5 = "start/challenge_5";
-    private static final String CHALLENGE_6 = "start/challenge_6";
     private static final String START_GAME_BUTTON = "start/start_game_btn";
     private static final String ELEMENTARY_LEVEL_DIFFICULTY_BUTTON = "start/elementary_level_difficulty_btn"; // 初等难度按钮(1~10)
     private static final String MEDIUM_LEVEL_DIFFICULTY_BUTTON = "start/medium_level_difficulty_btn"; // 中等难度按钮(11~20)
@@ -63,24 +59,31 @@ public class DifficultyController extends CommonController {
     public boolean selectDifficulty(int difficultyNumber) {
         // 选择难度范围
         if (difficultyNumber < 1 || difficultyNumber > 40) {
-            LogUtil.error("难度选择范围：1~30");
+            LogUtil.error("难度选择范围：1~40");
             return false;
         }
+        String currDifficultyRange;
         if (difficultyNumber <= 10) {
             LogUtil.info("=== 选择难度：初级 ===");
-            findAndClickImage(ELEMENTARY_LEVEL_DIFFICULTY_BUTTON);
+            currDifficultyRange = ELEMENTARY_LEVEL_DIFFICULTY_BUTTON;
         } else if (difficultyNumber <= 20) {
             LogUtil.info("=== 选择难度：中级 ===");
-            findAndClickImage(MEDIUM_LEVEL_DIFFICULTY_BUTTON);
+            currDifficultyRange = MEDIUM_LEVEL_DIFFICULTY_BUTTON;
         } else if (difficultyNumber <= 30) {
             LogUtil.info("=== 选择难度：高级 ===");
-            findAndClickImage(HIGH_LEVEL_DIFFICULTY_BUTTON);
+            currDifficultyRange = HIGH_LEVEL_DIFFICULTY_BUTTON;
         } else {
-            LogUtil.error("=== 选择难度：超级 ===");
-            findAndClickImage(EXPERT_LEVEL_DIFFICULTY_BUTTON);
+            LogUtil.error("=== 选择难度：专家级 ===");
+            currDifficultyRange = EXPERT_LEVEL_DIFFICULTY_BUTTON;
         }
-        // 延迟1s
-        automation.delay(1000);
+        // wait currDifficultyRange and click
+        Point difficultyRangePoint = getPointByWait(currDifficultyRange, 10000, 500);
+        if (difficultyRangePoint == null) {
+            LogUtil.error("选择难度范围失败");
+            return false;
+        }
+        // click
+        automation.click(difficultyRangePoint.x, difficultyRangePoint.y);
         // 拼接具体难度
         String difficulty = DIFFICULTY + difficultyNumber;
         LogUtil.info("=== 选择难度：难度" + difficulty + "===");
@@ -153,23 +156,20 @@ public class DifficultyController extends CommonController {
      */
     public boolean executeDifficultySelection(int difficultyNumber, PriorityQueue<Challenge> challengeQueue) {
         LogUtil.info("=== 开始难度选择流程 ===");
-
+        // 延迟5s 等待游戏内容加载完成
+        automation.delay(5000);
         // 选择难度, 包含选择难度范围和具体难度
         if (!selectDifficulty(difficultyNumber)) {
             return false;
         }
-        automation.delay(1000);
 
         // 选择模式
         if (!selectMode()) {
             return false;
         }
-        automation.delay(1000);
 
         // 选择挑战
         selectChallenges(challengeQueue);
-
-        automation.delay(1000);
 
         return startGame();
     }
