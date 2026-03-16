@@ -36,7 +36,6 @@ import java.util.List;
 public class ThiefController extends CommonController {
     // 小偷编号
     private static final int THIEF_NUMBER = 1;
-    private static final int X_RIGHT_OFFSET = 100;  // X 坐标向右微调
     // 技能图片
     private static final String THIEF_DROP_SKILL = "1/drop_skill";        // 丢弃物品技能
 
@@ -115,7 +114,7 @@ public class ThiefController extends CommonController {
         }
 
         // 找到商店坐标
-        Point shopPoint = getPointByWait(SHOP_BUILDING, 3000, 500);
+        Point shopPoint = getPointByWait(SHOP_BUILDING, TIMEOUT_3_S, CLICK_DELAY);
         if (shopPoint == null) {
             LogUtil.error("未找到商店");
             return false;
@@ -151,7 +150,7 @@ public class ThiefController extends CommonController {
         automation.delay(CLICK_DELAY);
 
         // 2. 找到储物柜坐标点, 使用 waitForImage 方法找坐标
-        Point lockerPoint = getPointByWait(LOCKER_BUILDING, 15000, CLICK_DELAY);
+        Point lockerPoint = getPointByWait(LOCKER_BUILDING, TIMEOUT_10_S, CLICK_DELAY);
         if (lockerPoint == null) {
             LogUtil.error("未找到储物柜");
             return false;

@@ -22,13 +22,7 @@ public class StrengthenAttributeController extends CommonController {
     private static final String ATTACK_SPEED_UP = "4/attack_speed_up";
     private static final String RANGE_UP = "4/range_up";
     private static final String MULTI_SHOT_UP = "4/multi_shot_up";
-    private static final String ATTACK_1_UP = "4/attack_1_up";
-    private static final String ATTACK_2_UP = "4/attack_2_up";
-    private static final String ATTACK_3_UP = "4/attack_3_up";
-    private static final String ATTACK_4_UP = "4/attack_4_up";
     private static final String STRENGTHEN_ATTRIBUTE_BUILDING = "common/strengthen_attribute_building";
-
-    private long gameStartTime;
 
     public StrengthenAttributeController(ImageRecognitionAutomation automation) {
         super(automation);
@@ -55,8 +49,6 @@ public class StrengthenAttributeController extends CommonController {
         }
         // 对已选的属性建筑物进行编号
         selectNumber(STRENGTHEN_ATTRIBUTE_NUMBER);
-        // 设置游戏开始时间
-        this.gameStartTime = startTime;
         return true;
     }
 
@@ -97,30 +89,6 @@ public class StrengthenAttributeController extends CommonController {
     public boolean upgradeMultiShot() {
         LogUtil.info("=== 强化多重射击 ===");
         return findAndClickImage(MULTI_SHOT_UP);
-    }
-
-    /**
-     * 强化攻击力（1-4）
-     * 已过时的方法
-     * @return 是否成功
-     */
-    @Deprecated
-    public boolean upgradeAttack() {
-        LogUtil.info("=== 强化攻击力 ===");
-
-        boolean success = true;
-
-        if (!findAndClickImage(ATTACK_4_UP)) {
-            success = false;
-        }
-        automation.delay(CLICK_DELAY);
-
-        if (!findAndClickImage(ATTACK_3_UP)) {
-            success = false;
-        }
-        automation.delay(CLICK_DELAY);
-
-        return success;
     }
 
     /**

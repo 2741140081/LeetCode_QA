@@ -68,7 +68,7 @@ public class ModifierController extends CommonController {
             automation.delay(CLICK_DELAY);
 
             // 3. 找到物品信息标签，获取基准坐标
-            Point itemInfoPoint = getPointByWait(ITEM_INFO_LABEL, 3000, 250);
+            Point itemInfoPoint = getPointByWait(ITEM_INFO_LABEL, TIMEOUT_3_S, CLICK_DELAY);
             if (itemInfoPoint == null) {
                 LogUtil.error("未找到物品信息标签");
                 return false;
@@ -88,7 +88,7 @@ public class ModifierController extends CommonController {
                 automation.click(itemPoint.x, itemPoint.y);
 
                 // 找到目标值标签
-                Point targetValuePoint = getPointByWait(TARGET_VALUE_LABEL, 3000, 250);
+                Point targetValuePoint = getPointByWait(TARGET_VALUE_LABEL, TIMEOUT_3_S, CLICK_DELAY);
                 if (targetValuePoint == null) {
                     LogUtil.error("未找到目标值标签");
                     return false;

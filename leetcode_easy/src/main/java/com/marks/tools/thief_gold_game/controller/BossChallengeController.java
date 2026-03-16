@@ -19,8 +19,6 @@ public class BossChallengeController extends CommonController {
     // boss 挑战建筑编号
     private static final int BOSS_CHALLENGE_NUMBER = 3;
 
-    private static final String AUTO_CHALLENGE_GOLD_MONSTER = "3/auto_challenge_gold_monster"; // 自动挑战金币怪
-    private static final String AUTO_CHALLENGE_WOOD_MONSTER = "3/auto_challenge_WOOD_monster"; // 自动挑战木头怪
     private static final String FINAL_BOSS_CHALLENGE = "common/final_boss_challenge";
     private static final String BOSS_CHALLENGE_BUILDING = "common/boss_challenge_building";
     private long gameStartTime;
@@ -50,32 +48,6 @@ public class BossChallengeController extends CommonController {
         // 对 已选的boss 挑战建筑进行编号
         selectNumber(BOSS_CHALLENGE_NUMBER);
         LogUtil.info("挑战boss建筑编号为：["+ BOSS_CHALLENGE_NUMBER +"]");
-        // 延迟1s
-        automation.delay(1000);
-        return true;
-    }
-
-    /**
-     * 开启自动挑战金币怪, 可以舍弃
-     * @return 是否成功
-     */
-    @Deprecated
-    public boolean startAutoChallengeMonster() {
-        LogUtil.info("=== 开启自动挑战金币怪 ===");
-        // 切换到挑战建筑
-        pressNumber(BOSS_CHALLENGE_NUMBER);
-        // 延迟1s
-        automation.delay(1000);
-        // 开启自动挑战金币怪
-        if (!findAndClickImage(AUTO_CHALLENGE_GOLD_MONSTER)) {
-            LogUtil.error("自动挑战金币怪开启失败！");
-            return false;
-        }
-        automation.delay(1000);
-        if (!findAndClickImage(AUTO_CHALLENGE_WOOD_MONSTER)) {
-            LogUtil.error("自动挑战木头怪开启失败！");
-            return false;
-        }
         // 延迟1s
         automation.delay(1000);
         return true;

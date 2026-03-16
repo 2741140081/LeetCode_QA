@@ -40,7 +40,6 @@ public class CommonController {
 
     // 图片路径常量
     protected static final String TEMPLATE_DIR = "D:/images/automation/thief_gold";
-    protected static final String OUTPUT_DIR = "D:/images/automation/thief_gold/results";
     protected static final String COMMON_FOLDER = "common/";  // 物品图片放置在common/ 文件夹下, 名称是 w291.png 类似
 
     protected static final String LOCKER_BUILDING = "common/locker_building";
