@@ -2,12 +2,14 @@ package com.marks.tools.thief_gold_game.controller;
 
 
 import com.marks.tools.kkplatform.ImageRecognitionAutomation;
-import com.marks.tools.kkplatform.WindowSwitcherUtils;
 import com.marks.utils.LogUtil;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 /**
  * <p>项目名称: LeetCode_QA </p>
  * <p>文件名称: ModifierController </p>
@@ -32,6 +34,7 @@ public class ModifierController extends CommonController {
 
     public ModifierController(ImageRecognitionAutomation automation) {
         super(automation);
+        // 初始化
     }
 
     /**
@@ -61,20 +64,22 @@ public class ModifierController extends CommonController {
             automation.delay(CLICK_DELAY);
 
             // 2. 点击查找游戏按钮，让修改器自动获取储物柜物品栏信息
-            if (!findAndClickImage(FIND_GAME_BUTTON)) {
+            Point findGamePoint = getImagePointByMap(FIND_GAME_BUTTON);
+            if (findGamePoint == null) {
                 LogUtil.error("点击查找游戏按钮失败");
                 return false;
             }
+            automation.click(findGamePoint.x, findGamePoint.y);
             automation.delay(CLICK_DELAY);
 
             // 3. 找到物品信息标签，获取基准坐标
-            Point itemInfoPoint = getPointByWait(ITEM_INFO_LABEL, TIMEOUT_3_S, CLICK_DELAY);
+            Point itemInfoPoint = getImagePointByMap(ITEM_INFO_LABEL);
             if (itemInfoPoint == null) {
                 LogUtil.error("未找到物品信息标签");
                 return false;
             }
 
-            // 4. 计算第一件物品的坐标点, 根据物品信息坐标，计算第一件物品的坐标点, TODO: INC20260316001
+            // 4. 计算第一件物品的坐标点, 根据物品信息坐标，计算第一件物品的坐标点
             Point firstItemPoint = getPointByOffset(itemInfoPoint, ITEM_X_OFFSET, ITEM_Y_OFFSET);
 
             // 5. 循环修改每个物品
@@ -88,13 +93,12 @@ public class ModifierController extends CommonController {
                 automation.click(itemPoint.x, itemPoint.y);
 
                 // 找到目标值标签
-                Point targetValuePoint = getPointByWait(TARGET_VALUE_LABEL, TIMEOUT_3_S, CLICK_DELAY);
+                Point targetValuePoint = getImagePointByMap(TARGET_VALUE_LABEL);
                 if (targetValuePoint == null) {
                     LogUtil.error("未找到目标值标签");
                     return false;
                 }
-                // TODO: INC20260316001
-                offsetPoint(targetValuePoint, 0, 12);
+                offsetPoint(targetValuePoint, 0, 20);
                 // 点击
                 automation.click(targetValuePoint.x, targetValuePoint.y);
                 // Ctrl + A 全选
@@ -104,7 +108,7 @@ public class ModifierController extends CommonController {
 
                 // 判断 itemName 是否等于 ys04, 如果等于 ys04, 需要修改物品数量
                 if (itemName.equals("ys04")) {
-                    // 下移20px, TODO: INC20260316001
+                    // 下移20px
                     offsetPoint(targetValuePoint, 0, 20);
                     // 点击
                     automation.click(targetValuePoint.x, targetValuePoint.y);
@@ -115,7 +119,8 @@ public class ModifierController extends CommonController {
                 }
 
                 // 点击修改按钮
-                if (!findAndClickImage(MODIFY_BUTTON)) {
+                Point modifyButtonPoint = getImagePointByMap(MODIFY_BUTTON);
+                if (modifyButtonPoint == null) {
                     LogUtil.error("点击修改按钮失败");
                     return false;
                 }
@@ -144,9 +149,10 @@ public class ModifierController extends CommonController {
      * @return 第 i 件物品的坐标点
      */
     private Point calculateItemPoint(Point firstItemPoint, int index) {
-        // TODO: INC20260316001
         return getPointByOffset(firstItemPoint, 0, (index * ITEM_HEIGHT));
     }
+
+
 
 
 }

@@ -68,21 +68,21 @@ public class PrepareRoom extends GameOperationCommon {
      */
     private User32.HWND getPrepareRoomWindow(List<User32.HWND> sameNameWindows) {
         // 检测所有窗口是否有红包弹窗
-        LogUtil.info("=== 检测所有窗口是否有红包弹窗 ===");
-        // 遍历窗口列表
-        for (User32.HWND hwnd : sameNameWindows) {
-            windowSwitcher.switchToWindowByHWND(hwnd);
-            // 延迟1s
-            automation.delay(1000);
-            // 判断 RED_PACKET_POP_FLAG
-            Point redPoint = automation.findImage(RED_PACKET_POP_FLAG, false);
-            if (redPoint != null) {
-                // 点击红包弹窗的关闭按钮
-                automation.click(redPoint.x, redPoint.y);
-                // 测试时, 延迟 10s, 方便找到关闭点与当前点击位置的偏移量
-                automation.delay(10000);
-            }
-        }
+//        LogUtil.info("=== 检测所有窗口是否有红包弹窗 ===");
+//        // 遍历窗口列表
+//        for (User32.HWND hwnd : sameNameWindows) {
+//            windowSwitcher.switchToWindowByHWND(hwnd);
+//            // 延迟1s
+//            automation.delay(1000);
+//            // 判断 RED_PACKET_POP_FLAG
+//            Point redPoint = automation.findImage(RED_PACKET_POP_FLAG, false);
+//            if (redPoint != null) {
+//                // 点击红包弹窗的关闭按钮
+//                automation.click(redPoint.x, redPoint.y);
+//                // 测试时, 延迟 10s, 方便找到关闭点与当前点击位置的偏移量
+//                automation.delay(10000);
+//            }
+//        }
 
         // 遍历窗口列表
         for (User32.HWND hwnd : sameNameWindows) {

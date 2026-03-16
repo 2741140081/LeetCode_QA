@@ -70,7 +70,14 @@ public class StrengthenAttributeController extends CommonController {
      */
     public boolean upgradeAttackSpeed() {
         LogUtil.info("=== 强化攻击速度 ===");
-        return findAndClickImage(ATTACK_SPEED_UP);
+        Point point = getImagePointByMap(ATTACK_SPEED_UP);
+        if (point == null) {
+            LogUtil.error("未找到攻击速度图标");
+            return false;
+        }
+        // 点击图标
+        automation.click(point.x, point.y);
+        return true;
     }
 
     /**
@@ -79,7 +86,14 @@ public class StrengthenAttributeController extends CommonController {
      */
     public boolean upgradeRange() {
         LogUtil.info("=== 强化射程 ===");
-        return findAndClickImage(RANGE_UP);
+        Point point = getImagePointByMap(RANGE_UP);
+        if (point == null) {
+            LogUtil.error("未找到攻击速度图标");
+            return false;
+        }
+        // 点击图标
+        automation.click(point.x, point.y);
+        return true;
     }
 
     /**
@@ -88,7 +102,14 @@ public class StrengthenAttributeController extends CommonController {
      */
     public boolean upgradeMultiShot() {
         LogUtil.info("=== 强化多重射击 ===");
-        return findAndClickImage(MULTI_SHOT_UP);
+        Point point = getImagePointByMap(MULTI_SHOT_UP);
+        if (point == null) {
+            LogUtil.error("未找到攻击速度图标");
+            return false;
+        }
+        // 点击图标
+        automation.click(point.x, point.y);
+        return true;
     }
 
     /**

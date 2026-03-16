@@ -68,7 +68,6 @@ public class GameFlowController {
         this.difficultyController = new DifficultyController(automation);
         this.thiefController = new ThiefController(automation);
         this.modifierController = new ModifierController(automation);
-        this.modifierController = new ModifierController(automation);
         this.bossChallengeController = new BossChallengeController(automation);
         this.strengthenAttributeController = new StrengthenAttributeController(automation);
         this.archiverChallengeController = new ArchiverChallengeController(automation);

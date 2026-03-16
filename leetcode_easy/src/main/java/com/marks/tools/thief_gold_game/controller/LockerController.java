@@ -5,7 +5,9 @@ import com.marks.utils.LogUtil;
 
 import java.awt.*;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>项目名称: LeetCode_QA </p>
@@ -39,6 +41,7 @@ public class LockerController extends CommonController {
     private static final String ICE_HALO_BOOK = "2/ice_halo_book";          // 寒冰光环技能书
 
     private Point thiefFlagPoint; // 小偷左上角的标记点, 固定点位
+    private Map<Integer, Point> pointMap; // 存储储物柜物品栏 index -> point
 
     // 修改器引用
     private ModifierController modifierController;
@@ -46,6 +49,7 @@ public class LockerController extends CommonController {
     public LockerController(ImageRecognitionAutomation automation, ModifierController modifierController) {
         super(automation);
         this.modifierController = modifierController;
+        pointMap = new HashMap<>();
     }
 
     public boolean initialize() {
@@ -123,25 +127,34 @@ public class LockerController extends CommonController {
 
     /**
      * 丢弃储物柜物品栏中的物品到小偷物品栏中
+     * 1. 添加储物柜的物品栏坐标持久化存储, 使用map 存储, 由于物品栏下标的坐标是一个固定值, 所以可以通过索引进行存储
+     * 2. 这样只需要遍历一次物品栏, 存储物品栏相应下标的坐标即可, 不需要每次都进行图片匹配
      * @param itemName 物品名称（图片名）
      * @return 是否成功
      */
-    public boolean dropItemFromLocker(String itemName) {
+    public boolean dropItemFromLocker(String itemName, int index) {
         // 切换到储物柜
         switchToLocker();
-        // 找到物品栏中的物品, 找到物品证明修改生效
-        String itemImagePath = COMMON_FOLDER + itemName;
-        Point itemPoint = getPointByWait(itemImagePath, TIMEOUT_3_S, CLICK_DELAY);
-        if (itemPoint == null) {
-            LogUtil.error("未找到物品：{}", itemImagePath);
-            return false;
-        }
+        // 判定 pointMap.get(index) 是否为空
+        if (pointMap.get(index) == null) {
+            // 找到物品栏中的物品, 找到物品证明修改生效
+            String itemImagePath = COMMON_FOLDER + itemName;
+            Point itemPoint = getPointByWait(itemImagePath, TIMEOUT_3_S, CLICK_DELAY);
+            if (itemPoint == null) {
+                LogUtil.error("未找到物品：{}", itemImagePath);
+                return false;
+            }
+            // 向map中添加物品坐标
+            pointMap.put(index, itemPoint);
+        } else {
+            Point itemPoint = pointMap.get(index);
+            // 移动到物品坐标，右键点击
+            automation.rightClick(itemPoint.x, itemPoint.y);
+            automation.delay(CLICK_DELAY);
+            // 移动到 thiefFlagPoint, 点击
+            automation.click(thiefFlagPoint.x, thiefFlagPoint.y);
 
-        // 移动到物品坐标，右键点击
-        automation.rightClick(itemPoint.x, itemPoint.y);
-        automation.delay(CLICK_DELAY);
-        // 移动到 thiefFlagPoint, 点击
-        automation.click(thiefFlagPoint.x, thiefFlagPoint.y);
+        }
         return true;
     }
 
@@ -155,9 +168,7 @@ public class LockerController extends CommonController {
 
         for (int i = 0; i < itemNames.size(); i++) {
             String itemName = itemNames.get(i);
-            LogUtil.info("正在丢弃第{}件物品：{}", i + 1, itemName);
-
-            if (!dropItemFromLocker(itemName)) {
+            if (!dropItemFromLocker(itemName, i)) {
                 LogUtil.error("丢弃第{}件物品{}失败", i + 1, itemName);
                 return false;
             }
@@ -206,7 +217,7 @@ public class LockerController extends CommonController {
 
             // 3. 将修改后的物品丢弃到小偷物品栏中
             for (String itemName : itemNames) {
-                if (!dropItemFromLocker(itemName)) {
+                if (!dropItemFromLocker(itemName, 0)) {
                     return false;
                 }
             }

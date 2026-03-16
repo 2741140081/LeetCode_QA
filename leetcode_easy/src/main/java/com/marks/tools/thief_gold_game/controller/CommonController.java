@@ -10,10 +10,8 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.*;
 import java.util.List;
-import java.util.Set;
 
 import static com.marks.tools.kkplatform.common.KingOfBeastsConstants.GAME_TITLE;
 import static com.marks.tools.kkplatform.common.KingOfBeastsConstants.MODIFIER_TITLE;
@@ -48,18 +46,21 @@ public class CommonController {
 
     // 可能在GameFlowController 中使用, 使用 public 访问权限，方便 GameFlowController 中使用
     public static final String[] FIRST_ITEM_NAMES = {"w291"};
-    public static final String[] SECOND_ITEM_NAMES = {"w293", "w293", "w290", "w290", "w291"};
-    public static final String[] CONSUMER_ITEM_NAMES = {"ys04", "ys04", "ys04", "ys04", "ys04", "ys04"}; // 消费者的名称
+    public static final String[] SECOND_ITEM_NAMES = {"w291", "w293", "w293", "w290", "w290"};
+    public static final String[] CONSUMER_ITEM_NAMES = {"I00C", "I00C", "I00C", "I00C", "I00C", "I00C"}; // 消费者的名称, ys04, 需要修改数量; I00C 不需要修改数量
     public static final String[] PRODUCER_ITEM_NAMES = {"w293", "w293", "w293", "w293", "w293", "w293"}; // 生产者的名称
 
     // 等待时间配置（毫秒）
-    protected static int WAIT_FOR_SHOP_TIME = 4500;     // 等待 10 s去商店
+    protected static int WAIT_FOR_SHOP_TIME = 4000;     // 等待 10 s去商店
     protected static boolean isChallenge5 = false;
 
+    // 按钮和Label的坐标都是固定的, 可以存储起来, 使用map
+    protected Map<String, Point> pointMap;
 
     public CommonController(ImageRecognitionAutomation automation) {
         this.automation = automation;
         this.windowSwitcher = WindowSwitcherUtils.getInstance();
+        pointMap = new HashMap<>();
     }
 
     /**
@@ -327,5 +328,20 @@ public class CommonController {
         itemNames.addAll(Arrays.asList(SECOND_ITEM_NAMES));
         // 将 itemNames 转换为List
         return itemNames.stream().toList();
+    }
+
+    public Point getImagePointByMap(String imageName) {
+        // 判定 imageName 是否在 pointMap 中
+        if (!pointMap.containsKey(imageName)) {
+            Point point = getPointByWait(imageName, TIMEOUT_3_S, CLICK_DELAY);
+            if (point != null) {
+                // 添加到map
+                pointMap.put(imageName, point);
+            } else {
+                LogUtil.error("未找到图片：{}", imageName);
+                return null;
+            }
+        }
+        return pointMap.get(imageName);
     }
 }

@@ -48,6 +48,8 @@ public class ThiefController extends CommonController {
     private static final String SHOP_BUILDING = "common/shop_building";     // 商店建筑物
     private static final String BUY_EQUIPMENT_BOX = "common/buy_equipment_box";  // 购买确认按钮
 
+
+
     private LockerController lockerController;
     private ModifierController modifierController;
 
@@ -161,12 +163,12 @@ public class ThiefController extends CommonController {
 
         // 3. 获取 THIEF_DROP_SKILL 的坐标, 然后计算第一件物品的坐标值
         // 点击丢弃物品技能
-        Point dropSkillPoint = findImage(THIEF_DROP_SKILL);
+        Point dropSkillPoint = getImagePointByMap(THIEF_DROP_SKILL);
         if (dropSkillPoint == null) {
             LogUtil.error("未找到丢弃物品技能");
             return false;
         }
-        // 通过计算, 得到第一件物品的坐标, x 值减去 180 px, y 值增加20 px, TODO: INC20260316001
+        // 通过计算, 得到第一件物品的坐标, x 值减去 180 px, y 值增加20 px
         Point itemPoint = getPointByOffset(dropSkillPoint, -230, 20);
 
         // 点击 itemPoint, 相当于移动操作
@@ -217,7 +219,7 @@ public class ThiefController extends CommonController {
         LogUtil.info("=== 开始吞噬装备 ===");
         pressNumber(THIEF_NUMBER);
         automation.delay(CLICK_DELAY);
-        // 通过修改器修改装备, 将物品修改为 ys04, 获取List, 通过 CONSUMER_ITEM_NAMES
+        // 通过修改器修改装备, 将物品修改, 获取List, 通过 CONSUMER_ITEM_NAMES
         List<String> itemNames = Arrays.asList(CONSUMER_ITEM_NAMES);
         if (itemNames.isEmpty() || !modifierController.modifyItems(itemNames)) {
             LogUtil.error("devourEquipment()中, 修改物品失败");
@@ -225,14 +227,14 @@ public class ThiefController extends CommonController {
         }
         // 延迟 500ms
         automation.delay(CLICK_DELAY);
-        return discardItemYs04(itemNames.get(0));
+        return discardItemByName(itemNames.get(0));
     }
 
     /**
      * 丢弃物品
      * 1. 判断物品栏第0个物品是否存在, 来确定丢弃是否成功
      */
-    private boolean discardItemYs04(String itemName) {
+    private boolean discardItemByName(String itemName) {
         // 判断 itemName, 为空或者 null
         if (itemName == null || itemName.isEmpty()) {
             return false;
@@ -242,31 +244,34 @@ public class ThiefController extends CommonController {
         itemName = COMMON_FOLDER + itemName;
         // 延迟
         automation.delay(CLICK_DELAY);
-        // 判断能否找到ys04
+        // 判断能否找到 itemName
         Point itemPoint = getPointByWait(itemName, TIMEOUT_3_S, CLICK_DELAY);
-        int i = 0; // 第 i 次丢弃
-        // 找到完美丢弃点坐标, 丢弃到坐标点上方 85 px 处
-        Point perfactDiscardPoint = getPointByWait(PERFECT_DISCARD_POINT, TIMEOUT_3_S, CLICK_DELAY);
+        if (itemPoint == null) {
+            LogUtil.info("物品{}未在物品栏中找到", itemName);
+            return false;
+        }
+
+        // 初始化完美丢弃点坐标
+        Point perfactDiscardPoint = getImagePointByMap(PERFECT_DISCARD_POINT);
         if (perfactDiscardPoint == null) {
             LogUtil.error("未找到完美丢弃点");
             return false;
         }
-        while (itemPoint != null && i < 3) {
-            // ys04 存在, 找到技能栏的丢弃按钮
-            findAndClickImage(THIEF_DROP_SKILL);
-            Point dropPoint = getPointByOffset(perfactDiscardPoint, 0, -75);
-            // 移动到dropPoint并点击
-            automation.click(dropPoint.x, dropPoint.y);
-            // 切换到储物柜
-            lockerController.switchToLocker();
-            // 切换回到小偷
-            pressNumber(THIEF_NUMBER);
-            // 更新 itemPoint
-            itemPoint = findImage(itemName, false);
-            i++;
+        // 设置完美丢弃点的偏移量
+        offsetPoint(perfactDiscardPoint, 0, -75);
+
+        Point dropSkillPoint = getImagePointByMap(THIEF_DROP_SKILL);
+        if (dropSkillPoint == null) {
+            LogUtil.error("未找到丢弃技能");
+            return false;
         }
+        // 开始丢弃操作
+        automation.click(dropSkillPoint.x, dropSkillPoint.y); // 点击丢弃技能
+        // 延迟
+        automation.delay(CLICK_DELAY);
+        automation.click(perfactDiscardPoint.x, perfactDiscardPoint.y); // 丢弃到完美丢弃点
         LogUtil.info("物品吞噬完成");
-        return itemPoint == null;
+        return true;
     }
 
     /**
