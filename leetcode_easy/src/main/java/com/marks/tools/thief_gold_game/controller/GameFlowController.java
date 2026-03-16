@@ -47,7 +47,7 @@ public class GameFlowController {
     private static final int ARCHIVER_BOSS_DURATION = 100 * 1000; // 进阶难度 2 分 30 秒, 由于每次挑战间隔10s, 所以整体挑战减少60s
 //    private static final int ARCHIVER_BOSS_DURATION = 20 * 1000; // 普通难度(<31) 20 秒
     // 装备吞噬次数
-    private static final int THIEF_EAT_TIMES = 8; // 难度31 需要7次, 难度21需要 5次
+    private static final int THIEF_EAT_TIMES = 10; // 难度31 需要7次, 难度21需要 5次
 
     private static final String ARCHIVER_RESULT_DIR = "D:/images/automation/thief_gold/archiver_result/";
     // 优先队列

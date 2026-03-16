@@ -121,7 +121,7 @@ public class ArchiverChallengeController extends CommonController {
             LogUtil.error("未找到建筑图片：{}", buildingImage);
             return null;
         }
-        // 微调坐标 TODO: INC20260316001
+        // 微调坐标
         offsetPoint(originalPoint, POINT_OFFSET, POINT_OFFSET);
         return originalPoint;
     }

@@ -51,7 +51,7 @@ public class CommonController {
     public static final String[] PRODUCER_ITEM_NAMES = {"w293", "w293", "w293", "w293", "w293", "w293"}; // 生产者的名称
 
     // 等待时间配置（毫秒）
-    protected static int WAIT_FOR_SHOP_TIME = 4000;     // 等待 10 s去商店
+    protected static int WAIT_FOR_SHOP_TIME = 2000;     // 等待 10 s去商店
     protected static boolean isChallenge5 = false;
 
     // 按钮和Label的坐标都是固定的, 可以存储起来, 使用map

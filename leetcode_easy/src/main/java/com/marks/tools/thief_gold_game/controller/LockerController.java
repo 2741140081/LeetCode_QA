@@ -146,15 +146,13 @@ public class LockerController extends CommonController {
             }
             // 向map中添加物品坐标
             pointMap.put(index, itemPoint);
-        } else {
-            Point itemPoint = pointMap.get(index);
-            // 移动到物品坐标，右键点击
-            automation.rightClick(itemPoint.x, itemPoint.y);
-            automation.delay(CLICK_DELAY);
-            // 移动到 thiefFlagPoint, 点击
-            automation.click(thiefFlagPoint.x, thiefFlagPoint.y);
-
         }
+        Point itemPoint = pointMap.get(index);
+        // 移动到物品坐标，右键点击
+        automation.rightClick(itemPoint.x, itemPoint.y);
+        automation.delay(CLICK_DELAY);
+        // 移动到 thiefFlagPoint, 点击
+        automation.click(thiefFlagPoint.x, thiefFlagPoint.y);
         return true;
     }
 

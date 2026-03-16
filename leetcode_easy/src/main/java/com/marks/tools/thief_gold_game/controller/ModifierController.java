@@ -98,9 +98,9 @@ public class ModifierController extends CommonController {
                     LogUtil.error("未找到目标值标签");
                     return false;
                 }
-                offsetPoint(targetValuePoint, 0, 20);
+                Point pointByOffset = getPointByOffset(targetValuePoint, 0, 20);
                 // 点击
-                automation.click(targetValuePoint.x, targetValuePoint.y);
+                automation.click(pointByOffset.x, pointByOffset.y);
                 // Ctrl + A 全选
                 pressCombinationKey(KeyEvent.VK_CONTROL, KeyEvent.VK_A);
                 // 输入新的物品名称
@@ -109,9 +109,9 @@ public class ModifierController extends CommonController {
                 // 判断 itemName 是否等于 ys04, 如果等于 ys04, 需要修改物品数量
                 if (itemName.equals("ys04")) {
                     // 下移20px
-                    offsetPoint(targetValuePoint, 0, 20);
+                    Point offset = getPointByOffset(targetValuePoint, 0, 20);
                     // 点击
-                    automation.click(targetValuePoint.x, targetValuePoint.y);
+                    automation.click(offset.x, offset.y);
                     // Ctrl + A 全选
                     pressCombinationKey(KeyEvent.VK_CONTROL, KeyEvent.VK_A);
                     // 输入物品数量
@@ -124,6 +124,7 @@ public class ModifierController extends CommonController {
                     LogUtil.error("点击修改按钮失败");
                     return false;
                 }
+                automation.click(modifyButtonPoint.x, modifyButtonPoint.y);
                 automation.delay(CLICK_DELAY);
             }
             LogUtil.info("所有物品修改完成，共{" + itemNames.size() + "}件");

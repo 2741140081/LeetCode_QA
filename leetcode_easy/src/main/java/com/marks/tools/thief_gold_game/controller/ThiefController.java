@@ -121,7 +121,7 @@ public class ThiefController extends CommonController {
             LogUtil.error("未找到商店");
             return false;
         }
-        // 微调 shopPoint, TODO: INC20260316001
+        // 微调 shopPoint
         offsetPoint(shopPoint, 100, 80);
         // 点击商店
         automation.click(shopPoint.x, shopPoint.y);
@@ -257,8 +257,6 @@ public class ThiefController extends CommonController {
             LogUtil.error("未找到完美丢弃点");
             return false;
         }
-        // 设置完美丢弃点的偏移量
-        offsetPoint(perfactDiscardPoint, 0, -75);
 
         Point dropSkillPoint = getImagePointByMap(THIEF_DROP_SKILL);
         if (dropSkillPoint == null) {
@@ -269,7 +267,9 @@ public class ThiefController extends CommonController {
         automation.click(dropSkillPoint.x, dropSkillPoint.y); // 点击丢弃技能
         // 延迟
         automation.delay(CLICK_DELAY);
-        automation.click(perfactDiscardPoint.x, perfactDiscardPoint.y); // 丢弃到完美丢弃点
+        // 设置完美丢弃点的偏移量
+        Point pointByOffset = getPointByOffset(perfactDiscardPoint, 0, -75);
+        automation.click(pointByOffset.x, pointByOffset.y); // 丢弃到完美丢弃点
         LogUtil.info("物品吞噬完成");
         return true;
     }
