@@ -77,9 +77,6 @@ public class LockerController extends CommonController {
      */
     public boolean buySkillBooks(int n) {
         LogUtil.info("=== 储物柜购买晕锤技能书{} 次 ===", n);
-
-        // 切换到储物柜
-        switchToLocker();
         Point skillBookPoint = getPointByWait(LOCKER_SKILL_BOOK, TIMEOUT_3_S, CLICK_DELAY);
         if (skillBookPoint == null) {
             LogUtil.error("未找到技能书");
@@ -133,8 +130,6 @@ public class LockerController extends CommonController {
      * @return 是否成功
      */
     public boolean dropItemFromLocker(String itemName, int index) {
-        // 切换到储物柜
-        switchToLocker();
         // 判定 pointMap.get(index) 是否为空
         if (pointMap.get(index) == null) {
             // 找到物品栏中的物品, 找到物品证明修改生效
@@ -150,7 +145,6 @@ public class LockerController extends CommonController {
         Point itemPoint = pointMap.get(index);
         // 移动到物品坐标，右键点击
         automation.rightClick(itemPoint.x, itemPoint.y);
-        automation.delay(CLICK_DELAY);
         // 移动到 thiefFlagPoint, 点击
         automation.click(thiefFlagPoint.x, thiefFlagPoint.y);
         return true;

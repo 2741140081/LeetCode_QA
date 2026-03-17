@@ -44,7 +44,7 @@ public class ThiefGameStarter {
             // 启动游戏流程, 循环执行游戏主体
             int count = 0;
             int maxCount = 3; // 执行10次
-//            difficulty = 24;
+//            difficulty = 28;
             while (count < maxCount) {
                 LogUtil.info("第 " + count + " 次执行游戏");
                 if (!gameFlowController.startGame(difficulty)) {

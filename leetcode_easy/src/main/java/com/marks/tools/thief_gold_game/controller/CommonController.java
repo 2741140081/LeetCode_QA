@@ -30,7 +30,7 @@ public class CommonController {
     protected ImageRecognitionAutomation automation;
     protected WindowSwitcherUtils windowSwitcher;
 
-    protected static final int CLICK_DELAY = 250;
+    protected static final int CLICK_DELAY = 200;
     // 分别配置3s、5s、10s的超时时间
     protected static final int TIMEOUT_3_S = 3000;
     protected static final int TIMEOUT_5_S = 5000;
@@ -51,7 +51,7 @@ public class CommonController {
     public static final String[] PRODUCER_ITEM_NAMES = {"w293", "w293", "w293", "w293", "w293", "w293"}; // 生产者的名称
 
     // 等待时间配置（毫秒）
-    protected static int WAIT_FOR_SHOP_TIME = 2000;     // 等待 10 s去商店
+    protected static int WAIT_FOR_SHOP_TIME = 500;     // 等待 10 s去商店
     protected static boolean isChallenge5 = false;
 
     // 按钮和Label的坐标都是固定的, 可以存储起来, 使用map
