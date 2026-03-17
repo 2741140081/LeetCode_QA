@@ -1,0 +1,27 @@
+server:
+  port: 8070
+  servlet:
+    context-path: /kk
+
+spring:
+    application:
+      name: kk-platform-game-auto
+    profiles:
+      active: dev
+    web:
+      resources:
+        static-locations: classpath:/static/, classpath:/templates/
+
+# 日志
+logging:
+  level:
+    root: INFO
+    com.marks.kkPlatformGameAuto: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    path: logs/
+    name: ${LOG_PATH:logs}/${spring.application.name}.log
+
+spring.config.import:
+  - classpath:game-common.yml

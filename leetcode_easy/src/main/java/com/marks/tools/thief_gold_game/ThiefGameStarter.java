@@ -9,6 +9,11 @@ import com.marks.utils.LogUtil;
 
 import java.awt.*;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.stream.Stream;
 
 /**
  * <p>项目名称: LeetCode_QA </p>
@@ -103,36 +108,43 @@ public class ThiefGameStarter {
 
     /**
      * 删除指定目录下的所有文件
+     * 1. 使用 Java NIO 的 Files.walk() - 自动管理资源
+     * 2. 使用 try-with-resources - 确保 Stream 正确关闭
+     * 3. 增强错误处理 - 区分文件和目录的处理
+     * 4. 优化日志记录 - 统一日志格式
      * @param directoryPath 目录路径
      */
     private static void deleteFilesInDirectory(String directoryPath) {
-        try {
-            File directory = new File(directoryPath);
-            if (!directory.exists() || !directory.isDirectory()) {
-                LogUtil.warn("目录不存在或不是目录：{}", directoryPath);
-                return;
-            }
+        Path directory = Paths.get(directoryPath);
 
-            File[] files = directory.listFiles();
-            if (files == null || files.length == 0) {
-                LogUtil.info("目录为空，无需删除：{}", directoryPath);
-                return;
-            }
+        if (!Files.exists(directory) || !Files.isDirectory(directory)) {
+            LogUtil.warn("目录不存在或不是目录：{}", directoryPath);
+            return;
+        }
 
-            int deletedCount = 0;
-            for (File file : files) {
-                if (file.isFile()) {
-                    if (file.delete()) {
-                        deletedCount++;
-                    } else {
-                        LogUtil.error("删除文件失败：{}", file.getAbsolutePath());
-                    }
-                }
-            }
+        try (Stream<Path> walk = Files.walk(directory, 1)) {
+            int[] deletedCount = {0};
+            int[] failedCount = {0};
 
-            LogUtil.info("已删除 {} 个文件，目录：{}", deletedCount, directoryPath);
-        } catch (Exception e) {
-            LogUtil.error("删除文件时发生错误：" + e.getMessage(), e);
+            walk.skip(1) // 跳过根目录本身
+                    .filter(Files::isRegularFile)
+                    .forEach(file -> {
+                        try {
+                            Files.delete(file);
+                            deletedCount[0]++;
+                        } catch (IOException e) {
+                            failedCount[0]++;
+                            LogUtil.error("删除文件失败：{}, 错误：{}",
+                                    file.toString(), e.getMessage());
+                        }
+                    });
+
+            LogUtil.info("文件清理完成 - 成功：{}, 失败：{}, 目录：{}",
+                    deletedCount[0], failedCount[0], directoryPath);
+
+        } catch (IOException e) {
+            LogUtil.error("遍历目录时发生错误：{}, 目录：{}",
+                    e.getMessage(), directoryPath, e);
         }
     }
 }

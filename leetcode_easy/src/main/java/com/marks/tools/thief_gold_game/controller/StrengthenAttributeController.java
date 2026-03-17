@@ -65,52 +65,20 @@ public class StrengthenAttributeController extends CommonController {
     }
 
     /**
-     * 强化攻击速度
+     * 触发属性强化
      * @return 是否成功
      */
-    public boolean upgradeAttackSpeed() {
-        LogUtil.info("=== 强化攻击速度 ===");
-        Point point = getImagePointByMap(ATTACK_SPEED_UP);
+    public boolean triggerUpgrade(String upgradeType) {
+        LogUtil.info("=== 触发{}属性强化 ===", upgradeType);
+        Point point = getImagePointByMap(upgradeType);
         if (point == null) {
-            LogUtil.error("未找到攻击速度图标");
-            return false;
+            LogUtil.error("未找到{}图标", upgradeType);
+            return true;
         }
-        // 点击图标
         automation.click(point.x, point.y);
-        return true;
+        return false;
     }
 
-    /**
-     * 强化射程
-     * @return 是否成功
-     */
-    public boolean upgradeRange() {
-        LogUtil.info("=== 强化射程 ===");
-        Point point = getImagePointByMap(RANGE_UP);
-        if (point == null) {
-            LogUtil.error("未找到攻击速度图标");
-            return false;
-        }
-        // 点击图标
-        automation.click(point.x, point.y);
-        return true;
-    }
-
-    /**
-     * 强化多重射击
-     * @return 是否成功
-     */
-    public boolean upgradeMultiShot() {
-        LogUtil.info("=== 强化多重射击 ===");
-        Point point = getImagePointByMap(MULTI_SHOT_UP);
-        if (point == null) {
-            LogUtil.error("未找到攻击速度图标");
-            return false;
-        }
-        // 点击图标
-        automation.click(point.x, point.y);
-        return true;
-    }
 
     /**
      * 执行一次完整的属性强化
@@ -124,18 +92,18 @@ public class StrengthenAttributeController extends CommonController {
         boolean success = true;
         for (int i = 0; i < 3; i++) {
             // 强化攻击速度
-            if (!upgradeAttackSpeed()) {
+            if (triggerUpgrade(ATTACK_SPEED_UP)) {
                 success = false;
             }
             // 强化射程
-            if (!upgradeRange()) {
+            if (triggerUpgrade(RANGE_UP)) {
                 success = false;
             }
             automation.delay(CLICK_DELAY);
         }
 
         // 强化多重射击
-        if (!upgradeMultiShot()) {
+        if (triggerUpgrade(MULTI_SHOT_UP)) {
             success = false;
         }
         return success;
