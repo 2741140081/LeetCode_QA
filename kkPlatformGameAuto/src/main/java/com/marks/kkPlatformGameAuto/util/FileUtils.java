@@ -108,14 +108,14 @@ public class FileUtils {
      * 从图片路径中提取文件名（不含扩展名）
      *
      * @param imagePath 图片路径
-     * @return 文件名（不含扩展名）
+     * @return 文件名（不含扩展名），如果 imagePath 为空则返回 "Error"
      */
-    private String extractImageName(String imagePath) {
+    public String extractImageName(String imagePath) {
         if (imagePath == null || imagePath.isEmpty()) {
-            return "match_result";
+            return "Error";
         }
 
-        // 处理不同操作系统的路径分隔符
+        // 使用 File 类获取文件名，自动处理不同操作系统的路径分隔符
         File file = new File(imagePath);
         String fileName = file.getName();
 

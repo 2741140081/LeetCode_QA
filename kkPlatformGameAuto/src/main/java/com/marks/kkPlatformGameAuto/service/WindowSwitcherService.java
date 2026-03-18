@@ -1,10 +1,5 @@
 package com.marks.kkPlatformGameAuto.service;
 
-import com.marks.kkPlatformGameAuto.entity.WindowInfo;
-import com.sun.jna.platform.win32.User32;
-
-import java.util.List;
-
 /**
  * <p>项目名称：LeetCode_QA </p>
  * <p>文件名称：WindowSwitcherService </p>
@@ -27,7 +22,7 @@ public interface WindowSwitcherService {
      * 切换到准备房间窗口
      * @return true 如果切换成功，否则 false
      */
-    boolean switchToReadyRoom();
+    boolean switchToPrepareRoom();
 
     /**
      * 切换到修改器窗口

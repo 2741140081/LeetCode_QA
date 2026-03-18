@@ -111,6 +111,13 @@ public class GameAutoProperties {
     }
 
     /**
+     * 获取默认图片识别间隔
+     */
+    public int getInterval() {
+        return imageRecognition.getInterval();
+    }
+
+    /**
      * 获取矩形颜色
      */
     public Scalar getRectColor() {

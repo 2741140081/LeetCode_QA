@@ -24,9 +24,15 @@ public class MouseUtils {
 
     private final Robot robot;
 
+    private int eventDelay;
+
     public MouseUtils() throws AWTException {
         this.robot = new Robot();
-        LogUtil.info("MouseUtils 初始化完成");
+        this.eventDelay = gameAutoProperties.getOperation().getEventDelay() != null
+                ? gameAutoProperties.getOperation().getEventDelay()
+                : 50;
+        robot.setAutoDelay(eventDelay);
+        log.info("MouseUtils 初始化完成，事件延迟时间：{}ms", eventDelay);
     }
 
     /**
@@ -44,7 +50,6 @@ public class MouseUtils {
     public void leftClick() {
         LogUtil.debug("执行左键单击");
         robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
-        robot.delay(50);
         robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
         robot.delay(gameAutoProperties.getOperation().getClickDelay());
     }
@@ -55,7 +60,6 @@ public class MouseUtils {
     public void rightClick() {
         LogUtil.debug("执行右键单击");
         robot.mousePress(InputEvent.BUTTON3_DOWN_MASK);
-        robot.delay(50);
         robot.mouseRelease(InputEvent.BUTTON3_DOWN_MASK);
         robot.delay(gameAutoProperties.getOperation().getClickDelay());
     }
@@ -93,7 +97,6 @@ public class MouseUtils {
         LogUtil.debug("执行拖拽：从 ({}, {}) 到 ({}, {})", fromX, fromY, toX, toY);
         robot.mouseMove(fromX, fromY);
         robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
-        robot.delay(100);
         robot.mouseMove(toX, toY);
         robot.delay(gameAutoProperties.getOperation().getMoveDuration());
         robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);

@@ -1,14 +1,32 @@
 package com.marks.kkPlatformGameAuto.config;
 
+import lombok.Data;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
+
 /**
- * <p>项目名称: LeetCode_QA </p>
- * <p>文件名称: ImageConfig </p>
- * <p>描述: [类型描述] </p>
+ * 图片通用配置
  *
  * @author marks
  * @version v1.0
  * @date 2026/3/17 11:10
- * @update [序号][日期YYYY-MM-DD] [更改人姓名][变更描述]
  */
+@Data
+@Component
+@ConfigurationProperties(prefix = "game.auto.image")
 public class ImageConfig {
+    /**
+     * 默认图片格式（不包含点）
+     */
+    private String defaultFormat;
+
+    /**
+     * 图片质量 (0.0-1.0)
+     */
+    private Double defaultQuality;
+
+    /**
+     * 是否自动添加文件扩展名
+     */
+    private Boolean autoAddExtension;
 }

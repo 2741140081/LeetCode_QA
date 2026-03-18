@@ -39,4 +39,50 @@ public class WindowConfig {
      * 窗口切换超时时间（毫秒）
      */
     private Integer timeout;
+
+    /**
+     * 是否启用窗口位置固定功能
+     */
+    private Boolean enablePositionFix = false;
+
+    /**
+     * 平台窗口位置配置
+     */
+    private WindowPositionConfig platform;
+
+    /**
+     * 修改器窗口位置配置
+     */
+    private WindowPositionConfig modifier;
+
+    /**
+     * 游戏窗口位置配置
+     */
+    private WindowPositionConfig game;
+
+    /**
+     * 窗口位置配置内部类
+     */
+    @Data
+    public static class WindowPositionConfig {
+        /**
+         * X 坐标
+         */
+        private Integer x;
+
+        /**
+         * Y 坐标
+         */
+        private Integer y;
+
+        /**
+         * 宽度
+         */
+        private Integer width;
+
+        /**
+         * 高度
+         */
+        private Integer height;
+    }
 }

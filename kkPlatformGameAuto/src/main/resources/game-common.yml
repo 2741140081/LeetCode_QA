@@ -33,12 +33,12 @@ game:
 
     # 鼠标键盘操作配置
     operation:
-      click-delay: 250
+      click-delay: 100
       double-click-interval: 300
       key-press-duration: 100
       mouse-move-speed: 100
       move-duration: 200
-
+      event-delay: 50  # 事件延迟时间，单位毫秒
     # 窗口配置
     window:
       # 平台和准备房间窗口名称（同名）
@@ -51,6 +51,26 @@ game:
       switch-wait-time: 1000
       # 窗口切换超时时间
       timeout: 5000
+      # 是否启用窗口位置固定功能
+      enable-position-fix: true
+      # 平台窗口位置配置
+      platform:
+        x: 0
+        y: 0
+        width: 1280
+        height: 720
+      # 修改器窗口位置配置
+      modifier:
+        x: 1280
+        y: 0
+        width: 640
+        height: 480
+      # 游戏窗口位置配置
+      game:
+        x: 0
+        y: 0
+        width: 1920
+        height: 1080
     # 截图配置
     screenshot:
       # 结果保存目录
@@ -61,3 +81,55 @@ game:
       format: png
       # 质量 (0.0-1.0)
       quality: 1.0
+    # 图片通用配置
+    image:
+      # 默认图片格式（不包含点）
+      default-format: png
+      # 默认图片质量
+      default-quality: 1.0
+      # 是否自动添加文件扩展名
+      auto-add-extension: true
+    # 修改器配置
+    modifier:
+      # 修改器图片存放目录
+      image-dir: ${game.auto.base-dir}/common/modifier
+      # 查找游戏按钮图片名称
+      find-game-button-image: find_game_button
+      # 人物属性标签图片名称
+      character-attribute-label-image: character_attribute_label
+      # 经验值输入框标签图片名称
+      experience-input-box-label-image: exp_input_box_label
+      # 物品信息标签图片名称
+      item-info-label-image: item_info_label
+      # 物品信息标签栏下的所有物品相对于信息标签的偏移量
+      item-offset-x: 50
+      item-offset-y: 12
+      # 物品标签图片的高度
+      item-label-height: 14
+      # 目标值标签图片名称
+      target-value-label-image: target_value_label
+      # 输入框相对于目标值标签的偏移量
+      input-offset-x: 0
+      input-offset-y: 20
+      # 修改按钮图片名称
+      modify-button-image: modify_button
+
+    # 准备房间配置
+    prepare-room:
+      # 准备房间图片存放目录
+      image-dir: ${game.auto.base-dir}/common/prepare_room
+      # 开始游戏按钮图片名称
+      start-game-button-image: start_game_button
+      # 房间号标识图片名称
+      room-number-label-image: room_number_label
+      # 房间号输入框相对于标识的偏移量
+      room-number-offset-x: 0
+      room-number-offset-y: 20
+    # 平台配置
+    platform:
+      # 平台图片存放目录
+      image-dir: ${game.auto.base-dir}/common/kkPlatform
+      # 平台 logo 图片名称
+      platform-logo-image: platform_logo
+      # 创建房间按钮图片名称
+      create-room-button-image: create_room_button

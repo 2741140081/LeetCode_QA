@@ -30,6 +30,11 @@ public class ImageRecognitionConfig {
     private int interval;
 
     /**
+     * 图片匹配默认超时时间
+     */
+    private int timeout;
+
+    /**
      * 矩形框粗细
      */
     private int rectThickness;

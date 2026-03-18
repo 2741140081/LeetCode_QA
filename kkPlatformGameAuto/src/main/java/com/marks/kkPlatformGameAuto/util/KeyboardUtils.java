@@ -28,9 +28,15 @@ public class KeyboardUtils {
 
     private final Robot robot;
 
+    private int eventDelay;
+
     public KeyboardUtils() throws AWTException {
         this.robot = new Robot();
-        LogUtil.info("KeyboardUtils 初始化完成");
+        this.eventDelay = gameAutoProperties.getOperation().getEventDelay() != null
+                ? gameAutoProperties.getOperation().getEventDelay()
+                : 50;
+        robot.setAutoDelay(eventDelay);
+        log.info("KeyboardUtils 初始化完成，事件延迟时间：{}ms", eventDelay);
     }
 
     /**
@@ -39,7 +45,6 @@ public class KeyboardUtils {
     public void pressKey(int keyCode) {
         LogUtil.debug("按下按键：{}", KeyEvent.getKeyText(keyCode));
         robot.keyPress(keyCode);
-        robot.delay(gameAutoProperties.getOperation().getKeyPressDuration());
         robot.keyRelease(keyCode);
         robot.delay(gameAutoProperties.getOperation().getClickDelay());
     }
@@ -48,12 +53,11 @@ public class KeyboardUtils {
      * 按下组合键（如 Ctrl+A）
      */
     public void pressCombinationKey(int controlKey, int targetKey) {
-        LogUtil.debug("按下组合键：{}+{}",
+        LogUtil.debug("按下组合键：{} + {}",
                 KeyEvent.getKeyText(controlKey), KeyEvent.getKeyText(targetKey));
 
         robot.keyPress(controlKey);
         robot.keyPress(targetKey);
-        robot.delay(50);
         robot.keyRelease(targetKey);
         robot.keyRelease(controlKey);
         robot.delay(gameAutoProperties.getOperation().getClickDelay());
@@ -70,15 +74,13 @@ public class KeyboardUtils {
         StringBuilder keyNames = new StringBuilder();
         for (int keyCode : keyCodes) {
             robot.keyPress(keyCode);
-            if (keyNames.length() > 0) {
-                keyNames.append("+");
+            if (!keyNames.isEmpty()) {
+                keyNames.append(" + ");
             }
             keyNames.append(KeyEvent.getKeyText(keyCode));
         }
-
+        robot.delay(gameAutoProperties.getOperation().getClickDelay());
         LogUtil.debug("按下组合键：{}", keyNames);
-
-        robot.delay(50);
 
         // 反向释放
         for (int i = keyCodes.length - 1; i >= 0; i--) {
@@ -134,14 +136,9 @@ public class KeyboardUtils {
             clipboard.setContents(stringSelection, null);
 
             // 2. 延迟等待剪贴板准备就绪
-            robot.delay(100);
-
+            robot.delay(gameAutoProperties.getOperation().getClickDelay());
             // 3. 按下 Ctrl+V 粘贴
             pressCombinationKey(KeyEvent.VK_CONTROL, KeyEvent.VK_V);
-
-            // 4. 额外延迟，确保粘贴完成
-            robot.delay(gameAutoProperties.getOperation().getClickDelay());
-
             LogUtil.info("文本粘贴成功：{} 个字符", text.length());
 
         } catch (IllegalStateException e) {
@@ -157,19 +154,19 @@ public class KeyboardUtils {
      * 获取数字键的 keyCode
      */
     private int getNumberKeyCode(int number) {
-        switch (number) {
-            case 0: return KeyEvent.VK_0;
-            case 1: return KeyEvent.VK_1;
-            case 2: return KeyEvent.VK_2;
-            case 3: return KeyEvent.VK_3;
-            case 4: return KeyEvent.VK_4;
-            case 5: return KeyEvent.VK_5;
-            case 6: return KeyEvent.VK_6;
-            case 7: return KeyEvent.VK_7;
-            case 8: return KeyEvent.VK_8;
-            case 9: return KeyEvent.VK_9;
-            default: return KeyEvent.CHAR_UNDEFINED;
-        }
+        return switch (number) {
+            case 0 -> KeyEvent.VK_0;
+            case 1 -> KeyEvent.VK_1;
+            case 2 -> KeyEvent.VK_2;
+            case 3 -> KeyEvent.VK_3;
+            case 4 -> KeyEvent.VK_4;
+            case 5 -> KeyEvent.VK_5;
+            case 6 -> KeyEvent.VK_6;
+            case 7 -> KeyEvent.VK_7;
+            case 8 -> KeyEvent.VK_8;
+            case 9 -> KeyEvent.VK_9;
+            default -> KeyEvent.CHAR_UNDEFINED;
+        };
     }
 
     /**

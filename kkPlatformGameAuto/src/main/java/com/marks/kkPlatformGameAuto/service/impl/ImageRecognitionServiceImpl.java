@@ -1,5 +1,6 @@
 package com.marks.kkPlatformGameAuto.service.impl;
 
+import com.marks.kkPlatformGameAuto.cache.ImageCache;
 import com.marks.kkPlatformGameAuto.config.properties.GameAutoProperties;
 import com.marks.kkPlatformGameAuto.service.ImageRecognitionService;
 import com.marks.kkPlatformGameAuto.util.FileUtils;
@@ -45,9 +46,21 @@ public class ImageRecognitionServiceImpl implements ImageRecognitionService {
     @Autowired
     private FileUtils fileService;
 
+    // 注入图片缓存
+    @Autowired
+    private ImageCache imageCache;
+
     @Override
     public java.awt.Point findImageCenter(String imagePath, int timeout, int delayTime) {
         long startTime = System.currentTimeMillis();
+        // 从缓存中获取
+        String cacheKey = fileService.extractImageName(imagePath);
+
+        Point cachedPoint = imageCache.get(cacheKey);
+        if (cachedPoint != null) {
+            log.info("缓存命中：{}, 坐标：({}, {})", imagePath, cachedPoint.x, cachedPoint.y);
+            return new java.awt.Point((int) cachedPoint.x, (int) cachedPoint.y);
+        }
 
         // 加载目标图片
         Mat templateMat = Imgcodecs.imread(imagePath);
@@ -74,6 +87,8 @@ public class ImageRecognitionServiceImpl implements ImageRecognitionService {
                             (int) matchPoint.y
                     );
                     log.info("找到图片，中心点坐标：({}, {})", resultPoint.x, resultPoint.y);
+                    // 更新缓存
+                    imageCache.put(cacheKey, matchPoint);
                     // 将矩形标记后的屏幕截图保存到临时文件中, 配置文件获取临时文件路径
                     fileService.saveMatToTempDir(screenMat, imagePath);
                     // 释放资源
@@ -109,6 +124,25 @@ public class ImageRecognitionServiceImpl implements ImageRecognitionService {
         return true;
     }
 
+    @Override
+    public boolean findImage(String imagePath) {
+        int timeout = gameAutoProperties.getImageRecognition().getTimeout();
+        int delayTime = gameAutoProperties.getImageRecognition().getInterval();
+        return findImage(imagePath, timeout, delayTime);
+    }
+
+    @Override
+    public boolean findImage(String imagePath, int timeout) {
+        int delayTime = gameAutoProperties.getImageRecognition().getInterval();
+        return findImage(imagePath, timeout, delayTime);
+    }
+
+    @Override
+    public boolean findImage(String imagePath, int timeout, int delayTime) {
+        java.awt.Point foundPoint = findImageCenter(imagePath, timeout, delayTime);
+        return foundPoint != null;
+    }
+
 
     private Point recognizeAndMarkElement(Mat templateMat, Mat screenMat) {
         // 将 Mat 转为灰度处理
@@ -130,13 +164,9 @@ public class ImageRecognitionServiceImpl implements ImageRecognitionService {
         // 判断匹配
         if (bestMatchValue >= gameAutoProperties.getSimilarityThreshold()) {
             log.info("匹配成功，匹配值：{}", bestMatchValue);
-            // 获取配置文件中矩形颜色和宽度
-            Scalar rectColor = gameAutoProperties.getRectColor();
-            // 获取配置文件中矩形宽度
-            int rectThickness = gameAutoProperties.getImageRecognition().getRectThickness();
-            // 绘制矩形在屏幕上
-            Imgproc.rectangle(screenMat, bestLoc, new Point(bestLoc.x + templateMat.cols(), bestLoc.y + templateMat.rows()), rectColor, rectThickness);
-            // 返回中心点坐标
+            // 绘制匹配的矩形在屏幕中
+            markMatchPosition(screenMat, bestLoc, templateMat.cols(), templateMat.rows());
+            // 获取匹配位置的中心点坐标
             resultPoint = new Point(bestLoc.x + (double) templateMat.cols() / 2, bestLoc.y + (double) templateMat.rows() / 2);
         }
         // 释放资源
@@ -213,15 +243,16 @@ public class ImageRecognitionServiceImpl implements ImageRecognitionService {
      * 在屏幕上标记匹配位置
      * @param screenMat 屏幕截图
      * @param topLeftLoc 匹配位置的左上角坐标
-     * @param templateSize 模板图片尺寸
+     * @param width 模板图片宽度
+     * @param height 模板图片高度
      */
-    private void markMatchPosition(Mat screenMat, Point topLeftLoc, Size templateSize) {
+    private void markMatchPosition(Mat screenMat, Point topLeftLoc, int width, int height) {
         // 获取配置文件中矩形颜色
         Scalar rectColor = gameAutoProperties.getRectColor();
         // 获取配置文件中矩形宽度
         int rectThickness = gameAutoProperties.getImageRecognition().getRectThickness();
         // 计算右下角坐标
-        Point bottomRightLoc = new Point(topLeftLoc.x + templateSize.width, topLeftLoc.y + templateSize.height);
+        Point bottomRightLoc = new Point(topLeftLoc.x +width, topLeftLoc.y + height);
         // 绘制矩形在屏幕上
         Imgproc.rectangle(screenMat, topLeftLoc, bottomRightLoc, rectColor, rectThickness);
 

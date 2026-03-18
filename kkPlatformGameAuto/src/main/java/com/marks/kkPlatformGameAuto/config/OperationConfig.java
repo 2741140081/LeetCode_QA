@@ -40,4 +40,9 @@ public class OperationConfig {
      * 移动持续时间 (毫秒)
      */
     private Integer moveDuration;
+
+    /**
+     * 事件延迟时间 (毫秒)，用于 Robot 操作后的延迟
+     */
+    private Integer eventDelay;
 }

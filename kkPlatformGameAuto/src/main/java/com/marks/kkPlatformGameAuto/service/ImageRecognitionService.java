@@ -1,7 +1,5 @@
 package com.marks.kkPlatformGameAuto.service;
 
-import org.springframework.stereotype.Service;
-
 import java.awt.*;
 
 /**
@@ -20,4 +18,13 @@ public interface ImageRecognitionService {
 
     // 识别图片并执行点击操作, 返回执行结果
     boolean findAndClickImage(String imagePath, int timeout);
+
+    // 查找图片 (使用配置文件默认参数)
+    boolean findImage(String imagePath);
+
+    // 查找图片 (指定超时时间)
+    boolean findImage(String imagePath, int timeout);
+
+    // 查找图片 (指定超时时间和间隔延迟)
+    boolean findImage(String imagePath, int timeout, int delayTime);
 }
