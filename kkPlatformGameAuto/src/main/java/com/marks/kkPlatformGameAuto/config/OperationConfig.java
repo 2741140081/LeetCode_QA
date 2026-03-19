@@ -45,4 +45,9 @@ public class OperationConfig {
      * 事件延迟时间 (毫秒)，用于 Robot 操作后的延迟
      */
     private Integer eventDelay;
+
+    /**
+     * 技能释放延迟 (毫秒)
+     */
+    private Integer skillDelay;
 }

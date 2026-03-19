@@ -39,6 +39,8 @@ game:
       mouse-move-speed: 100
       move-duration: 200
       event-delay: 50  # 事件延迟时间，单位毫秒
+      skill-delay: 200 # 技能间隔时间，单位毫秒
+      move-view-duration: 100 # 移动视角持续视角
     # 窗口配置
     window:
       # 平台和准备房间窗口名称（同名）
@@ -133,3 +135,38 @@ game:
       platform-logo-image: platform_logo
       # 创建房间按钮图片名称
       create-room-button-image: create_room_button
+    # 小偷游戏配置
+    thief:
+      # 小偷游戏图片存放目录
+      image-dir: ${game.auto.base-dir}/thief_gold
+      folder:
+        common: common
+        archiver-prefix: archiver_
+        equipment: equipment
+        locker: locker
+        thief-hero: thief
+        final-boss: final_boss
+        enhance-building: enhancement_building
+      # 小偷游戏图片名称
+      game-image:
+        locker-image: locker
+        final-boss-building-image: final_boss_building
+        attribute-enhance-building-image: attribute_enhance_building
+        thief-drop-skill-image: thief_drop_skill
+        locker-skill-image: locker_skill
+        locker-ice-halo-skill-image: locker_ice_halo_skill
+      # 编号配置
+      numbering:
+        thief-number: 1
+        locker-number: 2
+        final-boss-building-number: 3
+        attribute-enhance-building-number: 4
+      # 存档建筑配置
+      archiver-building-numbers: [1, 2, 3, 4, 5, 6]
+      # 装备物品配置
+      equipment-names: ["w290", "w291", "w293", "IOOC"]
+      # 修改物品配置
+      modify-item:
+        first-modify: ["w291"]
+        second-modify: ["w291", "w293", "w293", "w290", "w290"]
+        default-modify: ["w293", "w293", "w293", "w293", "w293", "w293"]

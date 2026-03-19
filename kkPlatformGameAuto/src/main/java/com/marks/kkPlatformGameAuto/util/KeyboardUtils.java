@@ -181,4 +181,18 @@ public class KeyboardUtils {
         int keyCode = KeyEvent.getExtendedKeyCodeForChar(KeyEvent.VK_F1 + functionNumber - 1);
         pressKey(keyCode);
     }
+
+    /**
+     * 获取大写字母对应的 keyCode
+     * @param ch 大写字母 (A-Z)
+     * @return 对应的 keyCode，如果输入无效返回 KeyEvent.VK_UNDEFINED
+     */
+    public int getLetterKeyCode(char ch) {
+        if (ch < 'A' || ch > 'Z') {
+            LogUtil.warn("输入不是大写字母：{}", ch);
+            return KeyEvent.VK_UNDEFINED;
+        }
+        // A-Z 对应的 keyCode 是连续的，VK_A = 65
+        return KeyEvent.VK_A + (ch - 'A');
+    }
 }

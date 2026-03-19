@@ -60,6 +60,14 @@ public class InputController {
     }
 
     /**
+     * 按下数字键
+     * @param number 数字 (0-9)
+     */
+    public void pressNumber(int number) {
+        keyboardUtils.pressNumber(number);
+    }
+
+    /**
      * 按下组合键
      */
     public void pressCombo(int controlKey, int targetKey) {
@@ -79,6 +87,8 @@ public class InputController {
     public void type(String text) {
         keyboardUtils.typeText(text);
     }
+
+
 
     /**
      * 链式调用：移动到坐标并右键点击
@@ -109,5 +119,14 @@ public class InputController {
             Thread.currentThread().interrupt();
         }
         return this;
+    }
+
+    /**
+     * 获取大写字母对应的 keyCode
+     * @param letter 大写字母 (A-Z)
+     * @return 对应的 keyCode，如果输入无效返回 KeyEvent.VK_UNDEFINED
+     */
+    public int getLetterKeyCode(char letter) {
+        return keyboardUtils.getLetterKeyCode(letter);
     }
 }

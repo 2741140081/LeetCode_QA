@@ -16,8 +16,6 @@ import java.awt.event.KeyEvent;
 import java.util.List;
 
 /**
- * <p>项目名称: LeetCode_QA </p>
- * <p>文件名称: ModifiersOperation </p>
  * <p>描述: 修改器相关操作
  * 1. 修改人物经验值
  * 2. 修改物品栏物品
