@@ -179,6 +179,15 @@
             <version>4.0.3</version>
         </dependency>
 
+        <!-- ==================== 测试依赖 ==================== -->
+        <!-- Spring Boot Test (包含 JUnit、MockMvc 等) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <version>${spring-boot.version}</version>
+            <scope>test</scope>
+        </dependency>
+
 	</dependencies>
 
     <build>

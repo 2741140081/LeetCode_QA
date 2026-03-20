@@ -16,8 +16,6 @@ import java.awt.event.KeyEvent;
 import java.util.List;
 
 /**
- * <p>项目名称: LeetCode_QA </p>
- * <p>文件名称: ModifiersOperation </p>
  * <p>描述: 修改器相关操作
  * 1. 修改人物经验值
  * 2. 修改物品栏物品
@@ -79,10 +77,12 @@ public class ModifierServiceImpl implements ModifierService {
         }
 
         // 4. 输入值并点击修改按钮
-        if (!inputValueAndModify(experienceInputBoxLabelCenter, String.valueOf(experienceValue), imageDir, timeout, delayTime)) {
+        if (!inputValueAndModify(experienceInputBoxLabelCenter, String.valueOf(experienceValue), imageDir, timeout)) {
             return false;
         }
         log.info("=== 修改器：修改经验值完成 ===");
+        // 切换回到游戏主体窗口
+        windowSwitcherService.switchToGame();
         return true;
     }
 
@@ -147,11 +147,35 @@ public class ModifierServiceImpl implements ModifierService {
             int targetValueLabelOffsetY = modifierConfig.getInputOffsetY();
             Point targetValueLabelPoint = new Point(targetValueLabelCenter.x + targetValueLabelOffsetX, targetValueLabelCenter.y + targetValueLabelOffsetY);
             // 4. 输入值并点击修改按钮
-            if (!inputValueAndModify(targetValueLabelPoint, itemName, imageDir, timeout, delayTime)) {
+            if (!inputValueAndModify(targetValueLabelPoint, itemName, imageDir, timeout)) {
                 return false;
             }
         }
         log.info("=== 修改器：修改物品完成 ===");
+        // 切换回到游戏主体窗口
+        windowSwitcherService.switchToGame();
+        return true;
+    }
+
+    @Override
+    public boolean lockAttackInterval() {
+        // 获取目录
+        String imageDir = modifierConfig.getImageDir();
+        // 获取查找游戏按钮超时时间
+        int timeout = gameAutoProperties.getDefaultTimeout();
+        // 1. 切换到修改器窗口并点击查找游戏按钮
+        if (!switchToModifierAndFindGame()) {
+            return false;
+        }
+        // 找到并点击锁定攻击间隔按钮
+        String lockIntervalImage = modifierConfig.getLockIntervalImage();
+        String lockIntervalImagePath = imagePathUtils.buildImagePathWithExtension(imageDir, lockIntervalImage);
+        if (!imageRecognitionService.findAndClickImage(lockIntervalImagePath, timeout)) {
+            log.error("未找到锁定攻击间隔按钮");
+        }
+
+        // 切换回到游戏主体窗口
+        windowSwitcherService.switchToGame();
         return true;
     }
 
@@ -191,10 +215,9 @@ public class ModifierServiceImpl implements ModifierService {
      * @param value 要输入的值
      * @param imageDir 图片目录
      * @param timeout 超时时间
-     * @param delayTime 延迟时间
      * @return true 如果操作成功，否则 false
      */
-    private boolean inputValueAndModify(Point inputPoint, String value, String imageDir, int timeout, int delayTime) {
+    private boolean inputValueAndModify(Point inputPoint, String value, String imageDir, int timeout) {
         // 1. 点击输入框
         input.moveAndClick(inputPoint.x, inputPoint.y);
 

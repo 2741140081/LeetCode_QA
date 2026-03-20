@@ -1,0 +1,4 @@
+update: 2026-03-20
+1. 完善ThiefGameServiceImpl 实现类的代码, 目前主体流程代码以及完成
+2. 需要进行测试, 使用spring boot test 进行测试
+

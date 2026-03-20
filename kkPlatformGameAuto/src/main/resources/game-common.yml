@@ -18,13 +18,18 @@ game:
       rect-color-r: 255.0
     # 超时配置 (毫秒)
     timeout:
-      default: 3000
-      short: 1000
-      medium: 5000
-      long: 10000
-      window-switch: 1000
-      find-image: 5000
-
+      default-time: 3000
+      short-time: 1000
+      medium-time: 5000
+      long-time: 10000
+      window-switch-time: 1000
+      find-image-time: 5000
+    # 等待配置 (毫秒)
+    wait-time:
+      default-time: 3000
+      short-time: 1000
+      medium-time: 5000
+      long-time: 10000
     # 重试配置
     retry:
       max-attempts: 3
@@ -39,6 +44,8 @@ game:
       mouse-move-speed: 100
       move-duration: 200
       event-delay: 50  # 事件延迟时间，单位毫秒
+      skill-delay: 200 # 技能间隔时间，单位毫秒
+      move-view-duration: 100 # 移动视角持续视角
     # 窗口配置
     window:
       # 平台和准备房间窗口名称（同名）
@@ -92,7 +99,7 @@ game:
     # 修改器配置
     modifier:
       # 修改器图片存放目录
-      image-dir: ${game.auto.base-dir}/common/modifier
+      image-dir: ${game.auto.base-dir}/modifier
       # 查找游戏按钮图片名称
       find-game-button-image: find_game_button
       # 人物属性标签图片名称
@@ -113,11 +120,12 @@ game:
       input-offset-y: 20
       # 修改按钮图片名称
       modify-button-image: modify_button
+      lock-interval-image: lock_interval_button
 
     # 准备房间配置
     prepare-room:
       # 准备房间图片存放目录
-      image-dir: ${game.auto.base-dir}/common/prepare_room
+      image-dir: ${game.auto.base-dir}/prepare_room
       # 开始游戏按钮图片名称
       start-game-button-image: start_game_button
       # 房间号标识图片名称
@@ -133,3 +141,59 @@ game:
       platform-logo-image: platform_logo
       # 创建房间按钮图片名称
       create-room-button-image: create_room_button
+    # 小偷游戏配置
+    thief:
+      # 小偷游戏图片存放目录
+      image-dir: ${game.auto.base-dir}/thief_gold
+      folder:
+        common: common
+        archiver-prefix: archiver_
+        equipment: equipment
+        locker: locker
+        thief-hero: thief
+        final-boss: final_boss
+        enhance-building: enhancement_building
+      # 小偷游戏图片名称
+      game-image:
+        locker-image: locker
+        final-boss-building-image: final_boss_building
+        attribute-enhance-building-image: attribute_enhance_building
+        thief-drop-skill-image: thief_drop_skill
+        thief-left-top-image: thief_left_top
+        thief-perfect-discard-point-image: perfect_discard_point
+        locker-skill-image: locker_skill
+        locker-ice-halo-skill-image: locker_ice_halo_skill
+        attack-speed-up-image: attack_speed_up
+        range-up--image: range_up
+        multi-shot-up-image: multi_shot_up
+        final-boss-image: final_boss
+        victory-image: victory
+      # 编号配置
+      numbering:
+        thief-number: 1
+        locker-number: 2
+        final-boss-building-number: 3
+        attribute-enhance-building-number: 4
+      # 存档建筑配置
+      archiver-building-numbers: [1, 2, 3, 4, 5, 6]
+      # 装备物品配置
+      equipment-names: ["w290", "w291", "w293", "IOOC"]
+      # 修改物品配置
+      modify-item:
+        first-modify: ["w291"]
+        second-modify: ["w291", "w293", "w293", "w290", "w290"]
+        third-modify: ["w293", "w293", "w293", "w293", "w293", "w293"]
+        default-modify: ["IOOC", "IOOC", "IOOC", "IOOC", "IOOC", "IOOC"]
+      gold-mine-offset-x: 0
+      gold-mine-offset-y: 80
+      devour-equipment-times: 12
+      attack-speed-up-times: 3
+      range-up-times: 3
+      multi-shot-up-times: 1
+      # 小偷游戏主时间, 15min, 当前单位是毫秒
+      thief-game-run-time: 900000
+      # 小偷游戏失败时间, 2min, 当前单位是毫秒
+      thief-game-failure-time: 120000
+      thief-game-archiver-time: 30000
+      attack-sKey: A
+      ten-click-sKey: T

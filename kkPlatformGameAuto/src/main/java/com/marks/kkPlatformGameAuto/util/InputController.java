@@ -4,6 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.awt.event.KeyEvent;
+
 /**
  * 输入控制器（鼠标和键盘操作的统一门面）
  * 提供简化的 API，内部委托给 MouseUtils 和 KeyboardUtils
@@ -60,6 +62,14 @@ public class InputController {
     }
 
     /**
+     * 按下数字键
+     * @param number 数字 (0-9)
+     */
+    public void pressNumber(int number) {
+        keyboardUtils.pressNumber(number);
+    }
+
+    /**
      * 按下组合键
      */
     public void pressCombo(int controlKey, int targetKey) {
@@ -79,6 +89,8 @@ public class InputController {
     public void type(String text) {
         keyboardUtils.typeText(text);
     }
+
+
 
     /**
      * 链式调用：移动到坐标并右键点击
@@ -102,12 +114,48 @@ public class InputController {
      * 链式调用：延迟
      */
     public InputController delay(int milliseconds) {
-        try {
-            Thread.sleep(milliseconds);
-        } catch (InterruptedException e) {
-            LogUtil.error("延迟被中断", e);
-            Thread.currentThread().interrupt();
-        }
+        keyboardUtils.delay(milliseconds);
         return this;
+    }
+
+    /**
+     * 获取大写字母对应的 keyCode
+     * @param letter 大写字母 (A-Z)
+     * @return 对应的 keyCode，如果输入无效返回 KeyEvent.VK_UNDEFINED
+     */
+    public int getLetterKeyCode(char letter) {
+        return keyboardUtils.getLetterKeyCode(letter);
+    }
+
+    /**
+     * 向上移动视角
+     * @param durationMs 持续时间（毫秒）
+     */
+    public void moveViewUp(int durationMs) {
+        keyboardUtils.pressKey(durationMs, KeyEvent.VK_UP);
+    }
+
+    /**
+     * 向下移动视角
+     * @param durationMs 持续时间（毫秒）
+     */
+    public void moveViewDown(int durationMs) {
+        keyboardUtils.pressKey(durationMs, KeyEvent.VK_DOWN);
+    }
+
+    /**
+     * 向左移动视角
+     * @param durationMs 持续时间（毫秒）
+     */
+    public void moveViewLeft(int durationMs) {
+        keyboardUtils.pressKey(durationMs, KeyEvent.VK_LEFT);
+    }
+
+    /**
+     * 向右移动视角
+     * @param durationMs 持续时间（毫秒）
+     */
+    public void moveViewRight(int durationMs) {
+        keyboardUtils.pressKey(durationMs, KeyEvent.VK_RIGHT);
     }
 }

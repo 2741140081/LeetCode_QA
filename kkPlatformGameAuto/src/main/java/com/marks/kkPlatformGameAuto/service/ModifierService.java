@@ -26,4 +26,10 @@ public interface ModifierService {
      * @return 是否成功
      */
     boolean modifyItems(List<String> itemNames);
+
+    /**
+     * 锁定攻击间隔
+     * @return 是否成功
+     */
+    boolean lockAttackInterval();
 }
