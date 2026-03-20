@@ -21,6 +21,18 @@ public interface HeroOperationService {
      * @return true 如果释放成功，否则 false
      */
     boolean useNonTargetedSkillByImage(String skillImagePath);
+
+    /**
+     * 释放非指向性技能行为 - 通过图片识别技能图标（支持多次释放）
+     * 流程：识别技能图片 -> 点击技能图标 -> 释放技能 -> 等待 CD -> 重复执行
+     * @param skillImagePath 技能图片完整路径
+     * @param executeCount 执行次数（点击次数）
+     * @param intervalMs 执行间隔（技能 CD 时间，毫秒）
+     * @return true 如果全部执行成功，否则 false
+     */
+    boolean useNonTargetedSkillByImage(String skillImagePath, int executeCount, int intervalMs);
+
+
     /**
      * 释放指向性技能行为 - 通过图片识别技能图标
      * 流程：识别技能图片 -> 点击技能图标 -> 移动到目标点 -> 释放技能
@@ -53,7 +65,7 @@ public interface HeroOperationService {
      * @param targetPoint 目标地点坐标
      * @return true 如果移交成功，否则 false
      */
-    boolean transferItem(List<String> itemImagePath, Point targetPoint);
+    boolean transferItems(List<String> itemImagePath, Point targetPoint);
 
     /**
      * 移交所有相同的物品到目标点

@@ -77,4 +77,9 @@ public class ModifierConfig {
      * 修改按钮图片名称
      */
     private String modifyButtonImage;
+
+    /**
+     * 锁定间隔图片名称
+     */
+    private String lockIntervalImage;
 }

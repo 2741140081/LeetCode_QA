@@ -5,7 +5,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 /**
- * 超时配置
+ * 等待时间配置
  *
  * @author marks
  * @version v1.0
@@ -13,9 +13,8 @@ import org.springframework.stereotype.Component;
  */
 @Data
 @Component
-@ConfigurationProperties(prefix = "game.auto.timeout")
-public class TimeoutConfig {
-
+@ConfigurationProperties(prefix = "game.auto.wait-time")
+public class WaitTimeConfig {
     /**
      * 默认超时时间 (毫秒)
      */
@@ -35,14 +34,4 @@ public class TimeoutConfig {
      * 长超时 (毫秒)
      */
     private Integer longTime;
-
-    /**
-     * 窗口切换超时 (毫秒)
-     */
-    private Integer windowSwitchTime;
-
-    /**
-     * 查找图片超时 (毫秒)
-     */
-    private Integer findImageTime;
 }

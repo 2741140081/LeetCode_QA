@@ -50,6 +50,16 @@ public class KeyboardUtils {
     }
 
     /**
+     * 按下并释放单个按键
+     */
+    public void pressKey(int durationMs, int keyCode) {
+        LogUtil.debug("按下按键：{}", KeyEvent.getKeyText(keyCode));
+        robot.keyPress(keyCode);
+        robot.delay(durationMs);
+        robot.keyRelease(keyCode);
+    }
+
+    /**
      * 按下组合键（如 Ctrl+A）
      */
     public void pressCombinationKey(int controlKey, int targetKey) {
@@ -194,5 +204,39 @@ public class KeyboardUtils {
         }
         // A-Z 对应的 keyCode 是连续的，VK_A = 65
         return KeyEvent.VK_A + (ch - 'A');
+    }
+
+
+    /**
+     * 延迟指定时间（毫秒）
+     * 优先使用 robot.delay()，超过限制时使用 Thread.sleep() 补充
+     * robot.delay() 的限制是最大值约为 Integer.MAX_VALUE / 1000 秒
+     * @param milliseconds 延迟时间（毫秒）
+     */
+    public void delay(int milliseconds) {
+        if (milliseconds <= 0) {
+            return;
+        }
+
+        try {
+            if (milliseconds < 60000) {
+                robot.delay(milliseconds);
+            } else {
+                Thread.sleep(milliseconds);
+            }
+        } catch (Exception e) {
+            LogUtil.error("延迟过程中发生异常：{}", e.getMessage(), e);
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    /**
+     * 延迟指定时间并支持链式调用
+     * @param milliseconds 延迟时间（毫秒）
+     * @return this（用于链式调用）
+     */
+    public KeyboardUtils delayAndChain(int milliseconds) {
+        delay(milliseconds);
+        return this;
     }
 }

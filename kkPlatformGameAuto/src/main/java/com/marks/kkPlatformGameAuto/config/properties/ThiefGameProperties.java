@@ -2,9 +2,12 @@ package com.marks.kkPlatformGameAuto.config.properties;
 
 
 import com.marks.kkPlatformGameAuto.config.ThiefGameConfig;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.awt.*;
 import java.util.List;
 
 /**
@@ -16,6 +19,7 @@ import java.util.List;
  * @date 2026/3/19
  */
 @Slf4j
+@Data
 @Component
 public class ThiefGameProperties {
     @Autowired
@@ -68,6 +72,10 @@ public class ThiefGameProperties {
         return thiefGameConfig.getModifyItem().getSecondModify();
     }
 
+    public List<String> getThirdModifyItems() {
+        return thiefGameConfig.getModifyItem().getThirdModify();
+    }
+
     /**
      * 获取默认修改的物品列表
      * @return 物品列表
@@ -96,8 +104,8 @@ public class ThiefGameProperties {
      * 获取存档建筑图片目录
      * @return 目录路径
      */
-    public String getArchiverImageDir() {
-        return buildImageDir(thiefGameConfig.getFolder().getArchiverPrefix());
+    public String getArchiverImageDir(int number) {
+        return buildImageDir(thiefGameConfig.getFolder().getArchiverPrefix() + number);
     }
 
     /**
@@ -140,6 +148,10 @@ public class ThiefGameProperties {
         return buildImageDir(thiefGameConfig.getFolder().getEnhanceBuilding());
     }
 
+    public Point getGoldMineOffset() {
+        return new Point(thiefGameConfig.getGoldMineOffsetX(), thiefGameConfig.getGoldMineOffsetY());
+    }
+
     /**
      * 构建图片目录路径
      * @param subDir 子目录
@@ -152,4 +164,6 @@ public class ThiefGameProperties {
         }
         return baseDir + "/" + subDir;
     }
+
+
 }

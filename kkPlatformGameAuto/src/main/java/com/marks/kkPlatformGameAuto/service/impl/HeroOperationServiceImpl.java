@@ -33,14 +33,27 @@ public class HeroOperationServiceImpl implements HeroOperationService {
     @Autowired
     private GameAutoProperties gameAutoProperties;
 
+
     @Override
     public boolean useNonTargetedSkillByImage(String skillImagePath) {
-        log.info("释放非指向性技能（图片识别），技能图片：{}", skillImagePath);
-        if (clickSkillIcon(skillImagePath)) {
-            return true;
+        return useNonTargetedSkillByImage(skillImagePath, 1, 0);
+    }
+
+    @Override
+    public boolean useNonTargetedSkillByImage(String skillImagePath, int executeCount, int intervalMs) {
+        // 找到技能中心点, 防止执行多次时, 需要重复查找
+        Point skillCenter = imageRecognitionService.findImageCenter(skillImagePath, gameAutoProperties.getDefaultTimeout(), gameAutoProperties.getDefaultWaitTime());
+        // 判断技能是否找到
+        if (skillCenter == null) {
+            return false;
         }
-        log.warn("释放技能失败：{}", skillImagePath);
-        return false;
+        for (int i = 0; i < executeCount; i++) {
+            // 点击技能
+            input.click(skillCenter.x, skillCenter.y);
+            // 技能释放CD
+            input.delay(intervalMs);
+        }
+        return true;
     }
 
     @Override
@@ -69,8 +82,26 @@ public class HeroOperationServiceImpl implements HeroOperationService {
     }
 
     @Override
-    public boolean transferItem(List<String> itemImagePath, Point targetPoint) {
-        return false;
+    public boolean transferItems(List<String> itemImagePath, Point targetPoint) {
+        log.info("移交物品到目标点");
+        // 获取配置文件中的默认超时时间
+        int timeout = gameAutoProperties.getDefaultTimeout();
+        int delayTime = gameAutoProperties.getInterval();
+        for (String itemPath : itemImagePath) {
+            // 找到物品坐标点
+            Point imageCenter = imageRecognitionService.findImageCenter(itemPath, timeout, delayTime);
+            // 判断物品是否找到
+            if (imageCenter == null) {
+                log.warn("未找到物品：{}", itemPath);
+                return false;
+            }
+            // 移动到坐标点并且右键点击
+            input.moveToAndRightClick(imageCenter.x, imageCenter.y);
+            input.delay(delayTime);
+            // 移动到目标点
+            input.moveToAndLeftClick(targetPoint.x, targetPoint.y);
+        }
+        return true;
     }
 
     @Override

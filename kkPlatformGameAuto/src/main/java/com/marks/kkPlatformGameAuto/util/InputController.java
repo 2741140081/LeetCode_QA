@@ -4,6 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.awt.event.KeyEvent;
+
 /**
  * 输入控制器（鼠标和键盘操作的统一门面）
  * 提供简化的 API，内部委托给 MouseUtils 和 KeyboardUtils
@@ -112,12 +114,7 @@ public class InputController {
      * 链式调用：延迟
      */
     public InputController delay(int milliseconds) {
-        try {
-            Thread.sleep(milliseconds);
-        } catch (InterruptedException e) {
-            LogUtil.error("延迟被中断", e);
-            Thread.currentThread().interrupt();
-        }
+        keyboardUtils.delay(milliseconds);
         return this;
     }
 
@@ -128,5 +125,37 @@ public class InputController {
      */
     public int getLetterKeyCode(char letter) {
         return keyboardUtils.getLetterKeyCode(letter);
+    }
+
+    /**
+     * 向上移动视角
+     * @param durationMs 持续时间（毫秒）
+     */
+    public void moveViewUp(int durationMs) {
+        keyboardUtils.pressKey(durationMs, KeyEvent.VK_UP);
+    }
+
+    /**
+     * 向下移动视角
+     * @param durationMs 持续时间（毫秒）
+     */
+    public void moveViewDown(int durationMs) {
+        keyboardUtils.pressKey(durationMs, KeyEvent.VK_DOWN);
+    }
+
+    /**
+     * 向左移动视角
+     * @param durationMs 持续时间（毫秒）
+     */
+    public void moveViewLeft(int durationMs) {
+        keyboardUtils.pressKey(durationMs, KeyEvent.VK_LEFT);
+    }
+
+    /**
+     * 向右移动视角
+     * @param durationMs 持续时间（毫秒）
+     */
+    public void moveViewRight(int durationMs) {
+        keyboardUtils.pressKey(durationMs, KeyEvent.VK_RIGHT);
     }
 }

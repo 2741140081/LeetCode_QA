@@ -54,6 +54,46 @@ public class ThiefGameConfig {
     private ModifyItemConfig modifyItem;
 
     /**
+     * 金矿偏移量
+     */
+    private int goldMineOffsetX;
+    private int goldMineOffsetY;
+
+    /**
+     *  吞噬装备次数
+     */
+    private int devourEquipmentTimes;
+
+    /**
+     *  属性强化次数
+     */
+    private int attackSpeedUpTimes;
+    private int rangeUpTimes;
+    private int multiShotUpTimes;
+
+    /**
+     * 小偷游戏主体运行时间
+     */
+    private long thiefGameRunTime;
+
+    /**
+     * 小偷游戏失败时间
+     */
+    private int thiefGameFailureTime;
+
+    /**
+     * 存档挑战需要的时间
+     */
+    private int thiefGameArchiverTime;
+
+
+    /**
+     * 快捷键配置
+     */
+    private char attackSKey;
+    private char tenClickSKey;
+
+    /**
      * 编号配置内部类
      */
     @Data
@@ -146,6 +186,16 @@ public class ThiefGameConfig {
         private String thiefDropSkillImage;
 
         /**
+         * 小偷左上角图片
+         */
+        private String thiefLeftTopImage;
+
+        /**
+         * 小偷完美丢弃点图片
+         */
+        private String thiefPerfectDiscardPointImage;
+
+        /**
          * 储物柜技能图片
          */
         private String lockerSkillImage;
@@ -154,6 +204,31 @@ public class ThiefGameConfig {
          * 储物柜冰环技能图片
          */
         private String lockerIceHaloSkillImage;
+
+        /**
+         * 攻击速度提升技能图片
+         */
+        private String attackSpeedUpImage;
+
+        /**
+         * 射程提升技能图片
+         */
+        private String rangeUpImage;
+
+        /**
+         * 多重射击提升技能图片
+         */
+        private String multiShotUpImage;
+
+        /**
+         * 技能图标图片
+         */
+        private String finalBossImage;
+
+        /**
+         * 游戏胜利图片
+         */
+        private String victoryImage;
     }
 
     /**
@@ -192,6 +267,11 @@ public class ThiefGameConfig {
          * 第二次修改的物品列表
          */
         private List<String> secondModify;
+
+        /**
+         * 第三次修改的物品列表
+         */
+        private List<String> thirdModify;
 
         /**
          * 默认修改的物品列表

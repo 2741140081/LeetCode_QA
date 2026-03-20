@@ -43,6 +43,12 @@ public class GameAutoProperties {
     private TimeoutConfig timeout;
 
     /**
+     * 等待时间配置
+     */
+    @Autowired
+    private WaitTimeConfig waitTime;
+
+    /**
      * 重试配置
      */
     @Autowired
@@ -82,7 +88,7 @@ public class GameAutoProperties {
         }
 
         log.info("图像识别默认缩放比例：{}", imageRecognition.getDefaultScale());
-        log.info("查找图片超时：{}ms", timeout.getFindImage());
+        log.info("查找图片超时：{}ms", timeout.getFindImageTime());
         log.info("最大重试次数：{}", retry.getMaxAttempts());
         log.info("==============================");
     }
@@ -93,7 +99,14 @@ public class GameAutoProperties {
      * 获取默认超时时间
      */
     public int getDefaultTimeout() {
-        return timeout.getDefaultTimeout();
+        return timeout.getDefaultTime();
+    }
+
+    /**
+     * 获取默认等待时间
+     */
+    public int getDefaultWaitTime() {
+        return waitTime.getDefaultTime();
     }
 
     /**

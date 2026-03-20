@@ -10,6 +10,8 @@ import org.springframework.stereotype.Component;
 import java.io.File;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * <p>项目名称：LeetCode_QA </p>
@@ -126,6 +128,141 @@ public class FileUtils {
         }
 
         return fileName;
+    }
+
+    /**
+     * 获取指定目录下的所有文件完整路径
+     * 递归遍历子目录（如果需要非递归，可以添加参数控制）
+     *
+     * @param directoryPath 目录路径
+     * @return 文件完整路径列表，如果目录不存在或为空则返回空列表
+     */
+    public List<String> getAllFilePathsInDirectory(String directoryPath) {
+        return getAllFilePathsInDirectory(directoryPath, false);
+    }
+
+    /**
+     * 获取指定目录下的所有文件完整路径
+     *
+     * @param directoryPath 目录路径
+     * @param recursive 是否递归遍历子目录
+     * @return 文件完整路径列表，如果目录不存在或为空则返回空列表
+     */
+    public List<String> getAllFilePathsInDirectory(String directoryPath, boolean recursive) {
+        List<String> filePaths = new ArrayList<>();
+
+        if (directoryPath == null || directoryPath.isEmpty()) {
+            log.warn("目录路径为空");
+            return filePaths;
+        }
+
+        File directory = new File(directoryPath);
+
+        if (!directory.exists()) {
+            log.warn("目录不存在：{}", directoryPath);
+            return filePaths;
+        }
+
+        if (!directory.isDirectory()) {
+            log.warn("路径不是目录：{}", directoryPath);
+            return filePaths;
+        }
+
+        collectFilePaths(directory, filePaths, recursive);
+        log.info("获取到目录 {} 下的 {} 个文件", directoryPath, filePaths.size());
+        return filePaths;
+    }
+
+    /**
+     * 获取指定目录下的所有文件完整路径（按扩展名过滤）
+     *
+     * @param directoryPath 目录路径
+     * @param extension 文件扩展名（例如："png", "jpg"），为 null 时不过滤
+     * @return 文件完整路径列表，如果目录不存在或为空则返回空列表
+     */
+    public List<String> getFilePathsByExtension(String directoryPath, String extension) {
+        return getFilePathsByExtension(directoryPath, extension, false);
+    }
+
+    /**
+     * 获取指定目录下的所有文件完整路径（按扩展名过滤）
+     *
+     * @param directoryPath 目录路径
+     * @param extension 文件扩展名（例如："png", "jpg"），为 null 时不过滤
+     * @param recursive 是否递归遍历子目录
+     * @return 文件完整路径列表，如果目录不存在或为空则返回空列表
+     */
+    public List<String> getFilePathsByExtension(String directoryPath, String extension, boolean recursive) {
+        List<String> filePaths = new ArrayList<>();
+
+        if (directoryPath == null || directoryPath.isEmpty()) {
+            log.warn("目录路径为空");
+            return filePaths;
+        }
+
+        File directory = new File(directoryPath);
+
+        if (!directory.exists()) {
+            log.warn("目录不存在：{}", directoryPath);
+            return filePaths;
+        }
+
+        if (!directory.isDirectory()) {
+            log.warn("路径不是目录：{}", directoryPath);
+            return filePaths;
+        }
+
+        collectFilePathsWithExtension(directory, filePaths, extension, recursive);
+        log.info("获取到目录 {} 下扩展名为 {} 的文件 {} 个", directoryPath, extension, filePaths.size());
+        return filePaths;
+    }
+
+    /**
+     * 递归收集文件路径
+     */
+    private void collectFilePaths(File dir, List<String> filePaths, boolean recursive) {
+        File[] files = dir.listFiles();
+        if (files == null) {
+            return;
+        }
+
+        for (File file : files) {
+            if (file.isFile()) {
+                filePaths.add(file.getAbsolutePath());
+            } else if (file.isDirectory() && recursive) {
+                collectFilePaths(file, filePaths, recursive);
+            }
+        }
+    }
+
+    /**
+     * 递归收集指定扩展名的文件路径
+     */
+    private void collectFilePathsWithExtension(File dir, List<String> filePaths, String extension, boolean recursive) {
+        File[] files = dir.listFiles();
+        if (files == null) {
+            return;
+        }
+
+        for (File file : files) {
+            if (file.isFile()) {
+                if (extension == null || extension.isEmpty() || hasExtension(file.getName(), extension)) {
+                    filePaths.add(file.getAbsolutePath());
+                }
+            } else if (file.isDirectory() && recursive) {
+                collectFilePathsWithExtension(file, filePaths, extension, recursive);
+            }
+        }
+    }
+
+    /**
+     * 检查文件名是否具有指定的扩展名
+     */
+    private boolean hasExtension(String fileName, String extension) {
+        if (fileName == null || extension == null) {
+            return false;
+        }
+        return fileName.toLowerCase().endsWith("." + extension.toLowerCase());
     }
 }
 
