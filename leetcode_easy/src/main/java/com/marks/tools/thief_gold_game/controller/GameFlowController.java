@@ -45,9 +45,9 @@ public class GameFlowController {
     // 游戏时间控制
     private long gameStartTime;
     private static final int ARCHIVER_BOSS_DURATION = 30 * 1000; // 进阶难度 2 分 30 秒, 由于每次挑战间隔10s, 所以整体挑战减少60s
-//    private static final int ARCHIVER_BOSS_DURATION = 20 * 1000; // 普通难度(<31) 20 秒
+//    private static final int ARCHIVER_BOSS_DURATION = 150 * 1000; // 进阶难度 2 分 30 秒, 由于每次挑战间隔10s, 所以整体挑战减少60s
     // 装备吞噬次数
-    private static final int THIEF_EAT_TIMES = 12; // 难度31 需要7次, 难度21需要 5次
+    private static final int THIEF_EAT_TIMES = 13; // 难度31 需要7次, 难度21需要 5次
 
     private static final String ARCHIVER_RESULT_DIR = "D:/images/automation/thief_gold/archiver_result/";
     // 优先队列
@@ -226,7 +226,9 @@ public class GameFlowController {
         if (!strengthenAttributeController.loopExecuteEnhancedProcess()) {
             return false;
         }
-        return true;
+
+        // 添加小偷锁定攻击间隔功能
+        return thiefController.lockInterval();
     }
 
     private boolean upAttackByDevourEquipment() {

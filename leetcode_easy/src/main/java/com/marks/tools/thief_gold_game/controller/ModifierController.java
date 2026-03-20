@@ -23,6 +23,7 @@ import java.util.Map;
 public class ModifierController extends CommonController {
     private static final String FIND_GAME_BUTTON = "modifier/find_game_btn";
     private static final String ITEM_INFO_LABEL = "modifier/item_info_label";
+    private static final String INTERVAL_LOCK_BUTTON = "modifier/interval_lock_btn";
     private static final String MODIFY_BUTTON = "modifier/modify_btn";
     private static final String TARGET_VALUE_LABEL = "modifier/target_value_label";
 
@@ -35,6 +36,37 @@ public class ModifierController extends CommonController {
     public ModifierController(ImageRecognitionAutomation automation) {
         super(automation);
         // 初始化
+    }
+
+    public boolean clickIntervalLockButton() {
+        LogUtil.info("步骤 4: 点击间隔锁定按钮");
+        // 1. 切换到修改器窗口
+        if (!switchToModifierWindow()) {
+            LogUtil.error("切换到修改器窗口失败");
+            return false;
+        }
+        automation.delay(CLICK_DELAY);
+
+        // 2. 点击查找游戏按钮
+        Point findGamePoint = getImagePointByMap(FIND_GAME_BUTTON);
+        if (findGamePoint == null) {
+            LogUtil.error("点击查找游戏按钮失败");
+            return false;
+        }
+        automation.click(findGamePoint.x, findGamePoint.y);
+        automation.delay(CLICK_DELAY);
+
+        // 3. 找到间隔锁定按钮
+        Point intervalLockBtnPoint = getImagePointByMap(INTERVAL_LOCK_BUTTON);
+        if (intervalLockBtnPoint == null) {
+            LogUtil.error("未找到间隔锁定按钮");
+            return false;
+        }
+        automation.click(intervalLockBtnPoint.x, intervalLockBtnPoint.y);
+        automation.delay(CLICK_DELAY);
+        // 返回游戏窗口主体
+        switchToGameWindow();
+        return true;
     }
 
     /**

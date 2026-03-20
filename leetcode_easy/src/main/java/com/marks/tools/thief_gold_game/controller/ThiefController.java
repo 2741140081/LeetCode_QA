@@ -211,6 +211,14 @@ public class ThiefController extends CommonController {
         return true;
     }
 
+    public boolean lockInterval() {
+        LogUtil.info("=== 锁定间隔 ===");
+        pressNumber(THIEF_NUMBER);
+        // delay
+        automation.delay(CLICK_DELAY);
+        return modifierController.clickIntervalLockButton();
+    }
+
     /**
      * 吞噬装备
      * 1. 按下1, 选中小偷, 使用修改器, 将物品修改为 ys04, 并且数量修改为1
