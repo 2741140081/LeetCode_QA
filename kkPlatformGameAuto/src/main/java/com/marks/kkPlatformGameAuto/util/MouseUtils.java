@@ -1,6 +1,7 @@
 package com.marks.kkPlatformGameAuto.util;
 
 import com.marks.kkPlatformGameAuto.config.properties.GameAutoProperties;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -19,20 +20,15 @@ import java.awt.event.InputEvent;
 @Component
 public class MouseUtils {
 
+    private Robot robot;
+
     @Autowired
     private GameAutoProperties gameAutoProperties;
 
-    private final Robot robot;
-
-    private int eventDelay;
-
     public MouseUtils() throws AWTException {
         this.robot = new Robot();
-        this.eventDelay = gameAutoProperties.getOperation().getEventDelay() != null
-                ? gameAutoProperties.getOperation().getEventDelay()
-                : 50;
-        robot.setAutoDelay(eventDelay);
-        log.info("MouseUtils 初始化完成，事件延迟时间：{}ms", eventDelay);
+        robot.setAutoDelay(100);
+        // 将eventDelay的设置移到@PostConstruct方法中，确保所有依赖都已注入
     }
 
     /**

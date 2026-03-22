@@ -28,15 +28,9 @@ public class KeyboardUtils {
 
     private final Robot robot;
 
-    private int eventDelay;
-
     public KeyboardUtils() throws AWTException {
         this.robot = new Robot();
-        this.eventDelay = gameAutoProperties.getOperation().getEventDelay() != null
-                ? gameAutoProperties.getOperation().getEventDelay()
-                : 50;
-        robot.setAutoDelay(eventDelay);
-        log.info("KeyboardUtils 初始化完成，事件延迟时间：{}ms", eventDelay);
+        robot.setAutoDelay(100);
     }
 
     /**

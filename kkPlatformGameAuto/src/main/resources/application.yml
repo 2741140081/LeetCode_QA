@@ -11,6 +11,20 @@ spring:
     web:
       resources:
         static-locations: classpath:/static/, classpath:/templates/
+    # 数据库配置
+    datasource:
+      url: jdbc:mysql://localhost:3306/image_3D?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      username: root
+      password: 123456
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      hikari:
+        pool-name: HikariPool-kkplatform
+        maximum-pool-size: 20
+        minimum-idle: 5
+        connection-timeout: 30000
+        idle-timeout: 600000
+        max-lifetime: 1800000
+        auto-commit: true
 
 # 日志
 logging:
