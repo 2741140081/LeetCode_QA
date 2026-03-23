@@ -2,6 +2,7 @@ package com.marks.kkPlatformGameAuto.service.impl;
 
 import com.marks.kkPlatformGameAuto.config.ModifierConfig;
 import com.marks.kkPlatformGameAuto.config.properties.GameAutoProperties;
+import com.marks.kkPlatformGameAuto.entity.ItemInfo;
 import com.marks.kkPlatformGameAuto.service.ImageRecognitionService;
 import com.marks.kkPlatformGameAuto.service.ModifierService;
 import com.marks.kkPlatformGameAuto.service.WindowSwitcherService;
@@ -88,16 +89,23 @@ public class ModifierServiceImpl implements ModifierService {
 
     @Override
     public boolean modifyItems(List<String> itemNames) {
-        log.info("=== 修改器：开始修改物品，数量：{} ===", itemNames.size());
+        // 将 itemNames 转换成 ItemInfo
+        List<ItemInfo> itemInfos = itemNames.stream().map(itemName -> new ItemInfo(itemName, 0)).toList();
+        return modifyItemsWithQuantity(itemInfos);
+    }
+
+    @Override
+    public boolean modifyItemsWithQuantity(List<ItemInfo> items) {
+        log.debug("=== 修改器：开始修改物品（带数量），物品数量：{} ===", items.size());
+
         // 获取图片识别间隔
         int delayTime = gameAutoProperties.getInterval();
         // 获取目录
         String imageDir = modifierConfig.getImageDir();
         // 获取查找游戏按钮超时时间
         int timeout = gameAutoProperties.getDefaultTimeout();
-
         // 判断列表是否为空
-        if (itemNames.isEmpty()) {
+        if (items.isEmpty()) {
             log.warn("列表为空，请检查输入参数");
             return false;
         }
@@ -122,36 +130,57 @@ public class ModifierServiceImpl implements ModifierService {
         int itemInfoLabelOffsetY = modifierConfig.getItemOffsetY();
         // itemNames[0]物品信息标签的坐标
         Point itemInfoLabelPoint = new Point(itemInfoLabelCenter.x + itemInfoLabelOffsetX, itemInfoLabelCenter.y + itemInfoLabelOffsetY);
-
         // 获取物品信息高度
         int itemInfoLabelHeight = modifierConfig.getItemLabelHeight();
-        for (int i = 0; i < itemNames.size(); i++) {
-            String itemName = itemNames.get(i);
-            log.info("正在修改物品：{}", itemName);
+
+        // 4. 找到目标值标签中心点坐标
+        String targetValueLabelImage = modifierConfig.getTargetValueLabelImage();
+        String targetValueLabelImagePath = imagePathUtils.buildImagePathWithExtension(imageDir, targetValueLabelImage);
+        Point targetValueLabelCenter = imageRecognitionService.findImageCenter(targetValueLabelImagePath, timeout, delayTime);
+        // 判断是否找到目标值标签
+        if (targetValueLabelCenter == null) {
+            log.warn("未找到目标值标签");
+            return false;
+        }
+        // 获取目标值标签的偏移量
+        int targetValueLabelOffsetX = modifierConfig.getInputOffsetX();
+        int targetValueLabelOffsetY = modifierConfig.getInputOffsetY();
+
+        for (int i = 0; i < items.size(); i++) {
+            ItemInfo item = items.get(i);
+            String itemName = item.getName();
+            Integer quantity = item.getQuantity();
+
+            // 确保 quantity 不为 null
+            if (quantity == null) {
+                quantity = 0;
+            }
+
+            log.debug("修改第 {} 个物品：名称={}, 数量={}", i + 1, itemName, quantity);
+
             // 计算第i件物品坐标
             Point itemPoint = new Point(itemInfoLabelPoint.x, itemInfoLabelPoint.y + i * itemInfoLabelHeight);
             // 点击坐标
             input.moveAndClick(itemPoint.x, itemPoint.y);
 
-            // 4. 找到目标值标签中心点坐标
-            String targetValueLabelImage = modifierConfig.getTargetValueLabelImage();
-            String targetValueLabelImagePath = imagePathUtils.buildImagePathWithExtension(imageDir, targetValueLabelImage);
-            Point targetValueLabelCenter = imageRecognitionService.findImageCenter(targetValueLabelImagePath, timeout, delayTime);
-            // 判断是否找到目标值标签
-            if (targetValueLabelCenter == null) {
-                log.warn("未找到目标值标签");
+            Point itemNamePoint = new Point(targetValueLabelCenter.x + targetValueLabelOffsetX,
+                    targetValueLabelCenter.y + targetValueLabelOffsetY);
+            // 4. 修改物品名称, 输入值并点击修改按钮
+            if (!inputValueAndModify(itemNamePoint, itemName, imageDir, timeout)) {
                 return false;
             }
-            // 获取目标值标签的偏移量
-            int targetValueLabelOffsetX = modifierConfig.getInputOffsetX();
-            int targetValueLabelOffsetY = modifierConfig.getInputOffsetY();
-            Point targetValueLabelPoint = new Point(targetValueLabelCenter.x + targetValueLabelOffsetX, targetValueLabelCenter.y + targetValueLabelOffsetY);
-            // 4. 输入值并点击修改按钮
-            if (!inputValueAndModify(targetValueLabelPoint, itemName, imageDir, timeout)) {
-                return false;
+            // 修改物品数量
+            if (item.shouldModifyQuantity()) {
+                // 由于物品名称/ 目标值标签 / 物品数量这三者是同一列, 并且输入框的高度相同,
+                // 所以修改物品数量的偏移量直接在修改名称的地点上进行再次偏移即可
+                Point itemQuantityPoint = new Point(itemNamePoint.x + targetValueLabelOffsetX,
+                        itemNamePoint.y + targetValueLabelOffsetY);
+                if (!inputValueAndModify(itemQuantityPoint,  String.valueOf(quantity), imageDir, timeout)) {
+                    return false;
+                }
             }
         }
-        log.info("=== 修改器：修改物品完成 ===");
+        log.debug("=== 修改器：修改物品完成 ===");
         // 切换回到游戏主体窗口
         windowSwitcherService.switchToGame();
         return true;

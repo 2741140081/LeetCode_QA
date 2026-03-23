@@ -15,6 +15,7 @@ import java.awt.*;
 public interface ImageRecognitionService {
     // 识别图片, 返回图片中心点坐标
     Point findImageCenter(String imagePath, int timeout, int delayTime);
+    Point findImageCenter(String imagePath, int timeout, int delayTime, boolean fromCache);
 
     // 识别图片并执行点击操作, 返回执行结果
     boolean findAndClickImage(String imagePath, int timeout);

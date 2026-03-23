@@ -52,14 +52,22 @@ public class ImageRecognitionServiceImpl implements ImageRecognitionService {
 
     @Override
     public java.awt.Point findImageCenter(String imagePath, int timeout, int delayTime) {
+        // 默认使用缓存
+        return findImageCenter(imagePath, timeout, delayTime, true);
+    }
+
+    @Override
+    public java.awt.Point findImageCenter(String imagePath, int timeout, int delayTime, boolean fromCache) {
         long startTime = System.currentTimeMillis();
-        // 从缓存中获取
         String cacheKey = fileService.extractImageName(imagePath);
 
-        Point cachedPoint = imageCache.get(cacheKey);
-        if (cachedPoint != null) {
-            log.info("缓存命中：{}, 坐标：({}, {})", imagePath, cachedPoint.x, cachedPoint.y);
-            return new java.awt.Point((int) cachedPoint.x, (int) cachedPoint.y);
+        // 如果允许从缓存获取，先尝试从缓存中查找
+        if (fromCache) {
+            Point cachedPoint = imageCache.get(cacheKey);
+            if (cachedPoint != null) {
+                log.info("缓存命中：{}, 坐标：({}, {})", imagePath, cachedPoint.x, cachedPoint.y);
+                return new java.awt.Point((int) cachedPoint.x, (int) cachedPoint.y);
+            }
         }
 
         // 加载目标图片
@@ -68,6 +76,7 @@ public class ImageRecognitionServiceImpl implements ImageRecognitionService {
             log.error("无法加载目标图片：{}", imagePath);
             return null;
         }
+
         // 创建返回结果
         java.awt.Point resultPoint = null;
         try {
@@ -87,16 +96,20 @@ public class ImageRecognitionServiceImpl implements ImageRecognitionService {
                             (int) matchPoint.y
                     );
                     log.info("找到图片，中心点坐标：({}, {})", resultPoint.x, resultPoint.y);
-                    // 更新缓存
-                    imageCache.put(cacheKey, matchPoint);
-                    // 将矩形标记后的屏幕截图保存到临时文件中, 配置文件获取临时文件路径
-                    fileService.saveMatToTempDir(screenMat, imagePath);
+
+                    // 只有当允许使用缓存时，才更新缓存
+                    if (fromCache) {
+                        imageCache.put(cacheKey, matchPoint);
+                        // 将矩形标记后的屏幕截图保存到临时文件中，配置文件获取临时文件路径
+                        fileService.saveMatToTempDir(screenMat, imagePath);
+                    }
+
                     // 释放资源
                     screenMat.release();
                     // 跳出循环
                     break;
                 }
-                // 未找到, 释放资源
+                // 未找到，释放资源
                 screenMat.release();
                 robot.delay(delayTime);
             }

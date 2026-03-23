@@ -1,14 +1,12 @@
 package com.marks.kkPlatformGameAuto.controller;
 
 import com.marks.kkPlatformGameAuto.entity.ThiefGameEntity;
+import com.marks.kkPlatformGameAuto.service.GameCommonService;
 import com.marks.kkPlatformGameAuto.service.ThiefGameService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,6 +27,9 @@ import java.util.Map;
 public class ThiefGameController {
     @Autowired
     private ThiefGameService thiefGameService;
+
+    @Autowired
+    private GameCommonService gameCommonService;
 
     /**
      * 执行小偷游戏完整流程
@@ -56,6 +57,8 @@ public class ThiefGameController {
                 response.put("success", false);
                 log.error("小偷游戏流程执行失败");
             }
+            log.info("=== 小偷游戏执行结束, 关闭游戏主体 ===");
+            gameCommonService.exitGame();
 
         } catch (Exception e) {
             log.error("执行小偷游戏异常：{}", e.getMessage(), e);
@@ -64,6 +67,18 @@ public class ThiefGameController {
             response.put("success", false);
         }
 
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 健康检查接口
+     * @return 健康检查结果
+     */
+    @GetMapping("/status")
+    public ResponseEntity<Map<String, Object>> checkStatus() {
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", "UP");
+        response.put("timestamp", System.currentTimeMillis());
         return ResponseEntity.ok(response);
     }
 }

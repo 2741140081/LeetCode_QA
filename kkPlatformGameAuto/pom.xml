@@ -24,12 +24,13 @@
         <jnativehook.version>2.2.2</jnativehook.version>
         <opencv-platform.version>4.10.0-1.5.11</opencv-platform.version>
         <sikuli.version>2.0.10</sikuli.version>
-        <jackson.version>2.18.3</jackson.version>
+        <jackson.version>2.15.3</jackson.version>
         <commons-io.version>2.15.1</commons-io.version>
         <commons-lang3.version>3.14.0</commons-lang3.version>
         <commons-configuration2.version>2.9.0</commons-configuration2.version>
         <mysql.version>8.0.26</mysql.version>
         <tess4j.version>4.5.4</tess4j.version>
+        <jnativehook.version>2.2.2</jnativehook.version>
 	</properties>
 	<dependencies>
         <!-- ==================== Spring Boot 核心依赖 ==================== -->
@@ -44,6 +45,13 @@
                     <artifactId>commons-logging</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <!-- Spring Boot Thymeleaf (模板引擎) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+            <version>${spring-boot.version}</version>
         </dependency>
 
         <!-- Spring Boot Configuration Processor (用于配置文件提示) -->
@@ -209,6 +217,13 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <version>${spring-boot.version}</version>
             <scope>test</scope>
+        </dependency>
+
+        <!-- 全局快捷键依赖 -->
+        <dependency>
+            <groupId>com.github.kwhat</groupId>
+            <artifactId>jnativehook</artifactId>
+            <version>${jnativehook.version}</version>
         </dependency>
 
 	</dependencies>

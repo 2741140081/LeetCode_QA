@@ -11,9 +11,18 @@ spring:
     web:
       resources:
         static-locations: classpath:/static/, classpath:/templates/
+    # Thymeleaf 配置
+    thymeleaf:
+      prefix: classpath:/templates/
+      suffix: .html
+      mode: HTML
+      encoding: UTF-8
+      cache: false
+      servlet:
+        content-type: text/html
     # 数据库配置
     datasource:
-      url: jdbc:mysql://localhost:3306/image_3D?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      url: jdbc:mysql://localhost:3306/image?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
       username: root
       password: 123456
       driver-class-name: com.mysql.cj.jdbc.Driver

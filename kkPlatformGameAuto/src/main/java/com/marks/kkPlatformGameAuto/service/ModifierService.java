@@ -1,5 +1,7 @@
 package com.marks.kkPlatformGameAuto.service;
 
+import com.marks.kkPlatformGameAuto.entity.ItemInfo;
+
 import java.util.List;
 
 /**
@@ -26,6 +28,15 @@ public interface ModifierService {
      * @return 是否成功
      */
     boolean modifyItems(List<String> itemNames);
+
+    /**
+     * 修改物品（支持指定名称和数量）
+     * 使用 List 是因为物品名称可能重复，需要按顺序修改多个物品
+     *
+     * @param items 物品信息列表
+     * @return 是否成功
+     */
+    boolean modifyItemsWithQuantity(List<ItemInfo> items);
 
     /**
      * 锁定攻击间隔

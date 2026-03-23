@@ -53,6 +53,12 @@ public class LeetCode_1594 {
      * 思考1 暂时不考虑
      * int[][] minDP = Math.min(dp[i][j-1] * grid[i][j], dp[i-1][j] * grid[i][j])
      * int[][] maxDP = Math.max(dp[i][j-1] * grid[i][j], dp[i-1][j] * grid[i][j])
+     * 问题原因找到了:
+     * 原因 1：负数取模的问题
+     * 当 grid[i][j] 为负数时，负负得正可能产生最大值
+     * 但如果之前已经取过模，数值的大小关系会被破坏
+     * 例如：-5 % MOD = -5，但 -5 和 -1000000012 取模后的大小关系与原始值不同
+     * AC: 1ms/43.34MB
      * @param grid
      * @return
      */
@@ -68,25 +74,29 @@ public class LeetCode_1594 {
         // 初始化, 可能需要初始化第0行所有元素, 同样需要初始化第0列所有元素
         minDP[0][0] = maxDP[0][0] = grid[0][0];
         for (int i = 1; i < n; i++) {
-            minDP[0][i] = minDP[0][i-1] * grid[0][i] % MOD;
-            maxDP[0][i] = maxDP[0][i-1] * grid[0][i] % MOD;
+            minDP[0][i] = minDP[0][i-1] * grid[0][i];
+            maxDP[0][i] = maxDP[0][i-1] * grid[0][i];
         }
 
         for (int i = 1; i < m; i++) {
-            minDP[i][0] = minDP[i-1][0] * grid[i][0] % MOD;
-            maxDP[i][0] = maxDP[i-1][0] * grid[i][0] % MOD;
+            minDP[i][0] = minDP[i-1][0] * grid[i][0];
+            maxDP[i][0] = maxDP[i-1][0] * grid[i][0];
         }
 
         for (int i = 1; i < m; i++) {
             for (int j = 1; j < n; j++) {
-                minDP[i][j] = Math.min(Math.min(maxDP[i][j-1] * grid[i][j], maxDP[i-1][j] * grid[i][j]),
-                        Math.min(minDP[i][j-1] * grid[i][j], minDP[i-1][j] * grid[i][j])) % MOD;
-                maxDP[i][j] = Math.max(Math.max(maxDP[i][j-1] * grid[i][j], maxDP[i-1][j] * grid[i][j]),
-                        Math.max(minDP[i][j-1] * grid[i][j], minDP[i-1][j] * grid[i][j])) % MOD;;
+                // 分类根据 grid[i][j] 的值
+                if (grid[i][j] >= 0) {
+                    minDP[i][j] = Math.min(minDP[i][j-1], minDP[i-1][j]) * grid[i][j];
+                    maxDP[i][j] = Math.max(maxDP[i][j-1], maxDP[i-1][j]) * grid[i][j];
+                } else if (grid[i][j] < 0) {
+                    maxDP[i][j] = Math.min(minDP[i][j-1], minDP[i-1][j]) * grid[i][j];
+                    minDP[i][j] = Math.max(maxDP[i][j-1], maxDP[i-1][j]) * grid[i][j];
+                }
             }
         }
         // 获取maxDP[m-1] 的最大值
         long res = maxDP[m-1][n-1];
-        return (int) (res < 0 ? -1 : res);
+        return (int) (res < 0 ? -1 : res % MOD);
     }
 }

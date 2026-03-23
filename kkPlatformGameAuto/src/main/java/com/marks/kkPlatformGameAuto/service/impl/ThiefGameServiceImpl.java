@@ -7,6 +7,7 @@ import com.marks.kkPlatformGameAuto.config.properties.ThiefGameProperties;
 import com.marks.kkPlatformGameAuto.entity.ThiefGameEntity;
 import com.marks.kkPlatformGameAuto.handler.commonHandler.NumberingHandler;
 import com.marks.kkPlatformGameAuto.service.*;
+import com.marks.kkPlatformGameAuto.state.GameStateManager;
 import com.marks.kkPlatformGameAuto.util.FileUtils;
 import com.marks.kkPlatformGameAuto.util.ImagePathUtils;
 import com.marks.kkPlatformGameAuto.util.InputController;
@@ -64,6 +65,9 @@ public class ThiefGameServiceImpl implements ThiefGameService {
     @Autowired
     private FileUtils fileUtils;
 
+    @Autowired
+    private GameStateManager gameStateManager;
+
     // 游戏开始时间
     private long gameStartTime;
 
@@ -77,6 +81,8 @@ public class ThiefGameServiceImpl implements ThiefGameService {
     @Override
     public boolean executeThiefGameFlow(ThiefGameEntity thiefGameEntity) {
         log.info("=== 开始执行小偷游戏流程 ===");
+        // 设置游戏状态为运行中
+        gameStateManager.startGame();
         List<Integer> archiverBuildings = thiefGameEntity.getArchiverBuildings();
         log.info("游戏难度：{}, 游戏模式：{}, 挑战数量：{}, 存档建筑数量：{}",
                 thiefGameEntity.getDifficulty(),
@@ -97,6 +103,11 @@ public class ThiefGameServiceImpl implements ThiefGameService {
             log.error("难度选择失败");
             return false;
         }
+        // [暂停点]selectDifficultyAndChallenges() 执行成功后
+        if (!gameStateManager.checkShouldPause()) {
+            log.warn("游戏在难度选择完成后被终止");
+            return false;
+        }
         // 记录游戏开始时间
         gameStartTime = System.currentTimeMillis();
         // 执行游戏主流程
@@ -106,6 +117,11 @@ public class ThiefGameServiceImpl implements ThiefGameService {
         }
         // 执行最后 boss 提前挑战
         if (!executeFinalBossChallenge()) {
+            return false;
+        }
+        // [暂停点]执行最后 boss 提前挑战后
+        if (!gameStateManager.checkShouldPause()) {
+            log.warn("游戏在最终 BOSS 挑战前被终止");
             return false;
         }
 
@@ -276,6 +292,12 @@ public class ThiefGameServiceImpl implements ThiefGameService {
             return false;
         }
 
+        // [暂停点]执行物品修改和转移流程前
+        if (!gameStateManager.checkShouldPause()) {
+            log.warn("游戏在物品修改和转移前被终止");
+            return false;
+        }
+
 
         // 执行物品修改和转移流程（第一次和第二次）
         List<List<String>> modifyItemBatches = new ArrayList<>();
@@ -295,6 +317,11 @@ public class ThiefGameServiceImpl implements ThiefGameService {
             // 从储物柜转移物品到小偷
             if (!transferItemsFromLockerToThief(batchItemNames, defaultTimeout, delayTime)) {
                 log.error("第{}次物品转移失败", i + 1);
+                return false;
+            }
+            // [暂停点]每次遍历的执行后
+            if (!gameStateManager.checkShouldPause()) {
+                log.warn("游戏在第{}次物品操作后被终止", i + 1);
                 return false;
             }
         }
@@ -328,6 +355,11 @@ public class ThiefGameServiceImpl implements ThiefGameService {
             }
             // 第 i 次吞噬装备完成
             log.info("第{}次吞噬装备完成", i);
+            // [暂停点] log.info("第{}次吞噬装备完成", i); 之后
+            if (!gameStateManager.checkShouldPause()) {
+                log.warn("游戏在第{}次吞噬装备后被终止", i + 1);
+                return false;
+            }
         }
 
         // 使用储物柜的寒冰技能

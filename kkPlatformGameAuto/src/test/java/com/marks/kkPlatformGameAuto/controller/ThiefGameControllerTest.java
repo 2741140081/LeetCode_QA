@@ -56,6 +56,14 @@ class ThiefGameControllerTest {
     void setUp() {
         // 手动注入 Mock
         ReflectionTestUtils.setField(controller, "thiefGameService", thiefGameService);
+        // 准备测试数据
+        // 准备测试数据 - 使用无参构造函数和 setter 方法
+        testConfig = ThiefGameEntity.builder()
+                .difficulty(1)
+                .gameMode(0)
+                .challenges(Arrays.asList(1, 2, 3))
+                .archiverBuildings(Arrays.asList(1, 2, 3, 4, 5, 6))
+                .build();
     }
 
     @Test

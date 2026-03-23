@@ -119,6 +119,14 @@ public class InputController {
     }
 
     /**
+     * 按下功能键
+     * @param functionNumber 功能键编号 (1-12)
+     */
+    public void pressFunctionKey(int functionNumber) {
+        keyboardUtils.pressFunctionKey(functionNumber);
+    }
+
+    /**
      * 获取大写字母对应的 keyCode
      * @param letter 大写字母 (A-Z)
      * @return 对应的 keyCode，如果输入无效返回 KeyEvent.VK_UNDEFINED

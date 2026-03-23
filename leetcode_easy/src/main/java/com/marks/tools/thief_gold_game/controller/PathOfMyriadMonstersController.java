@@ -37,6 +37,7 @@ public class PathOfMyriadMonstersController {
      * 4. 切换到修改器窗口, 进行修改操作, 修改后的名称为 modifiedName.get(i); 修改操作完成后, 切换到游戏窗口
      * 5. 修改后的物品在人物的装备栏, 找到物品并且右键双击, 将物品转移到仓库
      * 6. 重复上述过程3~5, 知道 originalName 遍历完成
+     * 7. 还是需要优化一下, 添加数量处理
      */
     public void startGame(List<String> originalName, List<String> modifiedName, String subFolder) {
         LogUtil.info("=== 开始游戏流程 ===");
