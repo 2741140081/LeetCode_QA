@@ -2,6 +2,7 @@ package com.marks.tools.thief_gold_game.controller;
 
 
 import com.marks.tools.kkplatform.ImageRecognitionAutomation;
+import com.marks.tools.kkplatform.entity.ItemInfo;
 import com.marks.utils.LogUtil;
 
 import java.awt.*;
@@ -74,12 +75,12 @@ public class ModifierController extends CommonController {
      * 1. 切换到修改器窗口
      * 2. 点击查找游戏按钮
      * 3. 找到物品信息标签，计算第一件物品坐标
-     * 4. 循环修改每个物品
+     * 4. 循环修改每个物品物品名称和数量大于0时, 修改物品数量
      * 5. 切换回游戏窗口
      * @param itemNames 要修改的物品名称列表
      * @return 是否成功
      */
-    public boolean modifyItems(List<String> itemNames) {
+    public boolean modifyItems(List<ItemInfo> itemNames) {
         LogUtil.info("=== 修改器：开始修改物品，数量：{"+ itemNames.size() +"} ===");
 
         if (itemNames.isEmpty()) {
@@ -116,7 +117,8 @@ public class ModifierController extends CommonController {
 
             // 5. 循环修改每个物品
             for (int i = 0; i < itemNames.size(); i++) {
-                String itemName = itemNames.get(i);
+                String itemName = itemNames.get(i).getName();
+                int count = itemNames.get(i).getCount();
                 LogUtil.info("正在修改第{" + (i + 1) + "}件物品：{ "+ itemName +"}");
 
                 // 计算第 i 件物品的坐标点
@@ -138,8 +140,8 @@ public class ModifierController extends CommonController {
                 // 输入新的物品名称
                 inputText(itemName);
 
-                // 判断 itemName 是否等于 ys04, 如果等于 ys04, 需要修改物品数量
-                if (itemName.equals("ys04")) {
+                // 判断 count 是否大于0, 如果大于0，则输入物品数量
+                if (count > 0) {
                     // 下移20px
                     Point offset = getPointByOffset(targetValuePoint, 0, 20);
                     // 点击
@@ -147,7 +149,7 @@ public class ModifierController extends CommonController {
                     // Ctrl + A 全选
                     pressCombinationKey(KeyEvent.VK_CONTROL, KeyEvent.VK_A);
                     // 输入物品数量
-                    inputText("1");
+                    inputText(String.valueOf(count));
                 }
 
                 // 点击修改按钮

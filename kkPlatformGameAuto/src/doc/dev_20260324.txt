@@ -1,0 +1,140 @@
+update: 2026-03-24
+1. 添加数据库存储小偷游戏存档, 主要用于判断存档boss的每日挑战是否达到上限
+2. 设置数据库表,
+    1. 每一个存档建筑物 archiver_{number} 文件夹下都有着一定数量的存档boss 图片, 可以构建一个表存储存档建筑物于存档boss的映射表
+    2. 映射表需要的字段, 自增id, 游戏名称, 存档建筑名称/编号, 存档boss名称, 图片所在路径
+    3. 存档boss挑战记录表, 这个表是 thief_game 的特有表, 当每次运行thief_game 进行挑战存档boss时, 需要检查该存档建筑物当天已挑战次数(挑战次数每日凌晨05:00 刷新)
+    4. 这个挑战记录表需要字段: 自增 id, 存档建筑物名称/编号(看是否需要将存档建筑物特定用表记录, 并且给出存档建筑物编号), 次数(0,1): 0表示存档挑战失败, 1表示成功,
+    挑战完成时间.
+    5. 查询挑战记录表 当日 05:00 ~ 第二天04:59, 存档建筑物 archiver_{number} 的次数为1的数量, 然后于存档boss/存档建筑物表的每日最大次数进行比较,
+    如果小于则选中该存档建筑物, 并且挑战存档建筑物中的存档boss; 大于则不进行挑战操作, 减少游戏运行时间.
+    6. 还是加一个存档表, 自增存档编号, 游戏名称, 存档建筑物名称, 存档建筑物文件夹, 每日挑战上限
+    7. 还有一个难度存档上限表, 即每个难度又有一个上限, 例如, 难度30, 上限时30次, 即难度30最多执行30次, 如果达到最大次数, 则降低难度执行/提高难度执行(待决定最终是提高还是降低)
+    8. 难度存档表字段: 难度编号(1~50), 游戏名称, 难度图片地址, 最大可存档次数, 已执行次数, 额外需要进行吞噬装备次数(由于高难度需要执行更多的轮次的装备吞噬次数, 这个值用于存储额外次数, 默认值是0)
+
+
+
+
+-- =====================================================
+-- 小偷游戏数据库表结构
+-- 创建日期：2026-03-24
+-- 描述：用于存储小偷游戏存档、BOSS 映射、挑战记录和难度配置
+-- =====================================================
+
+-- 1. 小偷游戏存档建筑物表
+-- 存储每个游戏的存档建筑物信息，包括每日挑战上限
+CREATE TABLE IF NOT EXISTS `thief_game_archiver` (
+    `id` BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '自增主键 ID',
+    `game_name` VARCHAR(100) NOT NULL COMMENT '游戏名称',
+    `archiver_number` INT NOT NULL COMMENT '存档编号 (1-6)',
+    `archiver_name` VARCHAR(100) NOT NULL COMMENT '存档建筑物名称',
+    `archiver_folder` VARCHAR(255) NOT NULL COMMENT '存档建筑物文件夹路径',
+    `daily_challenge_limit` INT DEFAULT 0 COMMENT '每日挑战上限次数',
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    UNIQUE KEY `uk_game_archiver` (`game_name`, `archiver_number`),
+    INDEX `idx_game_name` (`game_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='小偷游戏存档建筑物表';
+
+-- 2. 小偷游戏存档 BOSS 映射表
+-- 存储存档建筑物与存档 BOSS 的映射关系及图片路径
+CREATE TABLE IF NOT EXISTS `thief_game_archiver_boss` (
+    `id` BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '自增主键 ID',
+    `game_name` VARCHAR(100) NOT NULL COMMENT '游戏名称',
+    `archiver_number` INT NOT NULL COMMENT '存档建筑编号 (1-6)',
+    `archiver_name` VARCHAR(100) NOT NULL COMMENT '存档建筑名称',
+    `boss_name` VARCHAR(100) NOT NULL COMMENT '存档 BOSS 名称',
+    `image_path` VARCHAR(500) NOT NULL COMMENT 'BOSS 图片所在路径',
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    INDEX `idx_game_archiver` (`game_name`, `archiver_number`),
+    INDEX `idx_archiver_name` (`archiver_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='小偷游戏存档 BOSS 映射表';
+
+-- 3. 小偷游戏存档 BOSS 挑战记录表
+-- 记录每次挑战存档 BOSS 的结果，用于统计每日挑战次数
+CREATE TABLE IF NOT EXISTS `thief_game_challenge_record` (
+    `id` BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '自增主键 ID',
+    `game_name` VARCHAR(100) NOT NULL COMMENT '游戏名称',
+    `archiver_number` INT NOT NULL COMMENT '存档建筑物编号 (1-6)',
+    `challenge_result` TINYINT NOT NULL DEFAULT 0 COMMENT '挑战结果：0-失败，1-成功',
+    `challenge_time` DATETIME NOT NULL COMMENT '挑战完成时间',
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    INDEX `idx_game_archiver_time` (`game_name`, `archiver_number`, `challenge_time`),
+    INDEX `idx_challenge_date` (`challenge_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='小偷游戏存档 BOSS 挑战记录表';
+
+-- 4. 小偷游戏难度配置表
+-- 存储每个难度的最大可执行次数和额外吞噬装备次数
+CREATE TABLE IF NOT EXISTS `thief_game_difficulty_config` (
+    `id` BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '自增主键 ID',
+    `difficulty_level` INT NOT NULL COMMENT '难度等级 (1-50)',
+    `game_name` VARCHAR(100) NOT NULL COMMENT '游戏名称',
+    `difficulty_image_path` VARCHAR(500) DEFAULT NULL COMMENT '难度图片地址',
+    `max_execution_count` INT NOT NULL DEFAULT 0 COMMENT '最大可执行次数',
+    `current_execution_count` INT DEFAULT 0 COMMENT '已执行次数',
+    `extra_devour_times` INT DEFAULT 0 COMMENT '额外需要进行吞噬装备次数 (默认 0)',
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    UNIQUE KEY `uk_game_difficulty` (`game_name`, `difficulty_level`),
+    INDEX `idx_difficulty_level` (`difficulty_level`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='小偷游戏难度配置表';
+
+-- =====================================================
+-- 初始化数据示例
+-- =====================================================
+
+-- 插入小偷游戏的存档建筑物示例数据
+INSERT INTO `thief_game_archiver` (`game_name`, `archiver_number`, `archiver_name`, `archiver_folder`, `daily_challenge_limit`)
+VALUES
+('小偷偷金', 1, '存档建筑 1', 'archiver_1', 10),
+('小偷偷金', 2, '存档建筑 2', 'archiver_2', 10),
+('小偷偷金', 3, '存档建筑 3', 'archiver_3', 10),
+('小偷偷金', 4, '存档建筑 4', 'archiver_4', 10),
+('小偷偷金', 5, '存档建筑 5', 'archiver_5', 10),
+('小偷偷金', 6, '存档建筑 6', 'archiver_6', 10)
+ON DUPLICATE KEY UPDATE
+    `archiver_name` = VALUES(`archiver_name`),
+    `archiver_folder` = VALUES(`archiver_folder`),
+    `daily_challenge_limit` = VALUES(`daily_challenge_limit`);
+
+-- 插入小偷游戏的难度配置示例数据 (难度 1-50)
+INSERT INTO `thief_game_difficulty_config` (`difficulty_level`, `game_name`, `difficulty_image_path`, `max_execution_count`, `extra_devour_times`)
+SELECT
+    difficulty_level,
+    '小偷偷金' AS game_name,
+    CONCAT('difficulty_', difficulty_level, '.png') AS difficulty_image_path,
+    difficulty_level * 1 AS max_execution_count,  -- 难度 N 对应 N 次上限
+    0 AS extra_devour_times
+FROM (
+    SELECT @row := @row + 1 AS difficulty_level
+    FROM information_schema.COLUMNS, (SELECT @row := 0) r
+    WHERE @row < 50
+) AS levels
+ON DUPLICATE KEY UPDATE
+    `max_execution_count` = VALUES(`max_execution_count`),
+    `extra_devour_times` = VALUES(`extra_devour_times`);
+
+-- =====================================================
+-- 常用查询示例
+-- =====================================================
+
+-- 查询今日某个存档建筑物的成功挑战次数 (05:00 ~ 次日 04:59)
+-- SELECT COUNT(*)
+-- FROM thief_game_challenge_record
+-- WHERE game_name = '小偷偷金'
+--   AND archiver_number = 1
+--   AND challenge_result = 1
+--   AND challenge_time >= DATE_SUB(CURDATE(), INTERVAL 1 DAY) + INTERVAL 5 HOUR
+--   AND challenge_time < CURDATE() + INTERVAL 5 HOUR;
+
+-- 查询今日各存档建筑物的挑战统计
+-- SELECT
+--     archiver_number,
+--     COUNT(*) AS total_challenges,
+--     SUM(CASE WHEN challenge_result = 1 THEN 1 ELSE 0 END) AS success_count
+-- FROM thief_game_challenge_record
+-- WHERE game_name = '小偷偷金'
+--   AND challenge_time >= DATE_SUB(CURDATE(), INTERVAL 1 DAY) + INTERVAL 5 HOUR
+--   AND challenge_time < CURDATE() + INTERVAL 5 HOUR
+-- GROUP BY archiver_number;

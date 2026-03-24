@@ -1,13 +1,12 @@
 package com.marks.tools.thief_gold_game.controller;
 
 import com.marks.tools.kkplatform.ImageRecognitionAutomation;
+import com.marks.tools.kkplatform.entity.ItemInfo;
 import com.marks.utils.LogUtil;
 
 import java.awt.*;
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 /**
  * <p>项目名称: LeetCode_QA </p>
@@ -119,7 +118,11 @@ public class LockerController extends CommonController {
             LogUtil.error("ModifierController 未设置");
             return false;
         }
-        return modifierController.modifyItems(itemNames);
+        List<ItemInfo> itemInfos = new ArrayList<>();
+        for (String itemName : itemNames) {
+            itemInfos.add(new ItemInfo(itemName, 0));
+        }
+        return modifierController.modifyItems(itemInfos);
     }
 
     /**

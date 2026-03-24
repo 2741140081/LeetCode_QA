@@ -3,6 +3,7 @@ package com.marks.tools.thief_gold_game.controller;
 
 import com.marks.tools.kkplatform.ImageRecognitionAutomation;
 import com.marks.tools.kkplatform.WindowSwitcherUtils;
+import com.marks.tools.kkplatform.entity.ItemInfo;
 import com.marks.utils.LogUtil;
 
 import java.awt.*;
@@ -34,23 +35,23 @@ public class PathOfMyriadMonstersController {
      * 1. 不要准备房间, 不需要开始游戏和选择难度
      * 2. 主要功能是将物品进行修改, 流程如下
      * 3. 切换到游戏窗口, 通过图片识别, 找到仓库中待修改的物品, 点击物品, 物品会转移到人物的装备栏
-     * 4. 切换到修改器窗口, 进行修改操作, 修改后的名称为 modifiedName.get(i); 修改操作完成后, 切换到游戏窗口
+     * 4. 切换到修改器窗口, 进行修改操作, 修改后的名称为 modifiedItemInfos.get(i); 修改操作完成后, 切换到游戏窗口
      * 5. 修改后的物品在人物的装备栏, 找到物品并且右键双击, 将物品转移到仓库
-     * 6. 重复上述过程3~5, 知道 originalName 遍历完成
+     * 6. 重复上述过程3~5, 知道 originalItemInfos 遍历完成
      * 7. 还是需要优化一下, 添加数量处理
      */
-    public void startGame(List<String> originalName, List<String> modifiedName, String subFolder) {
+    public void startGame(List<ItemInfo> originalItemInfos, List<ItemInfo> modifiedItemInfos, String subFolder) {
         LogUtil.info("=== 开始游戏流程 ===");
         
-        if (originalName.size() != modifiedName.size()) {
+        if (originalItemInfos.size() != modifiedItemInfos.size()) {
             LogUtil.error("原始名称列表和修改名称列表大小不匹配");
             return;
         }
         
         try {
-            for (int i = 0; i < originalName.size(); i++) {
-                String originalItem = originalName.get(i);
-                String modifiedItem = modifiedName.get(i);
+            for (int i = 0; i < originalItemInfos.size(); i++) {
+                ItemInfo originalItem = originalItemInfos.get(i);
+                ItemInfo modifiedItem = modifiedItemInfos.get(i);
                 
                 // 1. 切换到游戏窗口，找到仓库中的物品并转移到装备栏
                 modifierController.switchToGameWindow();
@@ -87,11 +88,11 @@ public class PathOfMyriadMonstersController {
      * @param itemName 物品名称
      * @return 物品坐标点，未找到返回null
      */
-    private Point findAndClickImageInLocker(String itemName, String subFolder) {
+    private Point findAndClickImageInLocker(ItemInfo itemName, String subFolder) {
         LogUtil.info("在仓库中查找物品：{}", itemName);
         
         // 构建图片路径
-        String imagePath = COMMON_FOLDER + subFolder + itemName;
+        String imagePath = COMMON_FOLDER + subFolder + itemName.getName();
         Point point = null;
         for (int i = 0; i < 5; i++) {
             point = automation.findImage(imagePath, false);

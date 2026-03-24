@@ -1,6 +1,7 @@
 package com.marks.tools.thief_gold_game;
 
 import com.marks.tools.kkplatform.ImageRecognitionAutomation;
+import com.marks.tools.kkplatform.entity.ItemInfo;
 import com.marks.tools.thief_gold_game.controller.PathOfMyriadMonstersController;
 import com.marks.utils.LogUtil;
 
@@ -19,26 +20,29 @@ public class PathOfMyriadMonsters {
         PathOfMyriadMonstersController controller = new PathOfMyriadMonstersController(automation);
         
         // 定义s1子文件夹的物品处理
-        List<String> originalNames = new ArrayList<>();
-        List<String> modifiedNames = new ArrayList<>();
+        List<ItemInfo> originalItemInfos = new ArrayList<>();
+        List<ItemInfo> modifiedItemInfos = new ArrayList<>();
         int n = 28;
         for (int i = 0; i < n; i++) {
-            originalNames.add("k118");
+            ItemInfo k118 = new ItemInfo("k118", 4);
+            originalItemInfos.add(k118);
         }
         for (int i = 0; i < n/2; i++) {
-            modifiedNames.add("k228");
+            ItemInfo k228 = new ItemInfo("k228", 70);
+            modifiedItemInfos.add(k228);
         }
         for (int i = 0; i < (n + 1) / 2; i++) {
             // 另外一半的物品处理
-            modifiedNames.add("k228");
+            ItemInfo k228 = new ItemInfo("k228", 74);
+            modifiedItemInfos.add(k228);
         }
         // 执行s1子文件夹的物品修改流程
         LogUtil.info("开始处理s0子文件夹物品, 将 k118 转为 kXxx");
-        controller.startGame(originalNames, modifiedNames, "s0/");
+        controller.startGame(originalItemInfos, modifiedItemInfos, "s0/");
 
         // 执行s0子文件夹的物品修改流程
         LogUtil.info("开始处理s1子文件夹物品, 将 kXxx 转为 k118");
-//        controller.startGame(modifiedNames, originalNames, "s1/");
+//        controller.startGame(modifiedItemInfos, originalItemInfos, "s1/");
 
 
 

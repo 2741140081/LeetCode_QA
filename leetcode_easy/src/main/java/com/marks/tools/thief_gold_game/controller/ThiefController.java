@@ -1,10 +1,12 @@
 package com.marks.tools.thief_gold_game.controller;
 
 import com.marks.tools.kkplatform.ImageRecognitionAutomation;
+import com.marks.tools.kkplatform.entity.ItemInfo;
 import com.marks.utils.LogUtil;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -228,14 +230,17 @@ public class ThiefController extends CommonController {
         pressNumber(THIEF_NUMBER);
         automation.delay(CLICK_DELAY);
         // 通过修改器修改装备, 将物品修改, 获取List, 通过 CONSUMER_ITEM_NAMES
-        List<String> itemNames = Arrays.asList(CONSUMER_ITEM_NAMES);
-        if (itemNames.isEmpty() || !modifierController.modifyItems(itemNames)) {
+        List<ItemInfo> itemInfos = new ArrayList<>();
+        for (String itemName : CONSUMER_ITEM_NAMES) {
+            itemInfos.add(new ItemInfo(itemName, 0));
+        }
+        if (itemInfos.isEmpty() || !modifierController.modifyItems(itemInfos)) {
             LogUtil.error("devourEquipment()中, 修改物品失败");
             return false;
         }
         // 延迟 500ms
         automation.delay(CLICK_DELAY);
-        return discardItemByName(itemNames.get(0));
+        return discardItemByName(itemInfos.get(0).getName());
     }
 
     /**
