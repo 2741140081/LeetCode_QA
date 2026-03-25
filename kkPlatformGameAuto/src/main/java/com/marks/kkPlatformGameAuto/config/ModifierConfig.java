@@ -24,6 +24,11 @@ public class ModifierConfig {
     private String imageDir;
 
     /**
+     * 修改器 App 路径
+     */
+    private String appPath;
+
+    /**
      * 查找游戏按钮图片名称
      */
     private String findGameButtonImage;

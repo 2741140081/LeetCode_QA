@@ -40,6 +40,13 @@ public class InputController {
     }
 
     /**
+     * 左键单击（当前鼠标位置）
+     */
+    public void leftClick() {
+        mouseUtils.leftClick();
+    }
+
+    /**
      * 右键点击指定坐标
      */
     public void rightClick(int x, int y) {

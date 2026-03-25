@@ -100,6 +100,7 @@ game:
     modifier:
       # 修改器图片存放目录
       image-dir: ${game.auto.base-dir}/modifier
+      app-path: D:/Games/Modifier/xyTool.exe
       # 查找游戏按钮图片名称
       find-game-button-image: find_game_button
       # 人物属性标签图片名称
@@ -141,6 +142,24 @@ game:
       platform-logo-image: platform_logo
       # 创建房间按钮图片名称
       create-room-button-image: create_room_button
+    # 连点器和物品栏配置
+    clicker:
+      # 是否启用左键连点器
+      enabled: false
+      # 启动快捷键 (F11 或 F12)
+      start-key: F11
+      # 点击间隔 (毫秒)
+      interval: 100
+      # 物品栏配置
+      item-bar:
+        # 是否启用自动使用物品
+        enabled: false
+        # 使用间隔 (毫秒)
+        interval: 500
+        # 物品栏矩阵 3*2, 物品位置 [[7, 8], [4, 5], [1, 2]]
+        slots: [[7, 8], [4, 5], [1, 2]]
+        # 启用的物品槽位 (勾选哪些就使用哪些)
+        enabled-slots: []
     # 小偷游戏配置
     thief:
       # 小偷游戏图片存放目录

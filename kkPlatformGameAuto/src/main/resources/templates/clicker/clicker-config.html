@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>连点器配置</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+        .form-section h2 {
+            color: #667eea;
+            font-size: 20px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-group input[type="number"] {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .form-group input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .help-text {
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            font-weight: bold;
+        }
+
+        .checkbox-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .checkbox-item.selected {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            display: none;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 15px 40px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(-1px);
+        }
+
+        .btn-success {
+            background: #4caf50;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #45a049;
+        }
+
+        .btn-danger {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #da190b;
+        }
+
+        .status-bar {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #9e9e9e;
+        }
+
+        .status-dot.active {
+            background: #4caf50;
+            box-shadow: 0 0 10px #4caf50;
+        }
+
+        .status-label {
+            font-weight: bold;
+            color: #666;
+        }
+
+        .item-bar-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .item-slot {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border: 3px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .item-slot:hover {
+            transform: scale(1.05);
+            border-color: #667eea;
+        }
+
+        .item-slot.selected {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .item-slot .slot-number {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .item-slot .slot-label {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .result-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .result-content {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .result-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+
+        .result-icon.success {
+            color: #4caf50;
+        }
+
+        .result-icon.error {
+            color: #f44336;
+        }
+
+        .result-message {
+            font-size: 18px;
+            margin-bottom: 30px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>🖱️ 连点器配置中心</h1>
+        <p>鼠标左键连续点击 & 物品栏自动使用</p>
+    </div>
+
+    <div class="content">
+        <!-- 状态栏 -->
+        <div class="status-bar">
+            <div class="status-item">
+                <div class="status-dot" id="clickerStatusDot"></div>
+                <span class="status-label">左键连点器：</span>
+                <strong id="clickerStatusText">未启动</strong>
+            </div>
+            <div class="status-item">
+                <div class="status-dot" id="itemBarStatusDot"></div>
+                <span class="status-label">物品栏自动使用：</span>
+                <strong id="itemBarStatusText">未启动</strong>
+            </div>
+            <div class="status-item">
+                <span class="status-label">快捷键：</span>
+                <strong>F11 - 切换连点器</strong>
+            </div>
+        </div>
+
+        <!-- 连点器配置 -->
+        <div class="form-section">
+            <h2>⚙️ 左键连点器配置</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="clickerInterval">点击间隔 (毫秒)</label>
+                    <input type="number" id="clickerInterval" min="50" max="5000" value="100" step="10">
+                    <div class="help-text">推荐值：50-200ms，值越小点击越快</div>
+                </div>
+                <div class="form-group">
+                    <label for="startKey">启动快捷键</label>
+                    <select id="startKey" disabled>
+                        <option value="F11" selected>F11</option>
+                        <option value="F12">F12</option>
+                    </select>
+                    <div class="help-text">当前仅支持 F11/F12</div>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button type="button" class="btn btn-success" id="startClickerBtn" onclick="toggleClicker(true)">
+                    ▶️ 启动连点器
+                </button>
+                <button type="button" class="btn btn-danger" id="stopClickerBtn" onclick="toggleClicker(false)" style="display: none;">
+                    ⏹️ 停止连点器
+                </button>
+            </div>
+        </div>
+
+        <!-- 物品栏配置 -->
+        <div class="form-section">
+            <h2>🎒 物品栏自动使用配置</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="itemBarInterval">使用间隔 (毫秒)</label>
+                    <input type="number" id="itemBarInterval" min="100" max="10000" value="500" step="50">
+                    <div class="help-text">推荐值：200-1000ms，控制物品使用频率</div>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <label style="font-weight: bold; color: #333; display: block; margin-bottom: 15px;">
+                    📦 选择要自动使用的物品槽位 (3×2 矩阵)：
+                </label>
+                <div class="item-bar-grid" id="itemBarGrid">
+                    <!-- 第一排 -->
+                    <div class="item-slot" data-slot="7" onclick="toggleItemSlot(7)">
+                        <div class="slot-number">7</div>
+                        <div class="slot-label">左上</div>
+                    </div>
+                    <div class="item-slot" data-slot="8" onclick="toggleItemSlot(8)">
+                        <div class="slot-number">8</div>
+                        <div class="slot-label">右上</div>
+                    </div>
+                    <!-- 第二排 -->
+                    <div class="item-slot" data-slot="4" onclick="toggleItemSlot(4)">
+                        <div class="slot-number">4</div>
+                        <div class="slot-label">左中</div>
+                    </div>
+                    <div class="item-slot" data-slot="5" onclick="toggleItemSlot(5)">
+                        <div class="slot-number">5</div>
+                        <div class="slot-label">右中</div>
+                    </div>
+                    <!-- 第三排 -->
+                    <div class="item-slot" data-slot="1" onclick="toggleItemSlot(1)">
+                        <div class="slot-number">1</div>
+                        <div class="slot-label">左下</div>
+                    </div>
+                    <div class="item-slot" data-slot="2" onclick="toggleItemSlot(2)">
+                        <div class="slot-number">2</div>
+                        <div class="slot-label">右下</div>
+                    </div>
+                </div>
+                <div class="help-text" style="text-align: center; margin-top: 15px;">
+                    💡 点击格子选择/取消选择，被选中的物品会自动按顺序使用
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <button type="button" class="btn btn-success" id="startItemBarBtn" onclick="toggleItemBar(true)">
+                    ▶️ 启动自动使用
+                </button>
+                <button type="button" class="btn btn-danger" id="stopItemBarBtn" onclick="toggleItemBar(false)" style="display: none;">
+                    ⏹️ 停止自动使用
+                </button>
+            </div>
+        </div>
+
+        <!-- 保存配置按钮 -->
+        <div class="btn-group">
+            <button type="button" class="btn btn-primary" onclick="saveConfig()">
+                💾 保存配置
+            </button>
+            <button type="button" class="btn" style="background: #f0f0f0; color: #666;" onclick="loadConfig()">
+                🔄 重新加载
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- 结果弹窗 -->
+<div class="result-modal" id="resultModal">
+    <div class="result-content">
+        <div class="result-icon" id="resultIcon"></div>
+        <div class="result-message" id="resultMessage"></div>
+        <button class="btn btn-primary" onclick="closeModal()">确定</button>
+    </div>
+</div>
+
+<script>
+    let selectedSlots = new Set();
+    let clickerRunning = false;
+    let itemBarRunning = false;
+
+    // 页面加载时获取配置
+    window.addEventListener('DOMContentLoaded', function() {
+        loadConfig();
+        checkStatus();
+    });
+
+    // 加载配置
+    async function loadConfig() {
+        try {
+            const response = await fetch('/kk/api/clicker/config');
+            const config = await response.json();
+
+            document.getElementById('clickerInterval').value = config.interval || 100;
+            document.getElementById('itemBarInterval').value = config.itemBarInterval || 500;
+
+            // 加载已选择的物品槽位
+            selectedSlots.clear();
+            if (config.enabledSlots && Array.isArray(config.enabledSlots)) {
+                config.enabledSlots.forEach(slot => {
+                    selectedSlots.add(slot);
+                    const slotElement = document.querySelector(`[data-slot="${slot}"]`);
+                    if (slotElement) {
+                        slotElement.classList.add('selected');
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('加载配置失败:', error);
+            showModal('error', '加载配置失败：' + error.message);
+        }
+    }
+
+    // 检查状态
+    async function checkStatus() {
+        try {
+            const response = await fetch('/kk/api/clicker/status');
+            const status = await response.json();
+
+            clickerRunning = status.clickerRunning || false;
+            itemBarRunning = status.itemBarRunning || false;
+
+            updateUI();
+        } catch (error) {
+            console.error('检查状态失败:', error);
+        }
+    }
+
+    // 切换物品槽位选择
+    function toggleItemSlot(slot) {
+        const slotElement = document.querySelector(`[data-slot="${slot}"]`);
+        if (selectedSlots.has(slot)) {
+            selectedSlots.delete(slot);
+            slotElement.classList.remove('selected');
+        } else {
+            selectedSlots.add(slot);
+            slotElement.classList.add('selected');
+        }
+    }
+
+    // 切换连点器
+    async function toggleClicker(enable) {
+        try {
+            const response = await fetch('/kk/api/clicker/toggle', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ enable: enable })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                clickerRunning = enable;
+                updateUI();
+                showModal('success', result.message);
+            } else {
+                showModal('error', result.message);
+            }
+        } catch (error) {
+            showModal('error', '操作失败：' + error.message);
+        }
+    }
+
+    // 切换物品栏自动使用
+    async function toggleItemBar(enable) {
+        if (enable && selectedSlots.size === 0) {
+            showModal('error', '请至少选择一个物品槽位！');
+            return;
+        }
+
+        try {
+            const response = await fetch('/kk/api/clicker/itembar/toggle', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ enable: enable })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                itemBarRunning = enable;
+                updateUI();
+                showModal('success', result.message);
+            } else {
+                showModal('error', result.message);
+            }
+        } catch (error) {
+            showModal('error', '操作失败：' + error.message);
+        }
+    }
+
+    // 保存配置
+    async function saveConfig() {
+        const interval = parseInt(document.getElementById('clickerInterval').value);
+        const itemBarInterval = parseInt(document.getElementById('itemBarInterval').value);
+
+        if (interval < 50 || interval > 5000) {
+            showModal('error', '点击间隔必须在 50-5000ms 之间！');
+            return;
+        }
+
+        if (itemBarInterval < 100 || itemBarInterval > 10000) {
+            showModal('error', '物品使用间隔必须在 100-10000ms 之间！');
+            return;
+        }
+
+        try {
+            const response = await fetch('/kk/api/clicker/config', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    interval: interval,
+                    itemBarInterval: itemBarInterval,
+                    enabledSlots: Array.from(selectedSlots)
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                showModal('success', result.message);
+            } else {
+                showModal('error', result.message);
+            }
+        } catch (error) {
+            showModal('error', '保存失败：' + error.message);
+        }
+    }
+
+    // 更新 UI 状态
+    function updateUI() {
+        const clickerStatusDot = document.getElementById('clickerStatusDot');
+        const clickerStatusText = document.getElementById('clickerStatusText');
+        const startClickerBtn = document.getElementById('startClickerBtn');
+        const stopClickerBtn = document.getElementById('stopClickerBtn');
+
+        if (clickerRunning) {
+            clickerStatusDot.classList.add('active');
+            clickerStatusText.textContent = '运行中';
+            startClickerBtn.style.display = 'none';
+            stopClickerBtn.style.display = 'flex';
+        } else {
+            clickerStatusDot.classList.remove('active');
+            clickerStatusText.textContent = '未启动';
+            startClickerBtn.style.display = 'flex';
+            stopClickerBtn.style.display = 'none';
+        }
+
+        const itemBarStatusDot = document.getElementById('itemBarStatusDot');
+        const itemBarStatusText = document.getElementById('itemBarStatusText');
+        const startItemBarBtn = document.getElementById('startItemBarBtn');
+        const stopItemBarBtn = document.getElementById('stopItemBarBtn');
+
+        if (itemBarRunning) {
+            itemBarStatusDot.classList.add('active');
+            itemBarStatusText.textContent = '运行中';
+            startItemBarBtn.style.display = 'none';
+            stopItemBarBtn.style.display = 'flex';
+        } else {
+            itemBarStatusDot.classList.remove('active');
+            itemBarStatusText.textContent = '未启动';
+            startItemBarBtn.style.display = 'flex';
+            stopItemBarBtn.style.display = 'none';
+        }
+    }
+
+    // 显示结果弹窗
+    function showModal(type, message) {
+        const modal = document.getElementById('resultModal');
+        const icon = document.getElementById('resultIcon');
+        const msgElement = document.getElementById('resultMessage');
+
+        icon.className = 'result-icon ' + type;
+        icon.innerHTML = type === 'success' ? '✔️' : '❌';
+        msgElement.textContent = message;
+
+        modal.style.display = 'flex';
+    }
+
+    // 关闭弹窗
+    function closeModal() {
+        document.getElementById('resultModal').style.display = 'none';
+    }
+
+    // 点击弹窗外部关闭
+    document.getElementById('resultModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeModal();
+        }
+    });
+</script>
+</body>
+</html>

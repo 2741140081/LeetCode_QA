@@ -4,6 +4,7 @@ import com.github.kwhat.jnativehook.GlobalScreen;
 import com.github.kwhat.jnativehook.NativeHookException;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
+import com.marks.kkPlatformGameAuto.service.ClickerService;
 import com.marks.kkPlatformGameAuto.service.GameCommonService;
 import com.marks.kkPlatformGameAuto.state.GameStateManager;
 import jakarta.annotation.PreDestroy;
@@ -30,9 +31,10 @@ public class GlobalKeyboardListener implements CommandLineRunner, NativeKeyListe
     @Autowired
     private GameStateManager gameStateManager;
 
-    private boolean isRegistered = false;
+    @Autowired
+    private ClickerService clickerService;
 
-    // Deleted:private static final Logger logger = Logger.getLogger(GlobalKeyboardListener.class.getName());
+    private boolean isRegistered = false;
 
     @Override
     public void run(String... args) throws Exception {
@@ -53,7 +55,7 @@ public class GlobalKeyboardListener implements CommandLineRunner, NativeKeyListe
             GlobalScreen.addNativeKeyListener(this);
             isRegistered = true;
             log.info("全局键盘钩子注册成功");
-            log.info("快捷键说明：F8 - 暂停游戏，F9 - 恢复游戏");
+            log.info("快捷键说明：F8 - 暂停游戏，F9 - 恢复游戏，F11 - 连点器开关");
         } catch (NativeHookException e) {
             log.error("注册全局键盘钩子失败：{}", e.getMessage());
             log.error("注册全局键盘钩子失败，请确保以管理员权限运行", e);
@@ -108,6 +110,18 @@ public class GlobalKeyboardListener implements CommandLineRunner, NativeKeyListe
                 gameCommonService.resumeGame();
             } else {
                 log.warn("当前状态不能恢复：{}", gameStateManager.getCurrentStatus());
+            }
+        }
+        // 监听 F11 键（左键连点器开关）
+        else if (e.getKeyCode() == NativeKeyEvent.VC_F11) {
+            log.info("检测到 F11 按键，切换左键连点器");
+
+            if (clickerService.isRunning()) {
+                clickerService.stopLeftClicker();
+                log.info("左键连点器已停止");
+            } else {
+                clickerService.startLeftClicker();
+                log.info("左键连点器已启动");
             }
         }
     }

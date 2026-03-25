@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -47,6 +48,9 @@ public class ModifierServiceImpl implements ModifierService {
 
     @Autowired
     private InputController input;
+
+    // 修改器是否已启动标志
+    private volatile boolean isModifierStarted = false;
 
     @Override
     public boolean modifyExperience(int experienceValue) {
@@ -208,6 +212,34 @@ public class ModifierServiceImpl implements ModifierService {
         return true;
     }
 
+    /**
+     * 启动修改器App（公共方法）
+     * 只在一下两者情况下调用该方法
+     * 1. 修改器状态是 false
+     * 2. 切换窗口失败时
+     * @param appPath 修改器App路径
+     * @return true 如果操作成功，否则 false
+     */
+    @Override
+    public boolean lunchModifierApp(String appPath) {
+        // 如果传入的 appPath 为空或 null，则使用配置文件中的路径
+        if (appPath == null || appPath.trim().isEmpty()) {
+            appPath = modifierConfig.getAppPath();
+            log.debug("使用配置文件中的修改器路径：{}", appPath);
+        }
+        ProcessBuilder processBuilder = new ProcessBuilder(appPath);
+        try {
+            Process process = processBuilder.start();
+            log.debug("启动修改器App成功, pid:{}", process.pid());
+            // 更新修改器状态
+            isModifierStarted = true;
+            return true;
+        } catch (IOException e) {
+            log.error("启动修改器App失败", e);
+        }
+        return false;
+    }
+
 
     /**
      * 切换到修改器窗口并点击查找游戏按钮（公共方法）
@@ -215,13 +247,22 @@ public class ModifierServiceImpl implements ModifierService {
      */
     private boolean switchToModifierAndFindGame() {
         log.debug("切换到修改器窗口并点击查找游戏按钮");
+        if (!isModifierStarted) {
+            // 调用启动方法
+            if (!lunchModifierApp(modifierConfig.getAppPath())) {
+                return false;
+            }
+        }
 
         // 1. 切换到修改器窗口
         if (!windowSwitcherService.switchToModifier()) {
             log.warn("切换到修改器窗口失败");
-            return false;
-        }
+            // 调用启动方法
+            if (!lunchModifierApp(modifierConfig.getAppPath())) {
+                return false;
+            }
 
+        }
         // 2. 查找游戏按钮名称
         String findGameButtonImage = modifierConfig.getFindGameButtonImage();
         String imageDir = modifierConfig.getImageDir();

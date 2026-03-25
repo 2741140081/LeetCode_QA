@@ -43,4 +43,11 @@ public interface ModifierService {
      * @return 是否成功
      */
     boolean lockAttackInterval();
+
+    /**
+     * 启动修改器App
+     * @param appPath App路径
+     * @return 是否成功
+     */
+    boolean lunchModifierApp(String appPath);
 }

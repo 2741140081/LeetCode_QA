@@ -30,4 +30,14 @@ public class PageController {
         log.info("访问小偷游戏管理页面");
         return "thief-game/thief-game-manager";
     }
+
+    /**
+     * 打开连点器配置页面
+     * @return 页面视图
+     */
+    @GetMapping("/clicker")
+    public String openClickerPage() {
+        log.info("访问连点器配置页面");
+        return "clicker/clicker-config";
+    }
 }
