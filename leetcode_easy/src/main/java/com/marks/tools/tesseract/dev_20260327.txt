@@ -1,0 +1,24 @@
+
+1. 做一个资源读取功能, 用于处理 COC 的资源的情况
+2. 先找到相关 x_tmplate 的坐标中心点, 根据中心点以及模板的size 得到截图区域的起始坐标和宽度, 长度自行定义, 当前使用的长度是: 310 px(根据实际情况调整)
+3. 然后根据[0~9] 的数字模板进行匹配, 返回模板数字的匹配度满足要求的所有点的集合, 然后根据坐标位置排序, 就可以得到模板图片 -> 坐标位置 的一种一对多映射关系.
+4. 例如 模板数字[6], 有p1, p2, p3 这3个坐标点返回, item {templateName, List<Point> templatePoints} 返回这种类型的实体.
+5. 有了这样一个实体之后, 然后可以通过插入排序的方式, 按照point 进行升序排序(根据point.y), 截取的是一行数据, 所以这些坐标点的 x 值是相同的,
+需要根据 y 值进行升序排序.然后对已经排序的item进行遍历, 并且可以构建一个 Map<String, Integer> map;
+6. 存储tmplateName 与 number 直接的关系. 根据这个关系 可以得到 StringBuilder sb = value;
+7. value 就是数字的拼接. 然后将数字转成 int, 这就得到最终结果, 输出金币数量
+8. 相关模板的信息: 所有截图模板都在目录: D:\images\automation\coc 目录下
+9. 金币, 圣水, 黑油的模板图片名称分别是: gold_template.png, water_template.png, oil_template.png.
+数字模板的名称是: number_{数字}.png, 例如 number_0.png, number_1.png等
+10. 缩放比例还是 0.6667. 由于当前游戏没有在运行, 当前是使用Notepad++ 来替代游戏界面, 需要手动切换到notepad++ 页面, 直接让当前程序休眠 10s
+
+
+
+
+
+
+
+
+
+
+
