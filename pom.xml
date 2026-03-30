@@ -20,6 +20,7 @@
         <module>SpringAI_Demo</module>
         <module>schedule_task</module>
         <module>kkPlatformGameAuto</module>
+        <module>automated_script</module>
     </modules>
 
     <properties>
