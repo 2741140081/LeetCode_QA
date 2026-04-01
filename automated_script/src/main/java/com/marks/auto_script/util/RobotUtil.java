@@ -61,7 +61,27 @@ public class RobotUtil {
         mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
     }
 
+    public static void leftClick(int x, int y) {
+        if (x != -1 || y != -1) {
+            moveMouse(x, y);
+            delay(50);
+        }
+        mousePress(InputEvent.BUTTON1_DOWN_MASK);
+        delay(AppConfig.DEFAULT_CLICK_INTERVAL);
+        mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
+    }
+
     public static void rightClick() {
+        mousePress(InputEvent.BUTTON3_DOWN_MASK);
+        delay(AppConfig.DEFAULT_CLICK_INTERVAL);
+        mouseRelease(InputEvent.BUTTON3_DOWN_MASK);
+    }
+
+    public static void rightClick(int x, int y) {
+        if (x != -1 || y != -1) {
+            moveMouse(x, y);
+            delay(50);
+        }
         mousePress(InputEvent.BUTTON3_DOWN_MASK);
         delay(AppConfig.DEFAULT_CLICK_INTERVAL);
         mouseRelease(InputEvent.BUTTON3_DOWN_MASK);

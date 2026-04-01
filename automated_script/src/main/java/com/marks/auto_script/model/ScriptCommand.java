@@ -79,9 +79,15 @@ public class ScriptCommand {
             case MOUSE_CLICK:
                 return "mouseClick";
             case LEFT_CLICK:
-                return "leftClick";
+                if (x != -1 || y != -1) {
+                    return "leftClick [" + x + "," + y + "]";
+                }
+                return "leftClick [-1,-1]";
             case RIGHT_CLICK:
-                return "rightClick";
+                if (x != -1 || y != -1) {
+                    return "rightClick [" + x + "," + y + "]";
+                }
+                return "rightClick [-1,-1]";
             case MOVE_MOUSE:
                 return "moveMouse " + x + "," + y;
             default:
@@ -110,10 +116,18 @@ public class ScriptCommand {
             return new ScriptCommand(CommandType.MOUSE_RELEASE, "");
         } else if (line.equalsIgnoreCase("mouseClick")) {
             return new ScriptCommand(CommandType.MOUSE_CLICK, "");
-        } else if (line.equalsIgnoreCase("leftClick")) {
-            return new ScriptCommand(CommandType.LEFT_CLICK, "");
-        } else if (line.equalsIgnoreCase("rightClick")) {
-            return new ScriptCommand(CommandType.RIGHT_CLICK, "");
+        } else if (line.startsWith("leftClick")) {
+            int[] coords = extractCoordinates(line);
+            if (coords != null) {
+                return new ScriptCommand(CommandType.LEFT_CLICK, coords[0], coords[1]);
+            }
+            return new ScriptCommand(CommandType.LEFT_CLICK, -1, -1);
+        } else if (line.startsWith("rightClick")) {
+            int[] coords = extractCoordinates(line);
+            if (coords != null) {
+                return new ScriptCommand(CommandType.RIGHT_CLICK, coords[0], coords[1]);
+            }
+            return new ScriptCommand(CommandType.RIGHT_CLICK, -1, -1);
         } else if (line.startsWith("moveMouse")) {
             String coords = extractArgument(line);
             String[] parts = coords.split(",");
@@ -141,6 +155,26 @@ public class ScriptCommand {
         }
 
         return arg;
+    }
+
+    private static int[] extractCoordinates(String line) {
+        String arg = extractArgument(line);
+        if (arg.isEmpty()) {
+            return null;
+        }
+
+        arg = arg.replaceAll("[\\[\\]]", "").trim();
+        String[] parts = arg.split(",");
+        if (parts.length == 2) {
+            try {
+                int x = Integer.parseInt(parts[0].trim());
+                int y = Integer.parseInt(parts[1].trim());
+                return new int[]{x, y};
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
+        return null;
     }
 }
 

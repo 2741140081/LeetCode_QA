@@ -11,6 +11,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -140,12 +141,12 @@ public class MainFrame extends JFrame {
 
         gbc.gridy++;
         JButton leftClickButton = new JButton("左键点击");
-        leftClickButton.addActionListener(e -> editorPanel.insertTemplate("leftClick"));
+        leftClickButton.addActionListener(e -> editorPanel.insertTemplate("leftClick [-1,-1]"));
         buttonPanel.add(leftClickButton, gbc);
 
         gbc.gridy++;
         JButton rightClickButton = new JButton("右键点击");
-        rightClickButton.addActionListener(e -> editorPanel.insertTemplate("rightClick"));
+        rightClickButton.addActionListener(e -> editorPanel.insertTemplate("rightClick [-1,-1]"));
         buttonPanel.add(rightClickButton, gbc);
 
         gbc.gridy++;
@@ -178,6 +179,10 @@ public class MainFrame extends JFrame {
         JMenuItem saveItem = new JMenuItem("保存脚本");
         saveItem.addActionListener(e -> saveCurrentScript());
         fileMenu.add(saveItem);
+
+        JMenuItem deleteItem = new JMenuItem("删除脚本");
+        deleteItem.addActionListener(e -> deleteScript());
+        fileMenu.add(deleteItem);
 
         fileMenu.addSeparator();
 
@@ -304,6 +309,40 @@ public class MainFrame extends JFrame {
             }
         } else {
             JOptionPane.showMessageDialog(this, "没有当前脚本", "提示", JOptionPane.WARNING_MESSAGE);
+        }
+    }
+
+    private void deleteScript() {
+        if (currentScript == null) {
+            JOptionPane.showMessageDialog(this, "请先选择要删除的脚本", "提示", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        int confirm = JOptionPane.showConfirmDialog(
+                this,
+                "确定要删除脚本 \"" + currentScript.getName() + "\" 吗？\n此操作将同时删除脚本文件！",
+                "确认删除",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE
+        );
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            try {
+                String scriptName = currentScript.getName();
+                scriptService.deleteScript(currentScript);
+
+                listModel.removeElement(currentScript);
+                currentScript = null;
+                editorPanel.setText("");
+
+                statusLabel.setText("脚本已删除：" + scriptName);
+                logger.info("脚本删除成功：" + scriptName);
+
+                JOptionPane.showMessageDialog(this, "脚本删除成功！");
+            } catch (Exception e) {
+                logger.severe("脚本删除失败：" + e.getMessage());
+                JOptionPane.showMessageDialog(this, "删除脚本失败：" + e.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
 

@@ -23,7 +23,6 @@ public class AutomatedScriptApp {
 
     private static final Logger logger = Logger.getLogger(AutomatedScriptApp.class.getName());
 
-
     public static void main(String[] args) {
         // 加载日志配置
         try {

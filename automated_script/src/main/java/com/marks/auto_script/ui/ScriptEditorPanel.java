@@ -84,5 +84,9 @@ public class ScriptEditorPanel extends JPanel {
         textArea.setCaretPosition(caretPos + template.length() + 2);
         textArea.requestFocus();
     }
+
+    public void setText(String text) {
+        textArea.setText(text);
+    }
 }
 

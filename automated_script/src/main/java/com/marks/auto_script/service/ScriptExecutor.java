@@ -159,10 +159,10 @@ public class ScriptExecutor {
                 RobotUtil.leftClick();
                 break;
             case LEFT_CLICK:
-                RobotUtil.leftClick();
+                RobotUtil.leftClick(command.getX(), command.getY());
                 break;
             case RIGHT_CLICK:
-                RobotUtil.rightClick();
+                RobotUtil.rightClick(command.getX(), command.getY());
                 break;
             case MOVE_MOUSE:
                 RobotUtil.moveMouse(command.getX(), command.getY());
@@ -247,12 +247,15 @@ public class ScriptExecutor {
             @Override
             public void nativeMouseClicked(NativeMouseEvent nme) {
                 if (recording.get()) {
+                    int x = nme.getX();
+                    int y = nme.getY();
+
                     switch (nme.getButton()) {
                         case NativeMouseEvent.BUTTON1:
-                            addCommand(new ScriptCommand(ScriptCommand.CommandType.LEFT_CLICK, ""));
+                            addCommand(new ScriptCommand(ScriptCommand.CommandType.LEFT_CLICK, x, y));
                             break;
                         case NativeMouseEvent.BUTTON2:
-                            addCommand(new ScriptCommand(ScriptCommand.CommandType.RIGHT_CLICK, ""));
+                            addCommand(new ScriptCommand(ScriptCommand.CommandType.RIGHT_CLICK, x, y));
                             break;
                         case NativeMouseEvent.BUTTON3:
                             addCommand(new ScriptCommand(ScriptCommand.CommandType.MOUSE_CLICK, ""));
