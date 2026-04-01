@@ -114,6 +114,14 @@ public class ScriptCommand {
             return new ScriptCommand(CommandType.LEFT_CLICK, "");
         } else if (line.equalsIgnoreCase("rightClick")) {
             return new ScriptCommand(CommandType.RIGHT_CLICK, "");
+        } else if (line.startsWith("moveMouse")) {
+            String coords = extractArgument(line);
+            String[] parts = coords.split(",");
+            if (parts.length == 2) {
+                int x = Integer.parseInt(parts[0].trim());
+                int y = Integer.parseInt(parts[1].trim());
+                return new ScriptCommand(CommandType.MOVE_MOUSE, x, y);
+            }
         }
 
         throw new IllegalArgumentException("Unknown command: " + line);

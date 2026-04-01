@@ -9,8 +9,10 @@ import com.marks.auto_script.util.ScriptParser;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * <p>项目名称: LeetCode_QA </p>
@@ -27,6 +29,8 @@ import java.util.List;
 
 public class MainFrame extends JFrame {
 
+    private static final Logger logger = Logger.getLogger(MainFrame.class.getName());
+
     private ScriptService scriptService;
     private ScriptExecutor executor;
     private HotkeyService hotkeyService;
@@ -39,6 +43,7 @@ public class MainFrame extends JFrame {
     private JMenuItem runMenuItem;
     private JMenuItem stopMenuItem;
     private JMenuItem shortcutMenuItem;
+    private JMenuItem recordMenuItem;
 
     private Script currentScript;
 
@@ -182,6 +187,7 @@ public class MainFrame extends JFrame {
 
         menuBar.add(fileMenu);
 
+
         menuBar.add(Box.createHorizontalStrut(10));
 
         shortcutMenuItem = new JMenuItem("快捷键设置");
@@ -189,15 +195,35 @@ public class MainFrame extends JFrame {
         shortcutMenuItem.addActionListener(e -> showShortcutDialog());
         menuBar.add(shortcutMenuItem);
 
-        runMenuItem = new JMenuItem("运行脚本");
+        runMenuItem = new JMenuItem("运行脚本 ");
+        runMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0));
         runMenuItem.setMaximumSize(runMenuItem.getPreferredSize());
-        runMenuItem.addActionListener(e -> runScript());
+        runMenuItem.addActionListener(e -> {
+            logger.info("菜单项 [运行脚本] 被触发");
+            runScript();
+        });
         menuBar.add(runMenuItem);
+        logger.info("注册菜单项快捷键：F8 - 运行脚本");
 
-        stopMenuItem = new JMenuItem("停止脚本");
+        recordMenuItem = new JMenuItem("录制脚本 ");
+        recordMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0));
+        recordMenuItem.setMaximumSize(recordMenuItem.getPreferredSize());
+        recordMenuItem.addActionListener(e -> {
+            logger.info("菜单项 [录制脚本] 被触发");
+            startRecording();
+        });
+        menuBar.add(recordMenuItem);
+        logger.info("注册菜单项快捷键：F10 - 录制脚本");
+
+        stopMenuItem = new JMenuItem("停止 ");
+        stopMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0));
         stopMenuItem.setMaximumSize(stopMenuItem.getPreferredSize());
-        stopMenuItem.addActionListener(e -> stopScript());
+        stopMenuItem.addActionListener(e -> {
+            logger.info("菜单项 [停止] 被触发");
+            stopScript();
+        });
         menuBar.add(stopMenuItem);
+        logger.info("注册菜单项快捷键：F9 - 停止");
 
         return menuBar;
     }
@@ -297,26 +323,64 @@ public class MainFrame extends JFrame {
     }
 
     private void runScript() {
+        logger.info("runScript() 方法被调用");
         if (currentScript == null) {
+            logger.warning("尝试运行脚本但 currentScript 为 null");
             JOptionPane.showMessageDialog(this, "请先选择或创建一个脚本", "提示", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
+        logger.info("当前脚本：" + currentScript.getName());
+
         if (hotkeyService == null) {
+            logger.warning("hotkeyService 为 null，创建新的实例");
             hotkeyService = new HotkeyService(executor);
             hotkeyService.setCurrentScript(currentScript);
         }
 
         executor.execute(currentScript);
-        statusLabel.setText("脚本正在运行... 按 " + currentScript.getPauseKey() + " 暂停");
+        statusLabel.setText("脚本正在运行... 按 F9 停止");
+        logger.info("脚本开始执行，状态：" + executor.isRunning());
+    }
+
+    private void startRecording() {
+        logger.info("startRecording() 方法被调用");
+        if (executor.isRecording()) {
+            logger.info("正在录制中，执行停止录制");
+            executor.stopRecording();
+            statusLabel.setText("录制已停止");
+            recordMenuItem.setText("录制脚本 (F10)");
+        } else {
+            logger.info("开始录制");
+            executor.startRecording();
+            statusLabel.setText("正在录制... 按 F9 停止录制");
+            recordMenuItem.setText("停止录制");
+        }
     }
 
     private void stopScript() {
-        if (executor != null && executor.isRunning()) {
-            executor.stop();
-            statusLabel.setText("脚本已停止");
+        logger.info("stopScript() 方法被调用");
+        if (executor != null) {
+            logger.info("executor 状态 - isRunning: " + executor.isRunning() + ", isRecording: " + executor.isRecording());
+            if (executor.isRunning() || executor.isRecording()) {
+                if (executor.isRunning()) {
+                    logger.info("停止运行中的脚本");
+                    executor.stop();
+                    statusLabel.setText("脚本已停止");
+                    recordMenuItem.setText("录制脚本 (F10)");
+                }
+                if (executor.isRecording()) {
+                    logger.info("停止录制");
+                    executor.stopRecording();
+                    statusLabel.setText("录制已停止");
+                    recordMenuItem.setText("录制脚本 (F10)");
+                }
+            } else {
+                logger.info("没有正在运行的脚本");
+                statusLabel.setText("没有正在运行的脚本");
+            }
         } else {
-            statusLabel.setText("没有正在运行的脚本");
+            logger.warning("executor 为 null");
         }
     }
 }

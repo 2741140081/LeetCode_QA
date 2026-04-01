@@ -1,13 +1,18 @@
 package com.marks.auto_script.service;
 
+import com.github.kwhat.jnativehook.GlobalScreen;
+import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
+import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
+import com.github.kwhat.jnativehook.mouse.NativeMouseEvent;
+import com.github.kwhat.jnativehook.mouse.NativeMouseListener;
 import com.marks.auto_script.config.AppConfig;
 import com.marks.auto_script.model.Script;
 import com.marks.auto_script.model.ScriptCommand;
 import com.marks.auto_script.util.RobotUtil;
 
 import java.awt.event.KeyEvent;
-import java.util.HashMap;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * <p>项目名称: LeetCode_QA </p>
@@ -78,7 +83,16 @@ public class ScriptExecutor {
 
     private AtomicBoolean running = new AtomicBoolean(false);
     private AtomicBoolean paused = new AtomicBoolean(false);
+    private AtomicBoolean recording = new AtomicBoolean(false);
     private Thread executorThread;
+
+    private List<ScriptCommand> recordedCommands;
+    private String currentRecordFile;
+    private long lastEventTime;
+    private static final int MIN_EVENT_INTERVAL = 50;
+
+    private NativeKeyListener keyListener;
+    private NativeMouseListener mouseListener;
 
     public void execute(Script script) {
         if (running.get()) {
@@ -150,6 +164,9 @@ public class ScriptExecutor {
             case RIGHT_CLICK:
                 RobotUtil.rightClick();
                 break;
+            case MOVE_MOUSE:
+                RobotUtil.moveMouse(command.getX(), command.getY());
+                break;
         }
     }
 
@@ -173,12 +190,169 @@ public class ScriptExecutor {
         paused.set(false);
     }
 
+    public void startRecording() {
+        if (!recording.get()) {
+            recordedCommands = new ArrayList<>();
+            recording.set(true);
+            lastEventTime = System.currentTimeMillis();
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmm");
+            String timestamp = sdf.format(new Date());
+            String fileName = "record_" + timestamp + ".txt";
+            currentRecordFile = AppConfig.SCRIPT_DIR + java.io.File.separator + fileName;
+
+            registerRecordingListeners();
+
+            System.out.println("开始录制，脚本文件：" + currentRecordFile);
+        }
+    }
+
+    public void stopRecording() {
+        if (recording.get()) {
+            recording.set(false);
+            unregisterRecordingListeners();
+            saveRecording();
+            System.out.println("录制停止，已保存到：" + currentRecordFile);
+        }
+    }
+
+    private void registerRecordingListeners() {
+        keyListener = new NativeKeyListener() {
+            @Override
+            public void nativeKeyPressed(NativeKeyEvent nke) {
+                if (recording.get()) {
+                    String keyText = NativeKeyEvent.getKeyText(nke.getKeyCode()).toUpperCase();
+                    if (!"F10".equals(keyText) && !"F9".equals(keyText)) {
+                        recordKeyPress(keyText);
+                    }
+                }
+            }
+
+            @Override
+            public void nativeKeyReleased(NativeKeyEvent nke) {
+                if (recording.get()) {
+                    String keyText = NativeKeyEvent.getKeyText(nke.getKeyCode()).toUpperCase();
+                    if (!"F10".equals(keyText) && !"F9".equals(keyText)) {
+                        recordKeyRelease(keyText);
+                    }
+                }
+            }
+
+            @Override
+            public void nativeKeyTyped(NativeKeyEvent nke) {
+            }
+        };
+
+        mouseListener = new NativeMouseListener() {
+            @Override
+            public void nativeMouseClicked(NativeMouseEvent nme) {
+                if (recording.get()) {
+                    switch (nme.getButton()) {
+                        case NativeMouseEvent.BUTTON1:
+                            addCommand(new ScriptCommand(ScriptCommand.CommandType.LEFT_CLICK, ""));
+                            break;
+                        case NativeMouseEvent.BUTTON2:
+                            addCommand(new ScriptCommand(ScriptCommand.CommandType.RIGHT_CLICK, ""));
+                            break;
+                        case NativeMouseEvent.BUTTON3:
+                            addCommand(new ScriptCommand(ScriptCommand.CommandType.MOUSE_CLICK, ""));
+                            break;
+                    }
+                }
+            }
+
+            @Override
+            public void nativeMousePressed(NativeMouseEvent nme) {
+            }
+
+            @Override
+            public void nativeMouseReleased(NativeMouseEvent nme) {
+            }
+        };
+
+        GlobalScreen.addNativeKeyListener(keyListener);
+        GlobalScreen.addNativeMouseListener(mouseListener);
+    }
+
+    private void unregisterRecordingListeners() {
+        if (keyListener != null) {
+            GlobalScreen.removeNativeKeyListener(keyListener);
+            keyListener = null;
+        }
+        if (mouseListener != null) {
+            GlobalScreen.removeNativeMouseListener(mouseListener);
+            mouseListener = null;
+        }
+    }
+
+    private void recordKeyPress(String keyText) {
+        if (recording.get() && keyText != null) {
+            addCommand(new ScriptCommand(ScriptCommand.CommandType.KEY_PRESS, keyText));
+        }
+    }
+
+    private void recordKeyRelease(String keyText) {
+        if (recording.get() && keyText != null) {
+            addCommand(new ScriptCommand(ScriptCommand.CommandType.KEY_RELEASE, keyText));
+        }
+    }
+
+    private void addCommand(ScriptCommand command) {
+        if (recording.get() && recordedCommands != null) {
+            long currentTime = System.currentTimeMillis();
+            long delay = currentTime - lastEventTime;
+
+            if (delay > MIN_EVENT_INTERVAL) {
+                if (delay > 100) {
+                    recordedCommands.add(new ScriptCommand(ScriptCommand.CommandType.DELAY, (int) delay));
+                }
+                recordedCommands.add(command);
+                lastEventTime = currentTime;
+            } else {
+                recordedCommands.add(command);
+                lastEventTime = currentTime;
+            }
+        }
+    }
+
+    private void saveRecording() {
+        if (recordedCommands == null || recordedCommands.isEmpty()) {
+            System.out.println("没有录制的命令");
+            return;
+        }
+
+        try {
+            java.io.File recordDir = new java.io.File(AppConfig.SCRIPT_DIR);
+            if (!recordDir.exists()) {
+                recordDir.mkdirs();
+            }
+
+            try (java.io.FileWriter writer = new java.io.FileWriter(currentRecordFile)) {
+                for (ScriptCommand command : recordedCommands) {
+                    writer.write(command.toString() + ";\n");
+                }
+            }
+            System.out.println("录制脚本已保存：" + currentRecordFile);
+        } catch (java.io.IOException e) {
+            System.err.println("保存录制脚本失败：" + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public boolean isRecording() {
+        return recording.get();
+    }
+
     public boolean isRunning() {
         return running.get();
     }
 
     public boolean isPaused() {
         return paused.get();
+    }
+
+    public String getCurrentRecordFile() {
+        return currentRecordFile;
     }
 }
 
