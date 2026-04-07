@@ -1,9 +1,5 @@
 package com.marks.leetcode.sliding_window.random_length;
 
-import com.alibaba.druid.sql.visitor.functions.Char;
-
-import java.util.HashSet;
-
 /**
  * <p>项目名称:  </p>
  * <p>文件名称:  </p>

@@ -180,6 +180,7 @@ public class ScriptExecutor {
     public void stop() {
         running.set(false);
         paused.set(false);
+        RobotUtil.resetAllKeys();
     }
 
     public void pause() {

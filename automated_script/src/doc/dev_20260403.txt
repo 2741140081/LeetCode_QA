@@ -1,0 +1,18 @@
+扩展录制功能
+1. 在左键点击/右键点击时, 添加以点击坐标为中心, 截取圆形/正方形区域, 用于后续执行自动化脚本执行时进行判断
+2. 添加一个imageMatch 方法, 传入的参数是图片名称, 也是一个时间戳 yyyyMMdd_HHmmss_SSS.png
+3. 截图存放位置是: D:\automated_scripts\images
+4. 图片imageMatch 方法用于匹配点击后图片是否匹配的处理, 如果不匹配, 输出提示信息(不终止脚本执行), 并且将当前区域截图进行保存到 D:\automated_scripts\result,
+misImageMatch_时间戳.png
+
+
+
+
+
+
+
+
+
+
+
+

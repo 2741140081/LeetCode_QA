@@ -5,6 +5,9 @@ import com.marks.auto_script.config.AppConfig;
 
 import java.awt.*;
 import java.awt.event.InputEvent;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * <p>项目名称: LeetCode_QA </p>
  * <p>文件名称: RobotUtil </p>
@@ -19,6 +22,7 @@ import java.awt.event.InputEvent;
 public class RobotUtil {
 
     private static Robot robot;
+    private static final Set<Integer> pressedKeys = ConcurrentHashMap.newKeySet();
 
     static {
         try {
@@ -30,15 +34,28 @@ public class RobotUtil {
     }
 
     public static void delay(int milliseconds) {
-        robot.delay(milliseconds);
+        if (milliseconds <= 0) {
+            return;
+        } else if (milliseconds < 60000) {
+            robot.delay(milliseconds);
+        } else {
+            // > 60s
+            try {
+                Thread.sleep(milliseconds);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     public static void keyPress(int keyCode) {
         robot.keyPress(keyCode);
+        pressedKeys.add(keyCode);
     }
 
     public static void keyRelease(int keyCode) {
         robot.keyRelease(keyCode);
+        pressedKeys.remove(keyCode);
     }
 
     public static void keyClick(int keyCode) {
@@ -93,6 +110,25 @@ public class RobotUtil {
 
     public static void waitForIdle() {
         robot.waitForIdle();
+    }
+
+    public static void resetAllKeys() {
+        for (Integer keyCode : pressedKeys) {
+            try {
+                robot.keyRelease(keyCode);
+            } catch (Exception e) {
+                System.err.println("释放按键失败，keyCode: " + keyCode + ", 错误: " + e.getMessage());
+            }
+        }
+        pressedKeys.clear();
+    }
+
+    public static boolean hasPressedKeys() {
+        return !pressedKeys.isEmpty();
+    }
+
+    public static int getPressedKeysCount() {
+        return pressedKeys.size();
     }
 }
 

@@ -5,8 +5,6 @@ import com.marks.utils.TreeNode;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.alibaba.druid.sql.ast.SQLPartitionValue.Operator.List;
-
 /**
  * <p>项目名称: LeetCode_QA </p>
  * <p>文件名称: LeetCode_230 </p>
