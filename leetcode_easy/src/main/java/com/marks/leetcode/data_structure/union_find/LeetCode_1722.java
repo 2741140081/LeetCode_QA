@@ -87,7 +87,7 @@ public class LeetCode_1722 {
         return ans;
     }
 
-    private static class UnionFind {
+    private class UnionFind {
         private int[] parent;
 
         public UnionFind(int size) {

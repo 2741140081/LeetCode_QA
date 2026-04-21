@@ -27,7 +27,8 @@ public class WindowSwitcherUtils {
 
     private static WindowSwitcherUtils instance;
 
-    public WindowSwitcherUtils() {}
+    // 将构造方法设置为私有的，不允许外部创建对象, 只能在当前类中创建对象, 以实现单例模式
+    private WindowSwitcherUtils() {}
 
     public static synchronized WindowSwitcherUtils getInstance() {
         if (instance == null) {

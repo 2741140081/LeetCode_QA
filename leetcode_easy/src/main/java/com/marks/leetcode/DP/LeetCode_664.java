@@ -47,6 +47,7 @@ public class LeetCode_664 {
      * 4. curr = next, dp[i] = dp[i - 1]
      * 5. curr != next, 并且 prev != next, dp[i] = dp[i - 1] + 1
      * 6. 存在问题, 如 'abababa' 4,
+     * AC: 11ms/43.9MB
      * @param: s
      * @return int
      * @author marks
@@ -55,9 +56,23 @@ public class LeetCode_664 {
      */
     private int method_01(String s) {
         int n = s.length();
-        int[] dp = new int[n];
-
-        return 0;
+        int[][] dp = new int[n][n];
+        for (int i = n - 1; i >= 0; i--) {
+            dp[i][i] = 1;
+            for (int j = i + 1; j < n; j++) {
+                // 判断  s[i] 与 s[j]
+                if (s.charAt(i) == s.charAt(j)) {
+                    dp[i][j] = dp[i][j - 1];
+                } else {
+                    int min = Integer.MAX_VALUE;
+                    for (int k = i; k < j; k++) {
+                        min = Math.min(min, dp[i][k] + dp[k + 1][j]);
+                    }
+                    dp[i][j] = min;
+                }
+            }
+        }
+        return dp[0][n - 1];
     }
 
 }
