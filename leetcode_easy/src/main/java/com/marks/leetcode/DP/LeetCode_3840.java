@@ -32,14 +32,44 @@ public class LeetCode_3840 {
     public long rob(int[] nums, int[] colors) {
         long result;
         result = method_01(nums, colors);
+        result = method_02(nums, colors);
         return result;
 
+    }
+
+    // AC: 5ms/148.72MB
+    private long method_02(int[] nums, int[] colors) {
+        int n = nums.length;
+        long[][] dp = new long[2][2];
+        int prev;
+        int curr = 0;
+        // 处理dp[0]
+        dp[0][0] = 0;
+        dp[0][1] = nums[0];
+        for (int i = 1; i < n; i++) {
+            curr = i % 2;
+            prev = 1 - curr;
+            if (colors[i] == colors[i - 1]) {
+                dp[curr][0] = Math.max(dp[prev][0], dp[prev][1]);
+                dp[curr][1] = dp[prev][0] + nums[i];
+            } else {
+                dp[curr][0] = Math.max(dp[prev][0], dp[prev][1]);
+                dp[curr][1] = Math.max(dp[prev][0], dp[prev][1]) + nums[i];
+            }
+        }
+
+        return Math.max(dp[curr][0], dp[curr][1]);
     }
 
     /**
      * @Description:
      * 1. 动态规划, 但是需要记录前面一间房屋的颜色, int prevColor = 0, 初始值为0
-     * 2. 对于 第 i 间房屋, 选中偷或者不偷 int[][][] dp = new int[n][n][2]; 0表示不偷当前房屋, 1表示偷当前房屋
+     * 2. 对于 第 i 间房屋, 选中偷或者不偷 int[][] dp = new int[n][2]; 0表示不偷当前房屋, 1表示偷当前房屋
+     * 3. 需要对 i 与 i - 1 间房屋的颜色进行判断, 如果颜色相同, 则 dp[i][1] = dp[i - 1][0] + nums[i];
+     * dp[i][0] = Math.max(dp[i - 1][0], dp[i - 1][1]);
+     * 4. 如果颜色不同, 则 dp[i][1] = Math.max(dp[i - 1][0], dp[i - 1][1]) + nums[i]; dp[i][0] = Math.max(dp[i - 1][0], dp[i - 1][1]);
+     * AC: 25ms/138.34MB
+     * 由于 i 只与 i - 1 存在关联关系, 可以使用滚动数组优化空间复杂度, @See method_02
      * @param: nums
      * @param: colors
      * @return long
@@ -48,9 +78,23 @@ public class LeetCode_3840 {
      * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
      */
     private long method_01(int[] nums, int[] colors) {
+        int n = nums.length;
+        long[][] dp = new long[n][2];
+        // 预处理dp[0]
+        dp[0][0] = 0;
+        dp[0][1] = nums[0];
+        for (int i = 1; i < n; i++) {
+            if (colors[i] == colors[i - 1]) {
+                dp[i][0] = Math.max(dp[i - 1][0], dp[i - 1][1]);
+                dp[i][1] = dp[i - 1][0] + nums[i];
+            } else {
+                dp[i][0] = Math.max(dp[i - 1][0], dp[i - 1][1]);
+                dp[i][1] = Math.max(dp[i - 1][0], dp[i - 1][1]) + nums[i];
+            }
+        }
 
 
-        return 0;
+        return Math.max(dp[n - 1][0], dp[n - 1][1]);
     }
 
 }
