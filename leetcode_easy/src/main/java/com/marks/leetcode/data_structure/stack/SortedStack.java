@@ -30,6 +30,7 @@ public class SortedStack {
      * 4. 将temp 临时栈中的元素重新压入栈中
      *
      * AC: 64ms/46.37MB
+     * 5. 优化, 使用懒更新, 即当 push 元素时, 懒更新temp, 不进行回填操作, 而是在 peek 时进行回填
      * @return
      * @author marks
      * @CreateDate: 2026/05/12 17:20
