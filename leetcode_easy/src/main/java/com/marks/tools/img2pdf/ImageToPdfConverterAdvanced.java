@@ -31,11 +31,11 @@ import java.util.List;
  */
 public class ImageToPdfConverterAdvanced {
     // 图片尺寸
-    private static final int IMAGE_WIDTH = 1270;
-    private static final int IMAGE_HEIGHT = 720;
+    private static final int IMAGE_WIDTH = 399;
+    private static final int IMAGE_HEIGHT = 197;
 
     // 输入目录
-    private static final String INPUT_DIR = "D:\\images\\pdf";
+    private static final String INPUT_DIR = "D:\\images\\pdf\\dir_1";
     // 输出目录
     private static final String OUTPUT_DIR = "D:\\images\\pdf\\result";
 
@@ -99,7 +99,7 @@ public class ImageToPdfConverterAdvanced {
         }
 
         File[] files = directory.listFiles((dir, name) ->
-                name.toLowerCase().endsWith(".jpeg") || name.toLowerCase().endsWith(".jpg"));
+                name.toLowerCase().endsWith(".jpeg") || name.toLowerCase().endsWith(".jpg") || name.toLowerCase().endsWith(".png"));
 
         if (files != null) {
             for (File file : files) {
@@ -195,6 +195,8 @@ public class ImageToPdfConverterAdvanced {
                 bufferedImage = resizeImage(bufferedImage, IMAGE_WIDTH, IMAGE_HEIGHT);
             }
 
+            bufferedImage = addIndexNumber(bufferedImage, i);
+
             // 转换为PDF Image对象
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ImageIO.write(bufferedImage, "JPEG", baos);
@@ -228,5 +230,32 @@ public class ImageToPdfConverterAdvanced {
         g2d.drawImage(original, 0, 0, targetWidth, targetHeight, null);
         g2d.dispose();
         return resized;
+    }
+
+    /**
+     * 为图片添加索引编号
+     */
+    private BufferedImage addIndexNumber(BufferedImage image, int index) {
+        BufferedImage imageWithText = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
+        Graphics2D g2d = imageWithText.createGraphics();
+
+        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g2d.drawImage(image, 0, 0, null);
+
+        g2d.setColor(Color.BLACK);
+        g2d.setFont(new Font("Arial", Font.BOLD, 24));
+
+        String text = String.valueOf(index);
+        FontMetrics fm = g2d.getFontMetrics();
+        int textWidth = fm.stringWidth(text);
+        int textHeight = fm.getHeight();
+
+        int x = image.getWidth() - textWidth - 10;
+        int y = image.getHeight() - textHeight + fm.getAscent() - 10;
+
+        g2d.drawString(text, x, y);
+        g2d.dispose();
+
+        return imageWithText;
     }
 }
