@@ -13,7 +13,9 @@ package com.marks.leetcode.hash_table;
 public class LeetCode_567 {
 
     /**
-     * @Description: [方法描述]
+     * @Description:
+     * 给定两个字符串 s1 和 s2，写一个函数来判断 s2 是否包含 s1 的某个变位词。
+     * 换句话说，第一个字符串的排列之一是第二个字符串的 子串 。
      * @param: s1
      * @param: s2
      * @return boolean
