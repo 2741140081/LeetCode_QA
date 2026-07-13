@@ -1,6 +1,8 @@
 package com.marks.leetcode.array;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * <p>项目名称: LeetCode_QA </p>
@@ -50,7 +52,8 @@ public class LeetCode_2967 {
      * 6. 查看了相关的提示, 需要找到nums 的中位数 m, 然后根据中位数构建一个小于 m 的最大回文数 和 一个大于等于 m的最小回文数, 然后分别计算总代价, 取最小的代价返回.
      * 7. 将 m 转成一个 String, 使用双指针, 将除了中间位置外的元素一致 假设 12345678 => 12345321 中间位置如果是增加 将4 变成 5, 如果是减少将 5 变成 4
      * 8. 得到 int left = 12344321 < m, int right = 12355321 > m, 枚举 [left, m), 和 [m, right] 之间是否还存在更优秀(更大或更小)的回文数
-     * need todo:
+     * 9. 直接通过遍历查找回文数, 并且通过isPalindrome 判断数字是否是回文数.
+     * AC: 40ms/58.99MB
      * @param: nums
      * @return long
      * @author marks
@@ -69,21 +72,69 @@ public class LeetCode_2967 {
             m = nums[n / 2];
         }
         // 根据中位数构建一个小于 m 的最大回文数 和 一个大于等于 m的最小回文数
-        String mStr = String.valueOf(m);
-        int len = mStr.length();
-        int l, r;
-        char[] max = new char[len];
-        char[] min = new char[len];
-        if (len % 2 == 0) {
-            // 偶数
-            l = len / 2 - 1;
-            r = len / 2;
-        } else {
-            l = r = len / 2;
+        int[] palindromes = findPalindromes(m);
+        long min = 0;
+        long max = 0;
+        for (int i = 0; i < n; i++) {
+            min += Math.abs(nums[i] - palindromes[0]);
+            max += Math.abs(nums[i] - palindromes[1]);
         }
 
+        return Math.min(min, max);
+    }
 
-        return 0;
+    /**
+     * 查找最大小于 m 的回文数和最小大于等于 m 的回文数
+     * @param m 目标整数
+     * @return 包含两个回文数的数组 [min, max]
+     */
+    public int[] findPalindromes(int m) {
+        int min = m - 1;
+        int max = m;
+
+        // 向下查找最大小于 m 的回文数
+        while (min >= 0 && !isPalindrome(min)) {
+            min--;
+        }
+
+        // 向上查找最小大于等于 m 的回文数
+        while (!isPalindrome(max)) {
+            max++;
+        }
+
+        return new int[]{min, max};
+    }
+
+    /**
+     * 判断一个整数是否为回文数
+     * @param x 待判断的整数
+     * @return 如果是回文数返回 true，否则返回 false
+     */
+    public boolean isPalindrome(int x) {
+        // 负数不是回文数
+        if (x < 0) {
+            return false;
+        }
+
+        // 0-9 的单数字都是回文数
+        if (x >= 0 && x < 10) {
+            return true;
+        }
+
+        // 以0结尾的非0数字不是回文数（如10、100等）
+        if (x % 10 == 0 && x != 0) {
+            return false;
+        }
+
+        // 反转后半部分数字，与前半部分比较
+        int reversedHalf = 0;
+        while (x > reversedHalf) {
+            reversedHalf = reversedHalf * 10 + x % 10;
+            x /= 10;
+        }
+
+        // 当数字长度为奇数时，通过 reversedHalf/10 去除中间的数字
+        return x == reversedHalf || x == reversedHalf / 10;
     }
 
 }
