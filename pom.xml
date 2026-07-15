@@ -21,6 +21,7 @@
         <module>schedule_task</module>
         <module>kkPlatformGameAuto</module>
         <module>automated_script</module>
+        <module>redis_inAction</module>
     </modules>
 
     <properties>
