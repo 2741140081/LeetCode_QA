@@ -16,6 +16,14 @@ public class LeetCode_4 {
      * @Description:
      * 给定两个大小分别为 m 和 n 的正序（从小到大）数组 nums1 和 nums2。请你找出并返回这两个正序数组的 中位数 。
      * 算法的时间复杂度应该为 O(log (m+n)) 。
+     *
+     * tips:
+     * nums1.length == m
+     * nums2.length == n
+     * 0 <= m <= 1000
+     * 0 <= n <= 1000
+     * 1 <= m + n <= 2000
+     * -10^6 <= nums1[i], nums2[i] <= 10^6
      * @param: nums1
      * @param: nums2
      * @return double
@@ -31,11 +39,11 @@ public class LeetCode_4 {
 
     /**
      * @Description:
-     * 1. 开始分析, 如何在一个数组中找到中位数? 中位数是数组中间的数, 如果数组长度为偶数, 中位数是两个中间数之和除以2; int n = nums.length;
-     * 2. n & 1 == 0, int index = n / 2; double ans = ((double) nums[index] + nums[index - 1]) / 2; n & 1 ==1, dobule ans = nums[index];
-     * 3. 开始解决当前m + n 的问题, int m_mid = m / 2; int n_mid = n / 2;
-     * 3.1 nums1[m_mid] > nums2[n_mid], nums1[m_mid] < nums2[n_mid], nums1[m_mid] == nums2[n_mid]
-     * need todo
+     * 1. 中位数是有序数组中间的一个数, 当前整个数组的长度是 int len = m + n, 如果 len % 2 的情况进行讨论
+     * 2.1 len 是奇数, mid = len / 2; 设计一个下标 idx = 0, 然后对两个有序数组进行比较,
+     * nums1[left] > nums2[right], right++, idx++; 否则 left++, idx++; 当 idx == mid 时, 返回 此时的 nums1[left] 或者 nums2[right]
+     * 2.2 len 是偶数, 需要找到两个数 mid = len / 2, 以及 mid - 1. 用 prev 记录 mid - 1 的值,
+     * AC: 3ms/47.87MB
      * @param: nums1
      * @param: nums2
      * @return double
@@ -46,8 +54,49 @@ public class LeetCode_4 {
     private double method_01(int[] nums1, int[] nums2) {
         int m = nums1.length;
         int n = nums2.length;
-
-        return 0;
+        int idx = -1;
+        int left = 0, right = 0;
+        int len = m + n;
+        int curr = 0, prev = 0;
+        while (left < m && right < n) {
+            // 判断是否到达中位数
+            if (idx == len / 2) {
+                if (len % 2 == 0) {
+                    return (curr + prev) / 2.0;
+                } else {
+                    return curr;
+                }
+            }
+            if (len % 2 == 0) {
+                // 更新 prev
+                prev = curr;
+            }
+            if (nums1[left] > nums2[right]) {
+                curr = nums2[right];
+                right++;
+            } else {
+                curr = nums1[left];
+                left++;
+            }
+            idx++;
+        }
+        // 如果跳出循环, 则必定是 left == m || right == n, 计算剩余还需要多少个数字
+        int remaining = len / 2 - idx;
+        // 判断哪一个数组还剩余元素
+        while (remaining > 0) {
+            if (len % 2 == 0) {
+                prev = curr;
+            }
+            curr = (left >= m ? nums2[right] : nums1[left]);
+            left++;
+            right++;
+            remaining--;
+        }
+        if (len % 2 == 0) {
+            return (curr + prev) / 2.0;
+        } else {
+            return curr;
+        }
     }
 
 }

@@ -41,6 +41,7 @@ public class LeetCode_517 {
      * @Description:
      * E1: [-1, -2, 3]
      * 1. 假设使用前缀和, preSum[i] = 0 表示前 i 个洗衣机中衣服的数量之和,
+     * AC: 3ms/45.79MB
      * @param: machines
      * @return int
      * @author marks

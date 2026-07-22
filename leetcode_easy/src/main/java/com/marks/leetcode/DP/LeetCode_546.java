@@ -54,17 +54,31 @@ public class LeetCode_546 {
         return calculatePoints(boxes, 0, length - 1, 0);
     }
 
+    /**
+     * 计算消除盒子可获得的最大分数
+     * 这是一个使用动态规划（DP）和递归的解决方案，用于解决"消除盒子"问题
+     * @param boxes 盒子数组，每个元素代表一个盒子的分数
+     * @param l 当前考虑的子数组左边界
+     * @param r 当前考虑的子数组右边界
+     * @param k 右侧已经有的与boxes[r]相同的盒子数量
+     * @return 消除当前子数组可获得的最大分数
+     */
     public int calculatePoints(int[] boxes, int l, int r, int k) {
+        // 如果左边界超过右边界，说明没有盒子可消除，返回0分
         if (l > r) {
             return 0;
         }
+        // 如果当前状态已经计算过，直接从DP数组中获取结果，避免重复计算
         if (dp[l][r][k] == 0) {
             int r1 = r, k1 = k;
+            // 尝试合并右侧相同颜色的盒子
             while (r1 > l && boxes[r1] == boxes[r1 - 1]) {
                 r1--;
                 k1++;
             }
+            // 计算直接消除右侧所有相同盒子的分数
             dp[l][r][k] = calculatePoints(boxes, l, r1 - 1, 0) + (k1 + 1) * (k1 + 1);
+            // 尝试在中间找到与右侧盒子颜色相同的盒子，进行分步消除
             for (int i = l; i < r1; i++) {
                 if (boxes[i] == boxes[r1]) {
                     dp[l][r][k] = Math.max(dp[l][r][k], calculatePoints(boxes, l, i, k1 + 1) + calculatePoints(boxes, i + 1, r1 - 1, 0));
