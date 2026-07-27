@@ -1,6 +1,8 @@
 package com.marks.leetcode.array;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.PriorityQueue;
 
 /**
  * <p>项目名称: LeetCode_QA </p>
@@ -43,7 +45,8 @@ public class LeetCode_373 {
     /**
      * @Description:
      * E1: nums1 = [1,7,11], nums2 = [2,4,6], k = 3
-     * 1.
+     * 1. 使用优先队列, 小根堆排序, 对 nums1[i] + nums2[i] 进行排序
+     * AC: 37ms/131.61MB
      * @param: nums1
      * @param: nums2
      * @param: k
@@ -53,8 +56,30 @@ public class LeetCode_373 {
      * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
      */
     private List<List<Integer>> method_01(int[] nums1, int[] nums2, int k) {
+        // 1. 创建优先队列, 小根堆排序, 对 nums1[i] + nums2[i] 进行排序
+        PriorityQueue<int[]> pq = new PriorityQueue<>(k, (o1, o2)->{
+            return nums1[o1[0]] + nums2[o1[1]] - nums1[o2[0]] - nums2[o2[1]];
+        });
+        List<List<Integer>> ans = new ArrayList<>();
+        int m = nums1.length;
+        int n = nums2.length;
+        for (int i = 0; i < Math.min(m, k); i++) {
+            // 2. 添加 nums1[] 的下标 与 nums2[] 的第一个元素下标 0
+            pq.offer(new int[]{i,0});
+        }
+        while (k-- > 0 && !pq.isEmpty()) {
+            int[] idxPair = pq.poll();
+            List<Integer> list = new ArrayList<>();
+            list.add(nums1[idxPair[0]]);
+            list.add(nums2[idxPair[1]]);
+            ans.add(list);
+            if (idxPair[1] + 1 < n) {
+                // 添加 nums2[] 的下一个下标
+                pq.offer(new int[]{idxPair[0], idxPair[1] + 1});
+            }
+        }
 
-        return null;
+        return ans;
     }
 
 }
