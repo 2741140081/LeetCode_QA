@@ -45,6 +45,7 @@ public class LeetCode_1665 {
      * 2. 通过二分查找 int mid = (min + max) / 2; 找到最小初始能量使得可以完成所有任务. min = 7, max = 14
      * 3. 如何对 tasks 进行处理, 是按照实际能量排序还是最小能量排序? mid = 10;
      * 3.1 按照 minimum[i] 降序排序, 并且对 actual[i] 升序排序 => [4, 8], [2, 4], [1, 3]
+     * AC: 24ms/111.73MB
      * @param: tasks
      * @return int
      * @author marks
@@ -52,6 +53,7 @@ public class LeetCode_1665 {
      * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
      */
     private int method_01(int[][] tasks) {
+        // 计算每个任务的变换量：minimum - actual（即 a[1] - a[0]）, 并且进行升序排序
         Arrays.sort(tasks, (a, b) -> a[1] - a[0] - (b[1] - b[0]));
         int ans = 0;
         for (int[] task : tasks) {
