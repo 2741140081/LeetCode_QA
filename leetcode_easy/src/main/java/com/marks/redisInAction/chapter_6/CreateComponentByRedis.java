@@ -2,6 +2,7 @@ package com.marks.redisInAction.chapter_6;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Transaction;
+import redis.clients.jedis.params.ZParams;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -204,6 +205,62 @@ public class CreateComponentByRedis {
         }
 
         return false;
+    }
+
+
+    public String acquireFairSemaphore(Jedis conn, String semName, int limit, long timeout) {
+        // 1. 初始化标识符与key
+        String identifier = UUID.randomUUID().toString();
+        String czSet = semName + ":owner";
+        String ctr = semName + ":counter";
+
+        // 2. 清理过期请求
+        long now = System.currentTimeMillis();
+        Transaction trans = conn.multi();
+        // 从有序集合 semName 中移除所有 score (时间戳) 小于 now - timeout 的成员, 目的: 释放那些超时未释放的信号量, 防止死锁
+        trans.zremrangeByScore(semName.getBytes(), "-inf".getBytes(), String.valueOf(now - timeout).getBytes());
+
+        // 3. 计算当前有效持有者
+        ZParams zParams = new ZParams();
+        // 权重设置, 意味着结果集合的 score 完全取决于 czSet 的 score（通常代表获取信号量的时间），而忽略 semName 的时间。
+        // 这步操作是为了更新 czSet，确保它只包含那些在 semName 中依然存在的有效请求。
+        zParams.weights(1, 0);
+        // 对 czSet (旧的持有者集合) 和 semName(清理后的所有请求集合) 求交集
+        trans.zinterstore(czSet, zParams, czSet, semName);
+        // 计数器加1, 计数器的值代表了当前请求的“排队号”或“总数”。
+        trans.incr(ctr);
+        List<Object> response = trans.exec();
+        int counter = ((Long)response.get(response.size() - 1)).intValue();
+
+        // 4. 尝试获取信号量
+        trans = conn.multi();
+        trans.zadd(semName, now, identifier);
+        trans.zadd(czSet, counter, identifier);
+        trans.zrank(czSet, identifier);
+        response = trans.exec();
+        // 获取返回结果
+        int result = ((Long) response.get(response.size() - 1)).intValue();
+        if (result < limit) {
+            // 如果计数器的值小于限制值 limit，说明还有空余的信号量名额，返回 identifier 表示获取成功。
+            return identifier;
+        }
+
+        // 5. 获取失败处理, result >= limit, 信号量已满
+        trans = conn.multi();
+        // 从 semName 和 czSet 中移除当前 identifier.
+        trans.zrem(semName, identifier);
+        trans.zrem(czSet, identifier);
+        trans.exec();
+        return null;
+    }
+
+
+    public boolean releaseFairSemaphore(Jedis conn, String semName, String identifier) {
+        Transaction trans = conn.multi();
+        trans.zrem(semName, identifier);
+        trans.zrem(semName + ":owner", identifier); // czSet
+        List<Object> res = trans.exec();
+        return (Long)res.get(res.size() - 1) == 1;
     }
 
 
