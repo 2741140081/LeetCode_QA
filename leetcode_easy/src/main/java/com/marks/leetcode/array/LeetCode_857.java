@@ -47,10 +47,9 @@ public class LeetCode_857 {
      * E1:
      * 输入： quality = [10,20,5], wage = [70,50,30], k = 2
      * 输出： 105.00000
-     * 1. 选择 0 号 和 1 号工, 需要的最少金额: 1 : 2;
-     * 2. 假设 选择 k 位工人, 分别是 k0 ~ k-1; 然后质量总和是 kSum, 并且 ki 的最低工资是 kWage; 那么需要满足规则: ki / kSum >= kWage
-     * ki >= kWage * kSum ki / kWage >= kSum
-     * 3. [1/7, 2/5, 1/6] 然后从中选择 k 个最小的值, [1/7, 1/6] 然后以 1/7 作为基准,105.00000
+     * 1. 动态规划被排除, 因为时间复杂度是 O(n^2) 会超时, 感觉合适的方式是使用排序 + 队列的方式
+     * 2. 假设将[a, b] [c, d] 组成一个队伍, 总工资是 a/(a + c) = b/sum => sum = b * (a +c) / a,
+     * 然后判断 b 是否符合要求 c/(a + c) * sum => c1 = b * c / a >= d, 则符合要求 a1 = a * d / c
      * @param: quality
      * @param: wage
      * @param: k
@@ -60,15 +59,42 @@ public class LeetCode_857 {
      * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
      */
     private double method_01(int[] quality, int[] wage, int k) {
+        // 获取工人数组长度
         int n = quality.length;
-        Integer[] index = new Integer[n];
+        // 创建索引数组，用于后续排序
+        Integer[] h = new Integer[n];
         for (int i = 0; i < n; i++) {
-            index[i] = i;
+            h[i] = i;
         }
-        Arrays.sort(index, (a, b) -> quality[b] * wage[a] - quality[a] * wage[b]);
-
-
-
-        return 0;
+        // 根据性价比（工资/质量）对索引进行排序
+        Arrays.sort(h, (a, b) -> {
+            return quality[b] * wage[a] - quality[a] * wage[b];
+        });
+        // 初始化结果变量为一个很大的值
+        double res = 1e9;
+        // 总质量变量，用于计算总工资
+        double totalq = 0.0;
+        // 使用最大堆来维护当前选中的k-1个工人中质量最小的
+        PriorityQueue<Integer> pq = new PriorityQueue<Integer>((a, b) -> b - a);
+        // 遍历前k-1个工人，将其质量加入总质量，并加入堆中
+        for (int i = 0; i < k - 1; i++) {
+            totalq += quality[h[i]];
+            pq.offer(quality[h[i]]);
+        }
+        // 从第k-1个工人开始遍历，每次尝试将当前工人加入队伍
+        for (int i = k - 1; i < n; i++) {
+            int idx = h[i];
+            // 将当前工人的质量加入总质量
+            totalq += quality[idx];
+            // 将当前工人的质量加入堆中
+            pq.offer(quality[idx]);
+            // 计算当前队伍的总工资
+            double totalc = ((double) wage[idx] / quality[idx]) * totalq;
+            // 更新最小总工资
+            res = Math.min(res, totalc);
+            // 移除堆中质量最大的工人，保持堆的大小为k-1
+            totalq -= pq.poll();
+        }
+        return res;
     }
 }

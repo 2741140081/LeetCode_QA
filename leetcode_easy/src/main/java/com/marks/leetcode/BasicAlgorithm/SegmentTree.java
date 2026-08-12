@@ -45,10 +45,10 @@ public class SegmentTree {
 
 
     public int query(int treeIndex, int start, int end, int queryStart, int queryEnd) {
-        if (queryStart < start || queryEnd > end) {
+        if (queryEnd < start || queryStart > end) {
             // 当前查询不在
             return 0;
-        } else if (queryStart >= start && queryEnd <= end) {
+        } else if (queryStart <= start && queryEnd >= end) {
             return tree[treeIndex];
         } else {
             int mid = (end - start) / 2 + start;
