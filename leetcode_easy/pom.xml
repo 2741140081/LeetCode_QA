@@ -31,6 +31,7 @@
         <mysql.version>8.0.26</mysql.version>
         <tess4j.version>4.5.4</tess4j.version>
         <jnativehook.version>2.2.2</jnativehook.version>
+        <csv.version>1.10.0</csv.version>
     </properties>
 
     <build>
@@ -346,6 +347,16 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
             <version>${spring-boot.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-csv</artifactId>
+            <version>${csv.version}</version>
         </dependency>
     </dependencies>
 

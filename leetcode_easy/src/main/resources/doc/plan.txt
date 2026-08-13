@@ -1,0 +1,13 @@
+1. redis缓存: redis
+2. 消息队列: rebitMq or rocketMq kafka
+3. elk: 搜索
+4. k8s, docker: 容器
+
+
+
+
+
+
+
+
+

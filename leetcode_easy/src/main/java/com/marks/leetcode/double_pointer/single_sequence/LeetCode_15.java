@@ -15,6 +15,18 @@ import java.util.List;
  * @update [序号][日期YYYY-MM-DD] [更改人姓名][变更描述]
  */
 public class LeetCode_15 {
+
+    /**
+     * @Description:
+     * 给定一个包含 n 个整数的数组 nums，
+     * 判断 nums 中是否存在三个元素 a ，b ，c ，使得 a + b + c = 0 ？
+     * 请找出所有和为 0 且 不重复 的三元组。
+     * @param: nums
+     * @return java.util.List<java.util.List<java.lang.Integer>>
+     * @author marks
+     * @CreateDate: 2026/07/22 14:28
+     * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
+     */
     public List<List<Integer>> threeSum(int[] nums) {
         List<List<Integer>> result;
         result = method_01(nums);
@@ -22,6 +34,15 @@ public class LeetCode_15 {
         return result;
     }
 
+    /**
+     * @Description:
+     * 1. 先对数组进行排序
+     * @param: nums
+     * @return java.util.List<java.util.List<java.lang.Integer>>
+     * @author marks
+     * @CreateDate: 2026/07/22 14:31
+     * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
+     */
     private List<List<Integer>> method_02(int[] nums) {
         int n = nums.length;
         Arrays.sort(nums);

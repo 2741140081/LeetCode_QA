@@ -30,9 +30,44 @@ public class LeetCode_1358 {
     public int numberOfSubstrings(String s) {
         int result = 0;
 //        result = method_01(s);
-        result = method_02(s);
+//        result = method_02(s);
+        result = method_03(s);
         return result;
     }
+
+    /**
+     * @Description:
+     * 1. 再写一次, 还是使用滑动窗口, 但是是一个不定长的窗口, int[] cnt = new int[3] 记录窗口中的元素, 通过 checkIsOverWrite 判断是否满足条件
+     * 2. 假设 [i, j] 集合是满足条件的一个集合, 然后不断缩小 i, 直到 [nextI, j] 不满足条件, 此时最小的满足集合是 [nextI + 1, j] 大小是 j - nextI;
+     * 3. 思考错误了, 需要求子字符串的合法数目, 而不是求最短子字符串大小.
+     * AC: 13ms/45.63MB
+     * @param: s
+     * @return int
+     * @author marks
+     * @CreateDate: 2026/06/30 10:33
+     * @update: [序号][YYYY-MM-DD] [更改人姓名][变更描述]
+     */
+    private int method_03(String s) {
+        int n = s.length();
+        int left = 0, right = 0;
+        int[] cnt = new int[3];
+        int ans = 0;
+        while (right < n) {
+            cnt[s.charAt(right) - 'a']++;
+            if (checkIsOverWrite(cnt)) {
+                // 当前 right 满足条件, 缩小 left
+                while (checkIsOverWrite(cnt)) {
+                    cnt[s.charAt(left) - 'a']--;
+                    left++;
+                }
+            }
+            ans += left; // 由于 left 已经执行 ++ 操作, 所以此时 left 位置是 nextI, 需要 nextI - 1 是最小位置, 则 [0 ~ nextI - 1] 都是合法子字符串, 总数有 nextI 个
+            right++;
+        }
+
+        return ans;
+    }
+
     /**
      * @Description: [
      * E1:s = "abcabc"

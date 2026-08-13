@@ -17,7 +17,7 @@ class LeetCode_1358Test {
     @Test
     void numberOfSubstrings() {
         // s = "abcabc"
-        String s = "abcabc";
+        String s = "acbbcac";
         int result = new LeetCode_1358().numberOfSubstrings(s);
         System.out.println(result);
     }

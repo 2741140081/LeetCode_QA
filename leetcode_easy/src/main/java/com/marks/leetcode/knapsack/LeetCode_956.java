@@ -55,36 +55,35 @@ public class LeetCode_956 {
      */
     private int method_01(int[] rods) {
         int n = rods.length;
+        int INF = Integer.MIN_VALUE / 2;
         int sum = Arrays.stream(rods).sum();
-        int[][] dp = new int[n + 1][sum + 1];
+        int[][] dp = new int[2][sum + 1];
+        for (int i = 0; i < 2; i++) {
+            Arrays.fill(dp[i], INF);
+        }
         dp[0][0] = 0;
-        int count = 0;
+        int prev;
         int curr = 0;
         for (int i = 1; i <= n; i++) {
             curr = i % 2;
-            int pre = 1 - curr;
-            int temp = rods[i - 1];
-            count += temp;
+            prev = 1 - curr;
+            int rod = rods[i - 1];
             for (int j = 0; j <= sum; j++) {
-                // 如果不使用第 i 根棍子 dp[i][j] = dp[i - 1][j]
-                dp[i][j] = dp[i - 1][j];
-                // 如果使用第 i 根棍子
-                // a. 放在短堆中, 且放入后仍然是短堆 dp[i][j] = dp[i - 1][j + temp] + temp
-                if (j > temp && j + temp <= count) {
-                    dp[i][j] = Math.max(dp[i][j], dp[i - 1][j + temp] + temp);
+                // 忽略第 i 根钢筋
+                dp[curr][j] = dp[prev][j];
+                // 将 i 添加到短的侧
+                if (j + rod <= sum && dp[prev][j + rod] != INF) {
+                    dp[curr][j] = Math.max(dp[curr][j], dp[prev][j + rod] + rod);
                 }
-                // b. 放在短堆中, 当时放入后变成长堆 dp[i][j] = dp[i - 1][Math.abs(j - temp)] + temp
-                if (j <= temp) {
-                    dp[i][j] = Math.max(dp[i][j], dp[i - 1][temp - j] + (temp - j));
+                int abs = Math.abs(j - rod);
+                // 将 i 添加到长的侧
+                if (dp[prev][abs] != INF) { // j > rod, 防止从负数的非法转移
+                    dp[curr][j] = Math.max(dp[curr][j], dp[prev][abs] + rod);
                 }
-                // c. 放在长堆中,                 dp[i][j] = dp[i - 1][Math.abs(j - temp)]
-                if (j > temp) {
-                    dp[i][j] = Math.max(dp[i][j], dp[i - 1][j - temp]);
-                }
-
             }
         }
-        return dp[curr][0];
+
+        return dp[curr][0] / 2;
     }
 
 }
