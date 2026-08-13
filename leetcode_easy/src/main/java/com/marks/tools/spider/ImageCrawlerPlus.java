@@ -30,7 +30,7 @@ public class ImageCrawlerPlus {
     private static final int THREAD_POOL_SIZE = 20;
     private static ExecutorService executor;
     // 网站基础URL
-    private static final String BASE_URL = "https://tpmh3.com";
+    private static final String BASE_URL = "https://test.com";
     // 重试配置
     private static final int MAX_RETRY = 5;
     private static final long RETRY_INTERVAL = 10000; // 10秒
