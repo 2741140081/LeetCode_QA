@@ -25,6 +25,7 @@
         <slf4j.version>2.0.13</slf4j.version>
         <logback.version>1.5.25</logback.version>
         <okhttp.version>4.12.0</okhttp.version>
+        <guava.version>32.1.3-jre</guava.version>
     </properties>
 
     <dependencies>
@@ -145,6 +146,13 @@
             <artifactId>okhttp</artifactId>
             <version>${okhttp.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.version}</version>
+        </dependency>
+
 
         <!-- ========== 测试 ========== -->
         <dependency>
