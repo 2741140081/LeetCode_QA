@@ -4,11 +4,12 @@ package com.mangareader.component;
 import com.mangareader.service.ImageService;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
+import javafx.geometry.Orientation;
 import javafx.scene.CacheHint;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
-import javafx.scene.control.ProgressIndicator;
-import javafx.scene.control.ScrollPane;
+import javafx.scene.Node;
+import javafx.scene.control.*;
+import javafx.scene.control.skin.ListViewSkin;
+import javafx.scene.control.skin.VirtualFlow;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import org.springframework.stereotype.Component;
@@ -61,6 +62,70 @@ public class ComicVirtualFlow extends ListView<String> {
         this.currentScale = newScale;
         refresh();
     }
+
+    /**
+     * 获取当前可见的图片索引
+     * @return 当前可见的图片索引
+     */
+    public int getCurrentVisibleIndex() {
+        double scrollY = getScrollTop();
+        double estimatedCellHeight = estimateCellHeight();
+
+        if (estimatedCellHeight > 0) {
+            int estimatedIndex = (int) (scrollY / estimatedCellHeight);
+            return Math.max(0, Math.min(estimatedIndex, getItems().size() - 1));
+        }
+
+        return 0;
+    }
+
+    /**
+     * 估算单元格高度
+     * @return 估算的单元格高度
+     */
+    private double estimateCellHeight() {
+        for (int i = 0; i < Math.min(10, getItems().size()); i++) {
+            ListCell<String> cell = lookupCell(i);
+            if (cell != null && cell.getHeight() > 0) {
+                return cell.getHeight();
+            }
+        }
+        return 100;
+    }
+
+    /**
+     * 获取当前滚动位置
+     * @return 滚动位置
+     */
+    private double getScrollTop() {
+        for (Node node : lookupAll(".scroll-bar")) {
+            if (node instanceof ScrollBar scrollBar &&
+                    scrollBar.getOrientation() == Orientation.VERTICAL) {
+                return scrollBar.getValue();
+            }
+        }
+        return 0;
+    }
+
+    /**
+     * 查找指定索引的单元格
+     * @param index 单元格索引
+     * @return 单元格对象，如果不存在返回 null
+     */
+    private ListCell<String> lookupCell(int index) {
+        if (getSkin() instanceof ListViewSkin<?> skin) {
+            try {
+                @SuppressWarnings("unchecked")
+                VirtualFlow<ListCell<String>> virtualFlow =
+                        (VirtualFlow<ListCell<String>>) skin.getChildren().get(0);
+                return virtualFlow.getCell(index);
+            } catch (Exception e) {
+                return null;
+            }
+        }
+        return null;
+    }
+
 
     /**
      * 自定义图片单元格

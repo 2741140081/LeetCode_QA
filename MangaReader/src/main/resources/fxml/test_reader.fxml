@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import com.mangareader.component.ComicVirtualFlow?>
+
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Label?>
+<BorderPane fx:id="testRoot" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.mangareader.controller.TestReaderController">
+
+    <!-- 顶部简易测试工具栏 -->
+    <top>
+        <HBox spacing="15" style="-fx-padding: 10px; -fx-background-color: #f0f0f0;">
+            <Label text="下拉式漫画阅读器测试页面" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+            <Label fx:id="statusLabel" text="当前加载状态：准备就绪" style="-fx-font-size: 14px;"/>
+        </HBox>
+    </top>
+
+    <!-- 核心下拉阅读区域 -->
+    <!-- 核心下拉阅读区域 -->
+    <center>
+        <StackPane fx:id="comicContainer" style="-fx-background-color: #222222;"/>
+    </center>
+
+
+    <!-- 底部简易状态栏 -->
+    <bottom>
+        <HBox alignment="CENTER" spacing="20" style="-fx-padding: 8px; -fx-background-color: #f0f0f0;">
+            <Label fx:id="pageCountLabel" text="总图片数：0" style="-fx-font-size: 14px;"/>
+            <Label fx:id="currentPageLabel" text="当前浏览：第 0 张" style="-fx-font-size: 14px;"/>
+        </HBox>
+    </bottom>
+
+</BorderPane>

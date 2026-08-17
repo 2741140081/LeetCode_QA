@@ -16,8 +16,8 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * <p>项目名称: LeetCode_QA </p>
@@ -34,7 +34,17 @@ import java.util.concurrent.ExecutorService;
 @Service
 public class ImageServiceImpl implements ImageService {
 
-    private final ExecutorService imageLoadExecutor;
+    private final ExecutorService imageLoadExecutor = new ThreadPoolExecutor(
+            4, 8, 60, TimeUnit.SECONDS,
+            new LinkedBlockingQueue<>(200),
+            new ThreadFactory() {
+                private final AtomicInteger num = new AtomicInteger(1);
+                @Override public Thread newThread(Runnable r) {
+                    return new Thread(r, "img-loader-" + num.getAndIncrement());
+                }
+            },
+            new ThreadPoolExecutor.CallerRunsPolicy()
+    );;
 
     @Value("${manga.storage.cache-root}")
     private String diskCacheDir; // 硬盘缓存目录
@@ -42,9 +52,9 @@ public class ImageServiceImpl implements ImageService {
 
     private Cache<String, Image> memoryCache; // 内存缓存
 
-    public ImageServiceImpl(@Qualifier("imageLoadExecutor") ExecutorService imageLoadExecutor) {
-        this.imageLoadExecutor = imageLoadExecutor;
-    }
+//    public ImageServiceImpl(@Qualifier("imageLoadExecutor") ExecutorService imageLoadExecutor) {
+//        this.imageLoadExecutor = imageLoadExecutor;
+//    }
 
     @PostConstruct
     @Override

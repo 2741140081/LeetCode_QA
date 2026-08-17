@@ -4,45 +4,28 @@ spring:
 
 
 datasource:
-  type: com.alibaba.druid.pool.DruidDataSource
   driver-class-name: com.mysql.cj.jdbc.Driver
   url: jdbc:mysql://localhost:3306/manga_reader?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=utf8mb4&allowPublicKeyRetrieval=true
-  username: root
-  password: root
-  druid:
-    initial-size: 5
-    min-idle: 5
-    max-active: 20
-    max-wait: 60000
-    time-between-eviction-runs-millis: 60000
-    min-evictable-idle-time-millis: 300000
-    validation-query: SELECT 1
-    test-while-idle: true
-    test-on-borrow: false
-    test-on-return: false
-    pool-prepared-statements: true
-    max-pool-prepared-statement-per-connection-size: 20
-    filters: stat,wall,log4j2
-    web-stat-filter:
-      enabled: true
-      url-pattern: /*
-      exclusions: "*.js,*.gif,*.jpg,*.png,*.css,*.ico,/druid/*"
-    stat-view-servlet:
-      enabled: true
-      url-pattern: /druid/*
-      reset-enable: false
-      login-username: admin
-      login-password: admin
+  username: edms
+  password: edms
+  hikari:
+    pool-name: HikariPool-Manga
+    maximum-pool-size: 20
+    minimum-idle: 5
+    connection-timeout: 30000
+    idle-timeout: 600000
+    max-lifetime: 1800000
+    auto-commit: true
 
 # 添加 MyBatis 的 mapper 扫描路径和配置选项。
-mybatis:
-  mapper-locations: classpath:mapper/*.xml
-  type-aliases-package: com.mangareader.model.entity
-  configuration:
-    map-underscore-to-camel-case: true
-    cache-enabled: true
-    lazy-loading-enabled: true
-    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+#mybatis:
+#  mapper-locations: classpath:mapper/*.xml
+#  type-aliases-package: com.mangareader.model.entity
+#  configuration:
+#    map-underscore-to-camel-case: true
+#    cache-enabled: true
+#    lazy-loading-enabled: true
+#    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
 
 # 添加漫画存储根目录、缓存目录和阅读器相关配置。
 manga:

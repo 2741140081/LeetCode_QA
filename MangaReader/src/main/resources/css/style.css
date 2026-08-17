@@ -1,0 +1,244 @@
+/* ========================================
+   全局样式
+   ======================================== */
+
+/* 根节点样式 */
+.root {
+    -fx-background-color: #1e1e1e;
+    -fx-font-family: "Microsoft YaHei", "SimHei", Arial, sans-serif;
+    -fx-font-size: 14px;
+}
+
+/* 按钮样式 */
+.button {
+    -fx-background-color: #3a3a3a;
+    -fx-text-fill: #ffffff;
+    -fx-border-color: #555555;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-padding: 8px 16px;
+    -fx-cursor: hand;
+}
+
+.button:hover {
+    -fx-background-color: #4a4a4a;
+    -fx-border-color: #666666;
+}
+
+.button:pressed {
+    -fx-background-color: #2a2a2a;
+}
+
+/* 标签样式 */
+.label {
+    -fx-text-fill: #e0e0e0;
+}
+
+/* ========================================
+   工具栏样式
+   ======================================== */
+
+.toolbar {
+    -fx-background-color: #2d2d2d;
+    -fx-border-color: #404040;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 10px;
+    -fx-spacing: 10px;
+}
+
+/* ========================================
+   漫画阅读区域样式
+   ======================================== */
+
+.comic-container {
+    -fx-background-color: #1a1a1a;
+}
+
+.comic-virtual-flow {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.comic-virtual-flow .list-cell {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-border-width: 0;
+}
+
+.comic-virtual-flow .list-cell:filled:hover {
+    -fx-background-color: transparent;
+}
+
+.comic-virtual-flow .scroll-bar:vertical {
+    -fx-background-color: #2d2d2d;
+}
+
+.comic-virtual-flow .scroll-bar:vertical .track {
+    -fx-background-color: #2d2d2d;
+    -fx-border-color: #404040;
+    -fx-border-width: 0 1 0 0;
+}
+
+.comic-virtual-flow .scroll-bar:vertical .thumb {
+    -fx-background-color: #555555;
+    -fx-background-radius: 4px;
+}
+
+.comic-virtual-flow .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: #666666;
+}
+
+.comic-virtual-flow .scroll-bar:horizontal {
+    -fx-background-color: transparent;
+}
+
+/* ========================================
+   状态栏样式
+   ======================================== */
+
+.status-bar {
+    -fx-background-color: #2d2d2d;
+    -fx-border-color: #404040;
+    -fx-border-width: 1 0 0 0;
+    -fx-padding: 8px;
+}
+
+.status-label {
+    -fx-text-fill: #b0b0b0;
+    -fx-font-size: 12px;
+}
+
+/* ========================================
+   加载指示器样式
+   ======================================== */
+
+.progress-indicator {
+    -fx-progress-color: #4a90e2;
+}
+
+/* ========================================
+   图片容器样式
+   ======================================== */
+
+.image-container {
+    -fx-background-color: #1a1a1a;
+    -fx-padding: 0;
+    -fx-border-width: 0;
+}
+
+.image-view {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+}
+
+/* ========================================
+   滚动面板样式
+   ======================================== */
+
+.scroll-pane {
+    -fx-background-color: #1a1a1a;
+    -fx-border-color: #404040;
+    -fx-border-width: 0;
+}
+
+.scroll-pane .viewport {
+    -fx-background-color: #1a1a1a;
+}
+
+.scroll-pane .scroll-bar:vertical {
+    -fx-background-color: #2d2d2d;
+}
+
+.scroll-pane .scroll-bar:vertical .track {
+    -fx-background-color: #2d2d2d;
+    -fx-border-color: #404040;
+    -fx-border-width: 0 1 0 0;
+}
+
+.scroll-pane .scroll-bar:vertical .thumb {
+    -fx-background-color: #555555;
+    -fx-background-radius: 4px;
+}
+
+.scroll-pane .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: #666666;
+}
+
+.scroll-pane .scroll-bar:horizontal {
+    -fx-background-color: transparent;
+}
+
+/* ========================================
+   工具提示样式
+   ======================================== */
+
+.tooltip {
+    -fx-background-color: #3a3a3a;
+    -fx-text-fill: #e0e0e0;
+    -fx-border-color: #555555;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-padding: 6px 10px;
+}
+
+/* ========================================
+   菜单样式
+   ======================================== */
+
+.menu-bar {
+    -fx-background-color: #2d2d2d;
+    -fx-border-color: #404040;
+    -fx-border-width: 0 0 1 0;
+}
+
+.menu {
+    -fx-background-color: transparent;
+    -fx-text-fill: #e0e0e0;
+}
+
+.menu:hover {
+    -fx-background-color: #3a3a3a;
+}
+
+.menu-item {
+    -fx-background-color: #2d2d2d;
+    -fx-text-fill: #e0e0e0;
+}
+
+.menu-item:hover {
+    -fx-background-color: #3a3a3a;
+}
+
+.context-menu {
+    -fx-background-color: #2d2d2d;
+    -fx-border-color: #404040;
+    -fx-border-width: 1;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+}
+
+/* ========================================
+   对话框样式
+   ======================================== */
+
+.alert {
+    -fx-background-color: #2d2d2d;
+}
+
+.alert .header-panel {
+    -fx-background-color: #3a3a3a;
+    -fx-border-color: #404040;
+    -fx-border-width: 0 0 1 0;
+}
+
+.alert .content {
+    -fx-background-color: #2d2d2d;
+    -fx-text-fill: #e0e0e0;
+}
+
+.alert .button-bar {
+    -fx-background-color: #2d2d2d;
+    -fx-border-color: #404040;
+    -fx-border-width: 1 0 0 0;
+    -fx-padding: 10px;
+}

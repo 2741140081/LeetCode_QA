@@ -18,14 +18,13 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <javafx.version>21.0.2</javafx.version>
         <mysql-connector.version>8.2.0</mysql-connector.version>
-        <druid.version>1.2.25</druid.version>
-        <mybatis-spring-boot.version>3.0.3</mybatis-spring-boot.version>
         <imageio.version>3.9.4</imageio.version>
         <lombok.version>1.18.30</lombok.version>
         <slf4j.version>2.0.13</slf4j.version>
         <logback.version>1.5.25</logback.version>
         <okhttp.version>4.12.0</okhttp.version>
         <guava.version>32.1.3-jre</guava.version>
+        <imageio.version>3.9.4</imageio.version>
     </properties>
 
     <dependencies>
@@ -34,12 +33,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
-
-        <!-- JDBC 模块（数据库连接基础） -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-jdbc</artifactId>
         </dependency>
 
         <!-- AOP 模块（全局异常处理切面 / 日志切面） -->
@@ -55,32 +48,7 @@
         </dependency>
 
         <!-- ========== Spring 生态 ========== -->
-        <!-- MyBatis-Spring Boot Starter（ORM 框架） -->
-        <dependency>
-            <groupId>org.mybatis.spring.boot</groupId>
-            <artifactId>mybatis-spring-boot-starter</artifactId>
-            <version>${mybatis-spring-boot.version}</version>
-        </dependency>
-
-        <!-- Spring 事务管理 -->
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-tx</artifactId>
-        </dependency>
-
-        <!-- Spring 调度任务（定时缓存清理 / 进度保存） -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-quartz</artifactId>
-        </dependency>
-
         <!-- ========== 数据库相关 ========== -->
-        <!-- Druid 连接池 -->
-        <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>druid-spring-boot-starter</artifactId>
-            <version>${druid.version}</version>
-        </dependency>
 
         <!-- MySQL 驱动 -->
         <dependency>
@@ -88,6 +56,12 @@
             <artifactId>mysql-connector-j</artifactId>
             <version>${mysql-connector.version}</version>
             <scope>runtime</scope>
+        </dependency>
+
+        <!-- 数据库连接池依赖 -->
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
         </dependency>
 
         <!-- ========== JavaFX ========== -->
@@ -112,12 +86,39 @@
             <version>${javafx.version}</version>
         </dependency>
 
+        <!-- JavaFX 图形模块 (图片、Canvas 等) -->
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-graphics</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
+
         <!-- JavaFX Media（可选：动画 / 过渡效果） -->
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-media</artifactId>
             <version>${javafx.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-swing</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
+
+
+
+        <!-- 图片处理 -->
+        <dependency>
+            <groupId>com.twelvemonkeys.imageio</groupId>
+            <artifactId>imageio-jpeg</artifactId>
+            <version>${imageio.version}</version>
+        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.twelvemonkeys.imageio</groupId>-->
+<!--            <artifactId>imageio-png</artifactId>-->
+<!--            <version>${imageio.version}</version>-->
+<!--        </dependency>-->
 
         <!-- ========== 工具库 ========== -->
         <!-- Lombok（自动生成 getter/setter/构造器） -->
@@ -160,6 +161,10 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+        </dependency>
     </dependencies>
 
     <!-- ========== 构建配置 ========== -->
@@ -193,6 +198,22 @@
                 </configuration>
             </plugin>
 
+            <!-- ✅ 关键：JavaFX Maven 插件，自动配置模块路径 -->
+            <plugin>
+                <groupId>org.openjfx</groupId>
+                <artifactId>javafx-maven-plugin</artifactId>
+                <version>0.0.8</version>
+                <configuration>
+                    <mainClass>com.mangareader.TestMainApp</mainClass>
+                    <launcher>comic-reader</launcher>
+                    <jlinkImageName>comic-reader</jlinkImageName>
+                    <noManPages>true</noManPages>
+                    <stripDebug>true</stripDebug>
+                    <noHeaderFiles>true</noHeaderFiles>
+                    <compress>2</compress>
+                </configuration>
+            </plugin>
+
             <!-- 打包插件：包含所有依赖（含 JavaFX 模块） -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -216,6 +237,14 @@
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>com.mangareader.TestMainApp</mainClass>
+                </configuration>
+            </plugin>
         </plugins>
 
         <!-- 资源文件目录 -->
@@ -223,10 +252,15 @@
             <resource>
                 <directory>src/main/resources</directory>
                 <includes>
-                    <include>**/*.yml</include>
-                    <include>**/*.xml</include>
                     <include>**/*.fxml</include>
+                    <include>**/*.css</include>
                     <include>**/*.png</include>
+                    <include>**/*.jpg</include>
+                    <include>**/*.jpeg</include>
+                    <include>**/*.gif</include>
+                    <include>**/*.properties</include>
+                    <include>**/*.yml</include>
+                    <include>**/*.yaml</include>
                 </includes>
                 <filtering>true</filtering>
             </resource>
