@@ -7,7 +7,10 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.fxml.Initializable;
+import javafx.geometry.Orientation;
+import javafx.scene.Node;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollBar;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
@@ -24,7 +27,7 @@ import java.util.ResourceBundle;
 
 /**
  * <p>项目名称: LeetCode_QA </p>
- * <p>文件名称: TestReaderController </p>
+ * <p>文件名称: ReaderController </p>
  * <p>描述: [类型描述] </p>
  *
  * @author marks
@@ -34,7 +37,7 @@ import java.util.ResourceBundle;
  */
 
 @Component
-public class TestReaderController implements Initializable {
+public class ReaderController implements Initializable {
     @FXML
     private BorderPane testRoot;
     @FXML
@@ -57,7 +60,7 @@ public class TestReaderController implements Initializable {
     private ApplicationContext applicationContext;
 
     // 测试图片存放路径，替换成你本地100张测试图的实际目录
-    private static final String TEST_IMAGE_DIR = "D:/images/TestManga";
+    private static final String IMAGE_DIR = "D:/images/TestManga";
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -71,19 +74,65 @@ public class TestReaderController implements Initializable {
         comicContainer.getChildren().add(virtualFlow);
 
         // 扫描本地100张测试图，生成路径列表
-        List<String> testImagePaths = scanTestImages(TEST_IMAGE_DIR);
+        List<String> testImagePaths = scanTestImages(IMAGE_DIR);
         pageCountLabel.setText("总图片数：" + testImagePaths.size());
 
         ObservableList<String> observablePaths = FXCollections.observableArrayList(testImagePaths);
         virtualFlow.setImageData(observablePaths, 1.0);
 
         // 监听滚动事件
-        virtualFlow.skinProperty().addListener((obs, oldVal, newVal) -> {
-            int currentIdx = virtualFlow.getCurrentVisibleIndex();
-            currentPageLabel.setText("当前浏览：第 " + (currentIdx + 1) + " 张");
+        setupScrollListener(virtualFlow);
+        
+        statusLabel.setText("当前加载状态：" + testImagePaths.size() + "张测试图已就绪，可以开始下拉滚动测试");
+    }
+
+
+    /**
+     * 设置滚动监听器
+     * @param virtualFlow 虚拟滚动组件
+     */
+    private void setupScrollListener(ComicVirtualFlow virtualFlow) {
+        // 监听 Skin 创建事件
+        virtualFlow.skinProperty().addListener((obs, oldSkin, newSkin) -> {
+            if (newSkin != null) {
+                // Skin 创建后查找滚动条并添加监听器
+                setupScrollBarListener(virtualFlow);
+            }
         });
 
-        statusLabel.setText("当前加载状态：" + testImagePaths.size() + "张测试图已就绪，可以开始下拉滚动测试");
+        // 如果 Skin 已经存在，直接设置监听器
+        if (virtualFlow.getSkin() != null) {
+            setupScrollBarListener(virtualFlow);
+        }
+    }
+
+    /**
+     * 设置滚动条监听器
+     * @param virtualFlow 虚拟滚动组件
+     */
+    private void setupScrollBarListener(ComicVirtualFlow virtualFlow) {
+        // 查找垂直滚动条
+        for (Node node : virtualFlow.lookupAll(".scroll-bar")) {
+            if (node instanceof ScrollBar scrollBar &&
+                    scrollBar.getOrientation() == Orientation.VERTICAL) {
+
+                // 监听滚动条值变化
+                scrollBar.valueProperty().addListener((scrollObs, oldVal, newVal) -> {
+                    updateCurrentPageLabel(virtualFlow);
+                });
+
+                break;
+            }
+        }
+    }
+
+    /**
+     * 更新当前页码标签
+     * @param virtualFlow 虚拟滚动组件
+     */
+    private void updateCurrentPageLabel(ComicVirtualFlow virtualFlow) {
+        int currentIdx = virtualFlow.getCurrentVisibleIndex();
+        currentPageLabel.setText("当前浏览：第 " + (currentIdx + 1) + " 张");
     }
 
     // 扫描目录下所有支持的漫画图片，按文件名排序保证顺序正确
@@ -124,7 +173,7 @@ public class TestReaderController implements Initializable {
                 numSb.append(c);
             }
         }
-        return numSb.length() == 0 ? 0 : Integer.parseInt(numSb.toString());
+        return numSb.isEmpty() ? 0 : Integer.parseInt(numSb.toString());
     }
 }
 

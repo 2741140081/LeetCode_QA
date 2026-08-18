@@ -1,32 +1,53 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.scene.layout.*?>
 <?import com.mangareader.component.ComicVirtualFlow?>
-
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.SplitPane?>
 <BorderPane fx:id="testRoot" xmlns:fx="http://javafx.com/fxml"
-            fx:controller="com.mangareader.controller.TestReaderController">
+            fx:controller="com.mangareader.controller.ReaderController">
 
-    <!-- 顶部简易测试工具栏 -->
+    <!-- 顶部工具栏 -->
     <top>
         <HBox spacing="15" style="-fx-padding: 10px; -fx-background-color: #f0f0f0;">
-            <Label text="下拉式漫画阅读器测试页面" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+            <Label text="漫画阅读器" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+            <Separator orientation="VERTICAL"/>
+            <Button fx:id="prevChapterBtn" text="上一章" onAction="#handlePrevChapter"/>
+            <Button fx:id="nextChapterBtn" text="下一章" onAction="#handleNextChapter"/>
+            <Separator orientation="VERTICAL"/>
+            <Button fx:id="autoPlayBtn" text="自动播放" onAction="#handleAutoPlay"/>
+            <Button fx:id="speedUpBtn" text="加速" visible="false" onAction="#handleSpeedUp"/>
+            <Button fx:id="speedDownBtn" text="减速" visible="false" onAction="#handleSpeedDown"/>
+            <Separator orientation="VERTICAL"/>
             <Label fx:id="statusLabel" text="当前加载状态：准备就绪" style="-fx-font-size: 14px;"/>
         </HBox>
     </top>
 
-    <!-- 核心下拉阅读区域 -->
-    <!-- 核心下拉阅读区域 -->
+    <!-- 主内容区域 -->
     <center>
-        <StackPane fx:id="comicContainer" style="-fx-background-color: #222222;"/>
+        <SplitPane dividerPositions="0.2">
+            <!-- 左侧章节目录 -->
+            <ScrollPane fitToWidth="true" fitToHeight="true">
+                <VBox>
+                    <Label text="章节目录" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 10px;"/>
+                    <ListView fx:id="chapterListView" VBox.vgrow="ALWAYS"/>
+                </VBox>
+            </ScrollPane>
+
+            <!-- 右侧漫画阅读区域 -->
+            <StackPane fx:id="comicContainer" style="-fx-background-color: #222222;"/>
+        </SplitPane>
     </center>
 
-
-    <!-- 底部简易状态栏 -->
+    <!-- 底部状态栏 -->
     <bottom>
         <HBox alignment="CENTER" spacing="20" style="-fx-padding: 8px; -fx-background-color: #f0f0f0;">
             <Label fx:id="pageCountLabel" text="总图片数：0" style="-fx-font-size: 14px;"/>
             <Label fx:id="currentPageLabel" text="当前浏览：第 0 张" style="-fx-font-size: 14px;"/>
+            <Label fx:id="autoPlayStatusLabel" text="自动播放：关闭" style="-fx-font-size: 14px;"/>
         </HBox>
     </bottom>
 

@@ -18,7 +18,7 @@ public class MangaImage {
     /**
      * 主键ID
      */
-    private Long id;
+    private Long imageId;
 
     /**
      * 所属章节ID

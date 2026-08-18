@@ -18,12 +18,12 @@ public class Manga {
     /**
      * 主键ID
      */
-    private Long id;
+    private Long mangaId;
 
     /**
      * 漫画名称/标题
      */
-    private String name;
+    private String mangaName;
 
     /**
      * 本地磁盘目录ID
@@ -33,12 +33,12 @@ public class Manga {
     /**
      * 作者
      */
-    private String author;
+    private String authorName;
 
     /**
      * 简介/描述
      */
-    private String description;
+    private String mangaDescription;
 
     /**
      * 封面图片相对路径
@@ -48,7 +48,7 @@ public class Manga {
     /**
      * 状态: 0:启用 1:禁用 2:待下载
      */
-    private Integer status;
+    private Integer mangaStatus;
 
     /**
      * 创建时间

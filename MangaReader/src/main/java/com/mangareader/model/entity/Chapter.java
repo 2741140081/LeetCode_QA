@@ -18,7 +18,7 @@ public class Chapter {
     /**
      * 主键ID
      */
-    private Long id;
+    private Long chapterId;
 
     /**
      * 所属漫画ID

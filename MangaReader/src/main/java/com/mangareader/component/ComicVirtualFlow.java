@@ -68,14 +68,98 @@ public class ComicVirtualFlow extends ListView<String> {
      * @return 当前可见的图片索引
      */
     public int getCurrentVisibleIndex() {
-        double scrollY = getScrollTop();
-        double estimatedCellHeight = estimateCellHeight();
-
-        if (estimatedCellHeight > 0) {
-            int estimatedIndex = (int) (scrollY / estimatedCellHeight);
-            return Math.max(0, Math.min(estimatedIndex, getItems().size() - 1));
+        ObservableList<String> items = getItems();
+        if (items == null || items.isEmpty()) {
+            return 0;
         }
 
+        // 优先使用实际可见单元格
+        ListCell<String> firstVisibleCell = getFirstVisibleCell();
+        if (firstVisibleCell != null) {
+            return firstVisibleCell.getIndex();
+        }
+
+        // 备用方案：从滚动位置估算
+        return estimateVisibleIndexFromScroll();
+    }
+
+    /**
+     * 获取第一个可见的单元格
+     * @return 第一个可见的单元格，如果不存在返回 null
+     */
+    private ListCell<String> getFirstVisibleCell() {
+        if (getSkin() instanceof ListViewSkin<?> skin) {
+            try {
+                @SuppressWarnings("unchecked")
+                VirtualFlow<ListCell<String>> virtualFlow =
+                        (VirtualFlow<ListCell<String>>) skin.getChildren().get(0);
+
+                // 获取第一个可见的单元格
+                int firstVisibleIndex = virtualFlow.getFirstVisibleCell().getIndex();
+                return virtualFlow.getCell(firstVisibleIndex);
+            } catch (Exception e) {
+                return null;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 从滚动位置估算可见索引
+     * @return 估算的可见索引
+     */
+    private int estimateVisibleIndexFromScroll() {
+        double scrollRatio = getScrollTop();
+        ObservableList<String> items = getItems();
+
+        if (items == null || items.isEmpty()) {
+            return 0;
+        }
+
+        // 使用第一个单元格的高度作为参考
+        double estimatedCellHeight = estimateCellHeight();
+        if (estimatedCellHeight <= 0) {
+            return 0;
+        }
+
+        // 获取实际渲染的单元格数量
+        int visibleCellCount = getVisibleCellCount();
+        if (visibleCellCount <= 0) {
+            return 0;
+        }
+
+        // 计算实际可见区域的高度
+        double viewportHeight = getHeight();
+
+        // 计算滚动位置对应的索引
+        // 使用可见单元格的平均高度作为参考
+        double avgCellHeight = viewportHeight / visibleCellCount;
+        int estimatedIndex = (int) (scrollRatio * items.size());
+
+        // 边界约束
+        return Math.max(0, Math.min(estimatedIndex, items.size() - 1));
+    }
+
+    /**
+     * 获取可见单元格数量
+     * @return 可见单元格数量
+     */
+    private int getVisibleCellCount() {
+        if (getSkin() instanceof ListViewSkin<?> skin) {
+            try {
+                @SuppressWarnings("unchecked")
+                VirtualFlow<ListCell<String>> virtualFlow =
+                        (VirtualFlow<ListCell<String>>) skin.getChildren().get(0);
+
+                // 获取第一个和最后一个可见单元格
+                int firstIndex = virtualFlow.getFirstVisibleCell().getIndex();
+                int lastIndex = virtualFlow.getLastVisibleCell().getIndex();
+
+                return lastIndex - firstIndex + 1;
+            } catch (Exception e) {
+                return 0;
+            }
+        }
         return 0;
     }
 

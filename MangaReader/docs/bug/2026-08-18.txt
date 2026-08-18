@@ -1,0 +1,49 @@
+1. 底部状态栏一直显示 "当前浏览: 第1张", 原因大概里是 int currentIdx = virtualFlow.getCurrentVisibleIndex(); 一直返回 "0".
+// 监听滚动事件
+virtualFlow.skinProperty().addListener((obs, oldVal, newVal) -> {
+    int currentIdx = virtualFlow.getCurrentVisibleIndex();
+    currentPageLabel.setText("当前浏览：第 " + (currentIdx + 1) + " 张");
+});
+
+实际debug 过程中, 一直没有进入当前 virtualFlow.getCurrentVisibleIndex(); 怀疑是监听滚动事件存在问题
+
+
+
+监听滚动只发生在第一次加载的时候, 当加载完成后, 滚动鼠标滚轮不会触发监听存在问题
+
+
+2. 获取图片索引存在问题, 原因是: 程序不会直接加载所有图片, 但是 ObservableList<String> items 会有所有图片的名称信息,
+这就导致一开始可能只能 20张图片在容器中, 高度是 h1,
+这一步计算比例, 使用的是 items.size(), 即所有图片来计算高度, 这就导致出现问题, 即实际滚动一个小的距离, 但是方法会返回一个大的滚动.
+这是 item.size 不能这样使用
+"
+    // 转换为实际滚动的像素偏移量：比例 * 总内容像素高度（总条目数 * 单格预估高度）
+    double totalContentHeight = items.size() * estimatedCellHeight;
+    double actualScrollYPixel = scrollRatio * (totalContentHeight - this.getHeight());
+"
+
+/**
+ * 获取当前可见的图片索引
+ * @return 当前可见的图片索引
+ */
+public int getCurrentVisibleIndex() {
+    // 获取滚动条的归一化比例值
+    double scrollRatio = getScrollTop();
+    ObservableList<String> items = getItems();
+    if (items == null || items.isEmpty()) {
+        return 0;
+    }
+
+    double estimatedCellHeight = estimateCellHeight();
+    if (estimatedCellHeight <= 0) {
+        return 0;
+    }
+
+    // 转换为实际滚动的像素偏移量：比例 * 总内容像素高度（总条目数 * 单格预估高度）
+    double totalContentHeight = items.size() * estimatedCellHeight;
+    double actualScrollYPixel = scrollRatio * (totalContentHeight - this.getHeight());
+
+    int estimatedIndex = (int) (actualScrollYPixel / estimatedCellHeight);
+    // 边界约束保证索引合法
+    return Math.max(0, Math.min(estimatedIndex, items.size() - 1));
+}
