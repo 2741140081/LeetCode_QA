@@ -47,6 +47,7 @@ public class ImageUtil {
             return null;
         }
 
+
         try (FileInputStream fis = new FileInputStream(cacheFile)) {
             BufferedImage bufferedImage = ImageIO.read(fis);
             if (bufferedImage != null) {

@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * @update [序号][日期YYYY-MM-DD] [更改人姓名][变更描述]
  */
 class MangaReaderApplicationTest {
-    // 编写一个测试用例, 将 D:\images\TestManga 文件夹下的图片收集并且重命名为 00x.jpeg 的格式
+    // 编写一个测试用例, 将 D:\images\TestManga 文件夹下的图片收集并且重命名为 00x.jpg 的格式
 
 
     /**
@@ -33,14 +33,8 @@ class MangaReaderApplicationTest {
     @Test
     void testCollectAndRenameImages() {
         // 源目录和目标目录
-        String sourceDir = "D:/images/TestManga";
-        String targetDir = "D:/images/TestManga_Renamed";
-
-        // 创建目标目录
-        File targetDirectory = new File(targetDir);
-        if (!targetDirectory.exists()) {
-            targetDirectory.mkdirs();
-        }
+        String sourceDir = "D:/images/TestManga/testImage";
+        String targetDir = "D:/images/TestManga/120021/";
 
         // 收集图片文件
         List<File> imageFiles = collectImageFiles(sourceDir);
@@ -53,9 +47,18 @@ class MangaReaderApplicationTest {
             return Integer.compare(n1, n2);
         }));
 
-        // 重命名并复制到目标目录
-        renameAndCopyImages(imageFiles, targetDirectory);
-        System.out.println("图片重命名完成，保存在: " + targetDir);
+        String[] subDirs = {"005", "006","007","008","009", "010"};
+        for (String subDir : subDirs) {
+            // 创建目标目录
+            File targetDirectory = new File(targetDir + subDir);
+            if (!targetDirectory.exists()) {
+                targetDirectory.mkdirs();
+            }
+
+            // 重命名并复制到目标目录
+            renameAndCopyImages(imageFiles, targetDirectory);
+            System.out.println("图片重命名完成，保存在: " + targetDir);
+        }
     }
 
     /**
@@ -121,11 +124,11 @@ class MangaReaderApplicationTest {
      * @param targetDir 目标目录
      */
     private void renameAndCopyImages(List<File> imageFiles, File targetDir) {
-        for (int i = 0; i < imageFiles.size(); i++) {
-            File sourceFile = imageFiles.get(i);
+        for (int i = 0; i < 105; i++) {
+            File sourceFile = imageFiles.get(i % 8);
 
-            // 生成新文件名：00x.jpeg
-            String newName = String.format("%03d.jpeg", i + 1);
+            // 生成新文件名称
+            String newName = String.format("img%03d.jpg", i + 1);
             File targetFile = new File(targetDir, newName);
 
             try {

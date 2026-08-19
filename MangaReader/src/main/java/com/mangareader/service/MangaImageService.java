@@ -16,4 +16,5 @@ import java.util.List;
  */
 public interface MangaImageService {
     List<MangaImage> getImagesByChapterId(Long chapterId);
+    String getFullImagePath(String relativePath);
 }

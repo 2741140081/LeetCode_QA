@@ -1,36 +1,35 @@
 spring:
   application:
     name: manga-reader
-
-
-datasource:
-  driver-class-name: com.mysql.cj.jdbc.Driver
-  url: jdbc:mysql://localhost:3306/manga_reader?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=utf8mb4&allowPublicKeyRetrieval=true
-  username: edms
-  password: edms
-  hikari:
-    pool-name: HikariPool-Manga
-    maximum-pool-size: 20
-    minimum-idle: 5
-    connection-timeout: 30000
-    idle-timeout: 600000
-    max-lifetime: 1800000
-    auto-commit: true
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/manga_reader?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
+    username: edms
+    password: edms
+    hikari:
+      pool-name: HikariPool-Manga
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      auto-commit: true
 
 # 添加 MyBatis 的 mapper 扫描路径和配置选项。
-#mybatis:
-#  mapper-locations: classpath:mapper/*.xml
-#  type-aliases-package: com.mangareader.model.entity
-#  configuration:
-#    map-underscore-to-camel-case: true
-#    cache-enabled: true
-#    lazy-loading-enabled: true
-#    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.mangareader.model.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: true
+    lazy-loading-enabled: true
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
 
 # 添加漫画存储根目录、缓存目录和阅读器相关配置。
 manga:
   storage:
     root: D:/MangaLibrary
+    image-path: D:/images/TestManga
     cache-root: D:/MangaReader/cache
   reader:
     preload-count: 20

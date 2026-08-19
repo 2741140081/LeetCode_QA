@@ -1,13 +1,12 @@
 package com.mangareader;
 
-import com.mangareader.controller.MainController;
-import com.mangareader.controller.TestReaderController;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -25,6 +24,7 @@ import java.io.IOException;
  * @update [序号][日期YYYY-MM-DD] [更改人姓名][变更描述]
  */
 @SpringBootApplication
+@MapperScan("com.mangareader.mapper")
 public class MangaReaderApplication extends Application {
 
     private static ConfigurableApplicationContext springContext;

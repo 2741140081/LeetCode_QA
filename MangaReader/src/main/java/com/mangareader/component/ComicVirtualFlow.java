@@ -210,6 +210,11 @@ public class ComicVirtualFlow extends ListView<String> {
         return null;
     }
 
+    public int getImageCount() {
+        ObservableList<String> items = getItems();
+        return items == null ? 0 : items.size();
+    }
+
 
     /**
      * 自定义图片单元格

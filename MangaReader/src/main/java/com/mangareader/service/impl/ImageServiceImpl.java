@@ -88,8 +88,12 @@ public class ImageServiceImpl implements ImageService {
             File cacheFile = new File(diskCacheDir, cacheKey + ".dat");
             if (cacheFile.exists()) {
                 Image img = ImageUtil.loadFromDiskCache(cacheFile);
-                memoryCache.put(path + "_" + scale, img);
-                return img;
+                if (img != null) {
+                    memoryCache.put(path + "_" + scale, img);
+                    return img;
+                }
+                // 如果从缓存加载失败，删除缓存文件并继续加载原始图片
+                cacheFile.delete();
             }
 
             // 3. 磁盘读取解码缩放

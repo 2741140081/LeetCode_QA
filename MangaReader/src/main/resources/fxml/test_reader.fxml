@@ -1,12 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import com.mangareader.component.ComicVirtualFlow?>
-<?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ListView?>
-<?import javafx.scene.control.Separator?>
-<?import javafx.scene.control.SplitPane?>
 <BorderPane fx:id="testRoot" xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.mangareader.controller.ReaderController">
 
