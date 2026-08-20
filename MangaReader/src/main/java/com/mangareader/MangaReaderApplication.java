@@ -1,14 +1,13 @@
 package com.mangareader;
 
+import com.mangareader.controller.MainController;
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.stage.Stage;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import java.io.IOException;
@@ -16,7 +15,7 @@ import java.io.IOException;
 /**
  * <p>项目名称: LeetCode_QA </p>
  * <p>文件名称: MangaReaderApplication </p>
- * <p>描述: [类型描述] </p>
+ * <p>描述: 漫画阅读器应用主类 </p>
  *
  * @author marks
  * @version v1.0
@@ -25,6 +24,7 @@ import java.io.IOException;
  */
 @SpringBootApplication
 @MapperScan("com.mangareader.mapper")
+@EnableConfigurationProperties
 public class MangaReaderApplication extends Application {
 
     private static ConfigurableApplicationContext springContext;
@@ -44,23 +44,16 @@ public class MangaReaderApplication extends Application {
     }
 
     @Override
-    public void start(Stage primaryStage) throws IOException {
+    public void start(Stage primaryStage) {
         System.out.println("[JavaFX] 正在加载 FXML 界面...");
 
-        // 从 Spring 容器中获取 FXMLLoader 的类加载器
-        FXMLLoader loader = new FXMLLoader(
-                getClass().getResource("/fxml/test_reader.fxml")
-        );
+        // 从 Spring 容器中获取 MainController
+        MainController mainController = springContext.getBean(MainController.class);
 
-        // 关键：设置控制器工厂，让 Spring 创建 Controller 实例
-        loader.setControllerFactory(springContext::getBean);
-        Parent root = loader.load();
+        // 初始化主窗口
+        mainController.initMainStage(primaryStage);
 
-        Scene scene = new Scene(root, 1200, 800);
-        scene.getStylesheets().add(getClass().getResource("/css/style.css").toExternalForm());
-
-        primaryStage.setTitle("下拉式漫画阅读器 - Spring Boot + JavaFX");
-        primaryStage.setScene(scene);
+        primaryStage.setTitle("漫画阅读器");
         primaryStage.setOnCloseRequest(event -> {
             System.out.println("[JavaFX] 窗口关闭，停止 Spring 容器...");
             Platform.exit();
@@ -73,7 +66,7 @@ public class MangaReaderApplication extends Application {
     }
 
     @Override
-    public void stop() throws Exception {
+    public void stop() {
         System.out.println("[JavaFX] 应用退出，释放资源...");
         if (springContext != null && springContext.isRunning()) {
             springContext.close();

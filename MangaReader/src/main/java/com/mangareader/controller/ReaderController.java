@@ -1,11 +1,17 @@
 package com.mangareader.controller;
 
 import com.mangareader.component.ComicVirtualFlow;
+import com.mangareader.config.AutoplayConfig;
 import com.mangareader.model.entity.Chapter;
+import com.mangareader.model.entity.Manga;
 import com.mangareader.model.entity.MangaImage;
 import com.mangareader.service.ChapterService;
 import com.mangareader.service.MangaImageService;
+import com.mangareader.service.MangaService;
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -14,11 +20,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.scene.Node;
 import javafx.scene.Parent;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
-import javafx.scene.control.ScrollBar;
+import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +30,8 @@ import org.springframework.stereotype.Component;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
+
+import static javafx.util.Duration.millis;
 
 /**
  * 漫画阅读器控制器
@@ -68,6 +72,15 @@ public class ReaderController implements Initializable {
     @Autowired
     private MangaImageService mangaImageService;
 
+    @Autowired
+    private AutoplayConfig autoplayConfig;
+
+    @Autowired
+    private MainController mainController;
+
+    @Autowired
+    private MangaService mangaService;
+
     // 漫画ID，实际应用中应该从参数或上下文中获取
     private static final Long MANGA_ID = 1L;
 
@@ -79,8 +92,8 @@ public class ReaderController implements Initializable {
 
     // 自动播放相关
     private boolean isAutoPlaying = false;
-    private double scrollDistance = 0.3; // 每次滚动的距离比例
-    private int scrollInterval = 1000; // 滚动间隔时间(毫秒)
+    private double scrollDistance;  // 每次滚动的距离(像素)
+    private int scrollInterval;  // 滚动间隔时间(毫秒)
     private Timeline autoPlayTimeline;
 
     @Override
@@ -89,6 +102,10 @@ public class ReaderController implements Initializable {
 
         // 从 Spring 上下文获取 ComicVirtualFlow
         virtualFlow = applicationContext.getBean(ComicVirtualFlow.class);
+
+        // 初始化自动播放参数
+        scrollDistance = autoplayConfig.getDefaultScrollDistance();
+        scrollInterval = autoplayConfig.getDefaultScrollInterval();
 
         // 将组件添加到容器中
         StackPane.setMargin(virtualFlow, new Insets(0));
@@ -289,32 +306,25 @@ public class ReaderController implements Initializable {
      */
     private void toggleAutoPlay() {
         isAutoPlaying = !isAutoPlaying;
-
         if (isAutoPlaying) {
             // 显示加速/减速按钮
             speedUpBtn.setVisible(true);
             speedDownBtn.setVisible(true);
-
             // 更新状态标签
-            autoPlayStatusLabel.setText("自动播放：开启 (滚动距离: " + (scrollDistance * 100) + "%, 间隔: " + (scrollInterval / 1000) + "秒)");
-
+            autoPlayStatusLabel.setText("自动播放：开启 (滚动距离: " + scrollDistance + "px, 间隔: " + scrollInterval + "毫秒");
             // 创建自动播放时间轴
-            autoPlayTimeline = new javafx.animation.Timeline(
-                    new javafx.animation.KeyFrame(
-                            javafx.util.Duration.millis(scrollInterval),
-                            event -> scrollToNextImage()
-                    )
+            autoPlayTimeline = new Timeline(
+                    new KeyFrame(millis(scrollInterval),
+                            event -> scrollToNextImage())
             );
-            autoPlayTimeline.setCycleCount(javafx.animation.Animation.INDEFINITE);
+            autoPlayTimeline.setCycleCount(Animation.INDEFINITE);
             autoPlayTimeline.play();
         } else {
             // 隐藏加速/减速按钮
             speedUpBtn.setVisible(false);
             speedDownBtn.setVisible(false);
-
             // 更新状态标签
             autoPlayStatusLabel.setText("自动播放：关闭");
-
             // 停止自动播放
             if (autoPlayTimeline != null) {
                 autoPlayTimeline.stop();
@@ -331,30 +341,16 @@ public class ReaderController implements Initializable {
         for (Node node : virtualFlow.lookupAll(".scroll-bar")) {
             if (node instanceof ScrollBar scrollBar &&
                     scrollBar.getOrientation() == Orientation.VERTICAL) {
-
                 // 确保滚动条属于漫画图片区域，而不是章节目录
                 // 通过检查滚动条的父节点是否为virtualFlow来判断
                 if (isScrollBarBelongToVirtualFlow(scrollBar, virtualFlow)) {
                     // 模拟滚轮事件，向下滚动一定距离
                     // 使用Platform.runLater确保在JavaFX应用线程上执行
-                    javafx.application.Platform.runLater(() -> {
-                        // 计算滚动增量，模拟滚轮滚动
-                        double scrollAmount = scrollDistance; // 使用类成员变量scrollDistance
-
-                        // 获取当前滚动位置
-                        double currentValue = scrollBar.getValue();
-                        double maxValue = scrollBar.getMax();
-
-                        // 计算新的滚动位置
-                        double newValue = currentValue + (maxValue * scrollAmount);
-
-                        // 确保不超过最大值
-                        newValue = Math.min(newValue, maxValue);
-
-                        // 设置新的滚动位置
-                        scrollBar.setValue(newValue);
+                    Platform.runLater(() -> {
+                        double value = scrollBar.getValue();
+                        scrollBar.setUnitIncrement(scrollDistance);
+                        scrollBar.increment();
                     });
-
                     break; // 找到正确的滚动条后退出循环
                 }
             }
@@ -389,25 +385,20 @@ public class ReaderController implements Initializable {
     @FXML
     private void handleSpeedUp() {
         // 增加滚动距离或减少滚动间隔，加快播放速度
-        if (scrollDistance < 0.8) {
-            scrollDistance += 0.1;
-        } else if (scrollInterval > 500) {
-            scrollInterval -= 500;
+        if (scrollDistance < autoplayConfig.getMaxScrollDistance()) {
+            scrollDistance = Math.min(scrollDistance + autoplayConfig.getScrollDistanceStep(), autoplayConfig.getMaxScrollDistance());
         }
-
         // 更新状态标签
-        autoPlayStatusLabel.setText("自动播放：开启 (滚动距离: " + (scrollDistance * 100) + "%, 间隔: " + (scrollInterval / 1000) + "秒)");
-
+        autoPlayStatusLabel.setText("自动播放：开启 (滚动距离: " + scrollDistance + "px, 间隔: " + scrollInterval + "毫秒");
         // 如果正在自动播放，需要重启时间轴以应用新的速度
         if (isAutoPlaying) {
             autoPlayTimeline.stop();
-            autoPlayTimeline = new javafx.animation.Timeline(
-                    new javafx.animation.KeyFrame(
-                            javafx.util.Duration.millis(scrollInterval),
+            autoPlayTimeline = new Timeline(
+                    new KeyFrame(millis(scrollInterval),
                             event -> scrollToNextImage()
                     )
             );
-            autoPlayTimeline.setCycleCount(javafx.animation.Animation.INDEFINITE);
+            autoPlayTimeline.setCycleCount(Animation.INDEFINITE);
             autoPlayTimeline.play();
         }
     }
@@ -418,26 +409,21 @@ public class ReaderController implements Initializable {
      */
     @FXML
     private void handleSpeedDown() {
-        // 减少滚动距离或增加滚动间隔，减慢播放速度
-        if (scrollDistance > 0.1) {
-            scrollDistance -= 0.1;
-        } else if (scrollInterval < 5000) {
-            scrollInterval += 500;
+        // 减少滚动距离
+        if (scrollDistance > autoplayConfig.getMinScrollDistance()) {
+            scrollDistance = Math.max(scrollDistance - autoplayConfig.getScrollDistanceStep(), autoplayConfig.getMinScrollDistance());
         }
-
         // 更新状态标签
-        autoPlayStatusLabel.setText("自动播放：开启 (滚动距离: " + (scrollDistance * 100) + "%, 间隔: " + (scrollInterval / 1000) + "秒)");
-
+        autoPlayStatusLabel.setText("自动播放：开启 (滚动距离: " + scrollDistance + "px, 间隔: " + scrollInterval + "毫秒");
         // 如果正在自动播放，需要重启时间轴以应用新的速度
         if (isAutoPlaying) {
             autoPlayTimeline.stop();
-            autoPlayTimeline = new javafx.animation.Timeline(
-                    new javafx.animation.KeyFrame(
-                            javafx.util.Duration.millis(scrollInterval),
+            autoPlayTimeline = new Timeline(
+                    new KeyFrame(millis(scrollInterval),
                             event -> scrollToNextImage()
                     )
             );
-            autoPlayTimeline.setCycleCount(javafx.animation.Animation.INDEFINITE);
+            autoPlayTimeline.setCycleCount(Animation.INDEFINITE);
             autoPlayTimeline.play();
         }
     }
@@ -462,5 +448,44 @@ public class ReaderController implements Initializable {
         }
 
         return false;
+    }
+
+    /**
+     * 加载漫画
+     * @param mangaId 漫画ID
+     */
+    public void loadManga(Long mangaId) {
+        // 获取漫画信息
+        Manga manga = mangaService.getMangaById(mangaId);
+
+        if (manga != null) {
+            // 更新状态标签
+            statusLabel.setText("当前漫画: " + manga.getMangaName());
+
+            // 加载漫画的第一章
+            List<Chapter> chapters = chapterService.getChaptersByMangaId(mangaId);
+
+            // 清空章节列表
+            chapterListView.getItems().clear();
+
+            // 添加章节到列表
+            chapterListView.getItems().addAll(chapters);
+
+            if (!chapters.isEmpty()) {
+                // 加载第一章
+                loadChapter(chapters.get(0));
+            }
+        } else {
+            statusLabel.setText("加载漫画失败: 找不到ID为 " + mangaId + " 的漫画");
+        }
+    }
+
+    /**
+     * 处理返回书架按钮点击事件
+     */
+    @FXML
+    private void handleBackToShelf() {
+        // 通知主控制器切换回书架界面
+        mainController.switchToShelf();
     }
 }

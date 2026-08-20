@@ -40,13 +40,18 @@ manga:
     supported-formats: jpg,jpeg,png,webp,gif
     max-memory-cache-size: 50
     default-error-image: /images/error_placeholder.png
+  autoplay:
+    default-scroll-distance: 0.5  # 每次点击滚动条箭头时滚动的单位增量
+    default-scroll-interval: 16  # 默认滚动间隔(毫秒) 相当于 60fps
+    scroll-distance-step: 0.1  # 加速/减速时滚动距离的调整步长(像素)
+    min-scroll-distance: 0.1  # 最小滚动距离(像素)
+    max-scroll-distance: 10.0  # 最大滚动距离(像素)
 
 # 添加 Logback 日志框架的详细配置。
 logging:
   level:
     root: INFO
     com.mangareader: DEBUG
-    com.mangareader.dao: DEBUG
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"

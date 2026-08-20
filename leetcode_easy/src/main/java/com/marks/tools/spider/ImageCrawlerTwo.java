@@ -20,7 +20,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ImageCrawlerTwo {
-    public static String BASE_URL = "https://www.toupaimh.com";
+    public static String BASE_URL = "https://www.test.com";
 
     public static String ID_OF_HTML = "151867";
     public static String START_URL = BASE_URL + "/chapter/"+ ID_OF_HTML +".html";
@@ -78,7 +78,7 @@ public class ImageCrawlerTwo {
                         .header("Accept", "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8")
                         .header("Accept-encoding", "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8")
                         .header("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6")
-                        .header("Referer", "https://www.toupaimh.com/")
+                        .header("Referer", "https://www.test.com/")
                         .timeout(30000)
                         .get();
 

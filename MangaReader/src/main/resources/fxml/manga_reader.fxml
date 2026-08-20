@@ -9,6 +9,7 @@
         <HBox spacing="15" style="-fx-padding: 10px; -fx-background-color: #f0f0f0;">
             <Label text="漫画阅读器" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
             <Separator orientation="VERTICAL"/>
+            <Button text="返回书架" onAction="#handleBackToShelf" styleClass="back-button"/>
             <Button fx:id="prevChapterBtn" text="上一章" onAction="#handlePrevChapter"/>
             <Button fx:id="nextChapterBtn" text="下一章" onAction="#handleNextChapter"/>
             <Separator orientation="VERTICAL"/>

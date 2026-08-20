@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.mangareader.controller.MangaShelfController"
+            prefHeight="800.0" prefWidth="1200.0" stylesheets="@../css/style.css">
+
+    <VBox alignment="CENTER" spacing="10" AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0"
+          AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+
+        <!-- 标题栏 -->
+        <HBox alignment="CENTER" spacing="10" styleClass="header">
+            <Label text="我的书架" styleClass="title-label">
+                <font>
+                    <Font name="System Bold" size="24.0" />
+                </font>
+            </Label>
+        </HBox>
+
+        <!-- 漫画书架网格 -->
+        <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
+            <TilePane fx:id="mangaGrid" prefColumns="5" hgap="20" vgap="20"
+                      alignment="CENTER" styleClass="manga-grid">
+                <!-- 漫画项目将通过代码动态添加 -->
+            </TilePane>
+        </ScrollPane>
+
+        <!-- 底部工具栏 -->
+        <HBox alignment="CENTER" spacing="10" styleClass="footer">
+            <Button text="添加漫画" onAction="#handleAddManga" styleClass="action-button"/>
+            <Button text="刷新" onAction="#handleRefresh" styleClass="action-button"/>
+        </HBox>
+    </VBox>
+</AnchorPane>
