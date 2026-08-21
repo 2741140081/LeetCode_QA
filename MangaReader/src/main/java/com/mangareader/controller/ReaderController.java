@@ -82,7 +82,7 @@ public class ReaderController implements Initializable {
     private MangaService mangaService;
 
     // 漫画ID，实际应用中应该从参数或上下文中获取
-    private static final Long MANGA_ID = 1L;
+    private Long MANGA_ID;
 
     // 当前章节
     private Chapter currentChapter;
@@ -92,39 +92,28 @@ public class ReaderController implements Initializable {
 
     // 自动播放相关
     private boolean isAutoPlaying = false;
+    private boolean isLoading = false;
     private double scrollDistance;  // 每次滚动的距离(像素)
     private int scrollInterval;  // 滚动间隔时间(毫秒)
     private Timeline autoPlayTimeline;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        statusLabel.setText("当前加载状态：正在加载章节列表...");
-
+        statusLabel.setText("当前加载状态：等待加载漫画...");
         // 从 Spring 上下文获取 ComicVirtualFlow
         virtualFlow = applicationContext.getBean(ComicVirtualFlow.class);
-
         // 初始化自动播放参数
         scrollDistance = autoplayConfig.getDefaultScrollDistance();
         scrollInterval = autoplayConfig.getDefaultScrollInterval();
-
         // 将组件添加到容器中
         StackPane.setMargin(virtualFlow, new Insets(0));
         comicContainer.getChildren().add(virtualFlow);
-
         // 加载章节列表
         loadChapterList();
-
         // 设置章节列表点击事件
         setupChapterListViewListener();
-
         // 监听滚动事件
         setupScrollListener(virtualFlow);
-
-        // 默认加载第一章
-        if (!chapterListView.getItems().isEmpty()) {
-            chapterListView.getSelectionModel().select(0);
-            loadChapter(chapterListView.getItems().get(0));
-        }
     }
 
     /**
@@ -132,7 +121,6 @@ public class ReaderController implements Initializable {
      */
     private void loadChapterList() {
         List<Chapter> chapters = chapterService.getChaptersByMangaId(MANGA_ID);
-
         // 设置章节列表的单元格工厂，显示章节标题
         chapterListView.setCellFactory(param -> new ListCell<Chapter>() {
             @Override
@@ -145,10 +133,8 @@ public class ReaderController implements Initializable {
                 }
             }
         });
-
         // 添加章节到列表
         chapterListView.getItems().addAll(chapters);
-
         statusLabel.setText("当前加载状态：已加载 " + chapters.size() + " 个章节");
     }
 
@@ -169,10 +155,6 @@ public class ReaderController implements Initializable {
      */
     private void loadChapter(Chapter chapter) {
         // 如果正在自动播放，先停止
-        if (isAutoPlaying) {
-            toggleAutoPlay();
-        }
-
         currentChapter = chapter;
         statusLabel.setText("当前加载状态：正在加载 " + chapter.getTitle() + "...");
 
@@ -186,16 +168,19 @@ public class ReaderController implements Initializable {
             String fullPath = mangaImageService.getFullImagePath(image.getImageUrl());
             imagePaths.add(fullPath);
         }
-
         // 设置图片数据
         virtualFlow.setImageData(imagePaths, 1.0);
 
+        // 重置滚动位置到顶部，确保从第一张图片开始显示
+        Platform.runLater(() -> {
+            virtualFlow.scrollToTop();
+            // 更新当前页码标签
+            currentPageLabel.setText("当前浏览：第 1 张");
+        });
+
         // 更新页面信息
         pageCountLabel.setText("总图片数：" + images.size());
-        currentPageLabel.setText("当前浏览：第 1 张");
-
         statusLabel.setText("当前加载状态：" + chapter.getTitle() + " 已加载完成");
-
         // 更新按钮状态
         updateButtonStates();
     }
@@ -212,7 +197,6 @@ public class ReaderController implements Initializable {
                 setupScrollBarListener(virtualFlow);
             }
         });
-
         // 如果 Skin 已经存在，直接设置监听器
         if (virtualFlow.getSkin() != null) {
             setupScrollBarListener(virtualFlow);
@@ -228,19 +212,16 @@ public class ReaderController implements Initializable {
         for (Node node : virtualFlow.lookupAll(".scroll-bar")) {
             if (node instanceof ScrollBar scrollBar &&
                     scrollBar.getOrientation() == Orientation.VERTICAL) {
-
                 // 确保滚动条属于漫画图片区域，而不是章节目录
                 if (isScrollBarBelongToVirtualFlow(scrollBar, virtualFlow)) {
                     // 监听滚动条值变化
                     scrollBar.valueProperty().addListener((scrollObs, oldVal, newVal) -> {
                         updateCurrentPageLabel(virtualFlow);
-
                         // 如果正在自动播放，检查是否已经滚动到最后一张
                         if (isAutoPlaying) {
                             checkAutoPlayEnd(virtualFlow);
                         }
                     });
-
                     break; // 找到正确的滚动条后退出循环
                 }
             }
@@ -455,6 +436,7 @@ public class ReaderController implements Initializable {
      * @param mangaId 漫画ID
      */
     public void loadManga(Long mangaId) {
+        this.MANGA_ID = mangaId;
         // 获取漫画信息
         Manga manga = mangaService.getMangaById(mangaId);
 

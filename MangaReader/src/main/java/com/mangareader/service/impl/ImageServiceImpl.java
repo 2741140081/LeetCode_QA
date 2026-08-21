@@ -49,12 +49,7 @@ public class ImageServiceImpl implements ImageService {
     @Value("${manga.storage.cache-root}")
     private String diskCacheDir; // 硬盘缓存目录
 
-
     private Cache<String, Image> memoryCache; // 内存缓存
-
-//    public ImageServiceImpl(@Qualifier("imageLoadExecutor") ExecutorService imageLoadExecutor) {
-//        this.imageLoadExecutor = imageLoadExecutor;
-//    }
 
     @PostConstruct
     @Override

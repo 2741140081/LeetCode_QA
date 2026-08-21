@@ -41,7 +41,6 @@ public class ComicVirtualFlow extends ListView<String> {
     private void initialize() {
         // 设置单元格工厂
         setCellFactory(param -> new ImageCell());
-
         // 设置背景透明
         setStyle("-fx-background-color: transparent;");
         setCache(true);
@@ -115,27 +114,22 @@ public class ComicVirtualFlow extends ListView<String> {
         if (items == null || items.isEmpty()) {
             return 0;
         }
-
         // 使用第一个单元格的高度作为参考
         double estimatedCellHeight = estimateCellHeight();
         if (estimatedCellHeight <= 0) {
             return 0;
         }
-
         // 获取实际渲染的单元格数量
         int visibleCellCount = getVisibleCellCount();
         if (visibleCellCount <= 0) {
             return 0;
         }
-
         // 计算实际可见区域的高度
         double viewportHeight = getHeight();
-
         // 计算滚动位置对应的索引
         // 使用可见单元格的平均高度作为参考
         double avgCellHeight = viewportHeight / visibleCellCount;
         int estimatedIndex = (int) (scrollRatio * items.size());
-
         // 边界约束
         return Math.max(0, Math.min(estimatedIndex, items.size() - 1));
     }
@@ -192,6 +186,13 @@ public class ComicVirtualFlow extends ListView<String> {
     }
 
     /**
+     * 重置滚动位置到顶部
+     */
+    public void scrollToTop() {
+        scrollTo(0);
+    }
+
+    /**
      * 查找指定索引的单元格
      * @param index 单元格索引
      * @return 单元格对象，如果不存在返回 null
@@ -235,7 +236,6 @@ public class ComicVirtualFlow extends ListView<String> {
         @Override
         protected void updateItem(String imagePath, boolean empty) {
             super.updateItem(imagePath, empty);
-
             // 取消之前的加载任务
             if (currentLoadTask != null && !currentLoadTask.isDone()) {
                 currentLoadTask.cancel(true);
@@ -245,12 +245,10 @@ public class ComicVirtualFlow extends ListView<String> {
                 setGraphic(null);
                 return;
             }
-
             // 显示加载状态
             loadingIndicator.setVisible(true);
             imageView.setImage(null);
             setGraphic(container);
-
             final String currentPath = imagePath;
             currentLoadTask = imageService.loadImageAsync(currentPath, currentScale)
                     .thenAcceptAsync(image -> {
