@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.mangareader.controller.DownloadCenterController"
+            prefHeight="800.0" prefWidth="1200.0" stylesheets="@../css/style.css">
+
+    <VBox alignment="CENTER" spacing="10" AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0"
+          AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+
+        <!-- 顶部导航栏 -->
+        <fx:include source="top_navigation.fxml"/>
+
+        <!-- 下载参数设置区域 -->
+        <VBox spacing="15" styleClass="download-settings" alignment="CENTER">
+            <HBox spacing="10" alignment="CENTER">
+                <Label text="漫画名称:" styleClass="form-label"/>
+                <TextField fx:id="mangaNameField" promptText="请输入漫画名称" prefWidth="300"/>
+            </HBox>
+
+            <HBox spacing="10" alignment="CENTER">
+                <Label text="漫画目录网址:" styleClass="form-label"/>
+                <TextField fx:id="mangaUrlField" promptText="请输入漫画目录网址" prefWidth="400"/>
+            </HBox>
+
+            <HBox spacing="10" alignment="CENTER">
+                <Label text="下载线程数量:" styleClass="form-label"/>
+                <Spinner fx:id="threadCountSpinner" prefWidth="150" min="1" max="10" initialValue="3"/>
+            </HBox>
+
+            <Button text="开始下载" onAction="#handleStartDownload" styleClass="action-button"/>
+        </VBox>
+
+        <!-- 下载进度区域 -->
+        <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
+            <VBox fx:id="downloadProgressContainer" spacing="10" styleClass="download-progress-container">
+                <!-- 下载进度条将通过代码动态添加 -->
+            </VBox>
+        </ScrollPane>
+    </VBox>
+</AnchorPane>

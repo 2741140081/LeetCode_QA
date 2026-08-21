@@ -19,6 +19,7 @@ public class MainController {
     private Stage primaryStage;
     private Parent mangaShelfView;
     private Parent readerView;
+    private Parent downloadCenterView; // 添加下载中心视图
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -48,6 +49,12 @@ public class MainController {
             readerView = readerLoader.load();
             // 获取阅读器控制器
             readerController = readerLoader.getController();
+
+            // 加载下载中心界面
+            FXMLLoader downloadLoader = new FXMLLoader(getClass().getResource("/fxml/download_center.fxml"));
+            // 设置控制器工厂，让 Spring 创建 Controller 实例
+            downloadLoader.setControllerFactory(applicationContext::getBean);
+            downloadCenterView = downloadLoader.load();
 
             // 修改开始：创建一次 Scene，设置初始 Root 为书架视图
             this.scene = new Scene(mangaShelfView, 1200, 800);
@@ -89,5 +96,12 @@ public class MainController {
     public void switchToShelf() {
         // 修改开始：直接设置 Scene 的 Root，而不是创建新 Scene
         this.scene.setRoot(mangaShelfView);
+    }
+
+    /**
+     * 切换到下载中心
+     */
+    public void switchToDownloadCenter() {
+        this.scene.setRoot(downloadCenterView);
     }
 }

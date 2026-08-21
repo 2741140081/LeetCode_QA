@@ -13,14 +13,8 @@
     <VBox alignment="CENTER" spacing="10" AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0"
           AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
 
-        <!-- 标题栏 -->
-        <HBox alignment="CENTER" spacing="10" styleClass="header">
-            <Label text="我的书架" styleClass="title-label">
-                <font>
-                    <Font name="System Bold" size="24.0" />
-                </font>
-            </Label>
-        </HBox>
+        <!-- 顶部导航栏 -->
+        <fx:include source="top_navigation.fxml"/>
 
         <!-- 漫画书架网格 -->
         <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
