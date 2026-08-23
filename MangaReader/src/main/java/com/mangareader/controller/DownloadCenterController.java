@@ -12,6 +12,7 @@ import javafx.scene.layout.VBox;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -48,7 +49,7 @@ public class DownloadCenterController implements Initializable {
      * 处理开始下载按钮点击事件
      */
     @FXML
-    private void handleStartDownload() {
+    private void handleStartDownload() throws IOException {
         String mangaName = mangaNameField.getText().trim();
         String mangaUrl = mangaUrlField.getText().trim();
         int threadCount = threadCountSpinner.getValue();
@@ -88,27 +89,27 @@ public class DownloadCenterController implements Initializable {
         downloadProgressContainer.getChildren().add(downloadItem);
 
         // 开始下载
-        mangaDownloadService.downloadManga(mangaName, mangaUrl, threadCount,
-                progress -> {
-                    Platform.runLater(() -> {
-                        progressBar.setProgress(progress);
-                        progressLabel.setText(String.format("%.1f%%", progress * 100));
-                        statusLabel.setText("下载中...");
-                    });
-                },
-                () -> {
-                    Platform.runLater(() -> {
-                        statusLabel.setText("下载完成");
-                        cancelButton.setDisable(true);
-                        cancelButton.setText("完成");
-                    });
-                },
-                error -> {
-                    Platform.runLater(() -> {
-                        statusLabel.setText("下载失败: " + error.getMessage());
-                        progressBar.setStyle("-fx-accent: red;");
-                    });
-                }
+        mangaDownloadService.downloadManga(mangaName, mangaUrl, threadCount
+//                progress -> {
+//                    Platform.runLater(() -> {
+//                        progressBar.setProgress(progress);
+//                        progressLabel.setText(String.format("%.1f%%", progress * 100));
+//                        statusLabel.setText("下载中...");
+//                    });
+//                },
+//                () -> {
+//                    Platform.runLater(() -> {
+//                        statusLabel.setText("下载完成");
+//                        cancelButton.setDisable(true);
+//                        cancelButton.setText("完成");
+//                    });
+//                },
+//                error -> {
+//                    Platform.runLater(() -> {
+//                        statusLabel.setText("下载失败: " + error.getMessage());
+//                        progressBar.setStyle("-fx-accent: red;");
+//                    });
+//                }
         );
     }
 
