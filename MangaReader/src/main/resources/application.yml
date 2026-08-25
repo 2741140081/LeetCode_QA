@@ -56,6 +56,15 @@ manga:
       accept: "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8"
       accept-encoding: "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8"
       accept-language: "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6"
+  download-config:
+    save-base-path: /data/images/
+    core-threads: 8
+    max-threads: 16
+    batch-size: 50
+    max-retry: 3
+    connect-timeout: 10000
+    read-timeout: 30000
+    buffer-size: 8192
 
 # 添加 Logback 日志框架的详细配置。
 logging:

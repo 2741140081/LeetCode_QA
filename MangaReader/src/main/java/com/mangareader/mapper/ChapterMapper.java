@@ -29,4 +29,7 @@ public interface ChapterMapper {
     Chapter findNextChapter(@Param("mangaId") Long mangaId, @Param("currentChapterNum") Integer currentChapterNum);
 
     Chapter findPrevChapter(@Param("mangaId") Long mangaId, @Param("currentChapterNum") Integer currentChapterNum);
+
+    int batchInsert(@Param("chapters") List<Chapter> chapters);
+
 }

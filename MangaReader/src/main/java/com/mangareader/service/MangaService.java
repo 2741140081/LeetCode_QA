@@ -21,4 +21,6 @@ public interface MangaService {
     Manga getMangaById(Long mangaId);
 
     Manga addManga(Manga manga);
+
+    Manga addManga(String mangaName, String mangaUrl);
 }

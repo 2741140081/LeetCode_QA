@@ -31,6 +31,11 @@ public class Chapter {
     private Integer chapterNum;
 
     /**
+     * 章节网址
+     */
+    private String chapterUrl;
+
+    /**
      * 章节标题
      */
     private String title;

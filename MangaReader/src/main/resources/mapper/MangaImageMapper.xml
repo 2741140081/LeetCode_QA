@@ -32,4 +32,17 @@
         ORDER BY sort_order
     </select>
 
+    <!-- 批量插入图片信息 -->
+    <insert id="batchInsert" parameterType="java.util.List" useGeneratedKeys="true" keyProperty="imageId">
+        INSERT INTO manga_image (
+        chapter_id, image_name, image_type, image_width, image_height,
+        image_url, download_url, download_status, sort_order, created_at
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+            #{item.chapterId}, #{item.imageName}, #{item.imageType}, #{item.imageWidth}, #{item.imageHeight},
+            #{item.imageUrl}, #{item.downloadUrl}, #{item.downloadStatus}, #{item.sortOrder}, #{item.createdAt}
+            )
+        </foreach>
+    </insert>
 </mapper>

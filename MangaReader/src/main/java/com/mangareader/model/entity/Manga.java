@@ -36,9 +36,9 @@ public class Manga {
     private String authorName;
 
     /**
-     * 简介/描述
+     * 漫画下载地址
      */
-    private String mangaDescription;
+    private String mangaUrl;
 
     /**
      * 封面图片相对路径

@@ -46,6 +46,7 @@ public class LeetCode_1187 {
      * 2.2 保留 arr1[i] 不变, 修改 0 ~ i - 1, 使得满足严格递增要求, 也就是需要对于 [0 ~ i - 1] 需要从 arr2 中查找 j,
      * 满足 arr2[j] < arr1[i]
      * 3. 假设当前处理 i, dp[i - 1] = k,
+     * AC: 32ms/62.96MB
      * @param: arr1
      * @param: arr2
      * @return int
@@ -68,7 +69,7 @@ public class LeetCode_1187 {
         int[][] dp = new int[n + 1][maxChange + 1];
         // 初始化
         int INF = Integer.MAX_VALUE / 2;
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i <= n; i++) {
             Arrays.fill(dp[i], INF);
         }
         dp[0][0] = -1;

@@ -1,11 +1,13 @@
 package com.mangareader.service.impl;
 
+import com.mangareader.config.MangaProperties;
 import com.mangareader.mapper.MangaMapper;
 import com.mangareader.model.entity.Manga;
 import com.mangareader.service.MangaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -24,6 +26,9 @@ public class MangaServiceImpl implements MangaService {
 
     @Autowired
     private MangaMapper mangaMapper;
+
+    @Autowired
+    private MangaProperties mangaProperties;
 
     @Override
     public List<Manga> getAllManga() {
@@ -44,9 +49,9 @@ public class MangaServiceImpl implements MangaService {
             return null;
         }
 
-        // 设置默认状态为启用
+        // 设置默认状态为待下载
         if (manga.getMangaStatus() == null) {
-            manga.setMangaStatus(0);
+            manga.setMangaStatus(2);
         }
 
         // 设置创建和更新时间
@@ -59,5 +64,23 @@ public class MangaServiceImpl implements MangaService {
 
         // 插入成功后，返回包含自增ID的漫画对象
         return result > 0 ? manga : null;
+    }
+
+    @Override
+    public Manga addManga(String mangaName, String mangaUrl) {
+        Manga manga = new Manga();
+        manga.setMangaName(mangaName);
+        manga.setMangaUrl(mangaUrl);
+        // 根据 mangaName 创建本地文件
+        String mangaBasePath = mangaProperties.getStorage().getImagePath();
+        String fullPath = mangaBasePath + File.separator + mangaName;
+        manga.setDirId(fullPath);
+        // 根据 fullPath 创建本地文件夹
+        File file = new File(fullPath);
+        if (!file.exists()) {
+            file.mkdirs();
+        }
+
+        return addManga(manga);
     }
 }

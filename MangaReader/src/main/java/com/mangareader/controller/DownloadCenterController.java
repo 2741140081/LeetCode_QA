@@ -1,6 +1,8 @@
 package com.mangareader.controller;
 
+import com.mangareader.model.entity.Manga;
 import com.mangareader.service.MangaDownloadService;
+import com.mangareader.service.MangaService;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -37,6 +39,9 @@ public class DownloadCenterController implements Initializable {
     @Autowired
     private MangaDownloadService mangaDownloadService;
 
+    @Autowired
+    private MangaService mangaService;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // 初始化线程数选择器
@@ -64,6 +69,12 @@ public class DownloadCenterController implements Initializable {
             showAlert("错误", "请输入漫画目录网址");
             return;
         }
+        // 根据 mangaName 和 mangaUrl 创建 Manga 实体类, 并且保存到数据库, 并且使用 mangaName 创建本地目录
+        Manga manga = mangaService.addManga(mangaName, mangaUrl);
+        if (manga == null) {
+            showAlert("错误", "初始化下载任务失败，请检查数据库或磁盘权限");
+            return;
+        }
 
         // 创建下载进度条
         ProgressBar progressBar = new ProgressBar(0);
@@ -89,7 +100,7 @@ public class DownloadCenterController implements Initializable {
         downloadProgressContainer.getChildren().add(downloadItem);
 
         // 开始下载
-        mangaDownloadService.downloadManga(mangaName, mangaUrl, threadCount
+        mangaDownloadService.downloadManga(manga, threadCount
 //                progress -> {
 //                    Platform.runLater(() -> {
 //                        progressBar.setProgress(progress);

@@ -20,4 +20,7 @@ import java.util.List;
 @Mapper
 public interface MangaImageMapper {
     List<MangaImage> findByChapterId(@Param("chapterId") Long chapterId);
+
+    // 添加批量插入方法
+    int batchInsert(@Param("list") List<MangaImage> imageList);
 }
