@@ -14,15 +14,22 @@
         <result column="download_url" property="downloadUrl" jdbcType="VARCHAR"/>
         <result column="download_status" property="downloadStatus" jdbcType="TINYINT"/>
         <result column="sort_order" property="sortOrder" jdbcType="INTEGER"/>
-
+        <result column="file_size" property="fileSize" jdbcType="BIGINT"/>
+        <result column="downloaded_size" property="downloadedSize" jdbcType="BIGINT"/>
+        <result column="retry_count" property="retryCount" jdbcType="INTEGER"/>
+        <result column="error_msg" property="errorMsg" jdbcType="VARCHAR"/>
+        <result column="last_trigger_time" property="lastTriggerTime" jdbcType="TIMESTAMP"/>
         <result column="created_at" property="createdAt" jdbcType="TIMESTAMP"/>
     </resultMap>
+
 
     <!-- 基础列 -->
     <sql id="Base_Column_List">
         image_id, chapter_id, image_name, image_type, image_width, image_height,
-        image_url, download_url, download_status, sort_order, created_at
+        image_url, download_url, download_status, sort_order, file_size, downloaded_size,
+        retry_count, error_msg, last_trigger_time, created_at
     </sql>
+
 
     <!-- 根据章节ID查询图片列表 -->
     <select id="findByChapterId" resultMap="MangaImageResultMap">

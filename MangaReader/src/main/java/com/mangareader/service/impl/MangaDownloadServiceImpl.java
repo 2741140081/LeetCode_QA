@@ -169,6 +169,5 @@ public class MangaDownloadServiceImpl implements MangaDownloadService {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-
     }
 }

@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 
 @Data
 @Component
-@ConfigurationProperties(prefix = "manga.download")
+@ConfigurationProperties(prefix = "manga.download-config")
 public class MangaDownloadConfig {
     /** 定时任务扫描Cron表达式 */
     private String scanCron = "0/2 * * * * ?";

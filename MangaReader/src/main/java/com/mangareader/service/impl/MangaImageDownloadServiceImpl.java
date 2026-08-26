@@ -38,6 +38,7 @@ public class MangaImageDownloadServiceImpl implements MangaImageDownloadService 
         long imageId = task.getImageId();
         log.info("[Image-{}] 开始执行漫画图片定时下载: {}", imageId, task.getDownloadUrl());
 
+        // todo: 完善 requestBuilder 信息
         Request.Builder requestBuilder = new Request.Builder()
                 .url(task.getDownloadUrl())
                 .header("User-Agent", "Mozilla/5.0 MangaScheduledDownloader/1.0");
@@ -59,7 +60,7 @@ public class MangaImageDownloadServiceImpl implements MangaImageDownloadService 
             long startPos = task.getDownloadedSize() != null ? task.getDownloadedSize() : 0;
 
             // 生成合法文件名, 避免冲突
-            String fileName = extractFileName(task.getDownloadUrl(), response, imageId);
+            String fileName = task.getImageName();
             Path targetPath = Paths.get(task.getImageUrl()).resolve(fileName);
             targetPath = resolveConflict(targetPath);
 
@@ -135,42 +136,6 @@ public class MangaImageDownloadServiceImpl implements MangaImageDownloadService 
             mapper.updateStatus(imageId, 2, task.getDownloadedSize(), errorMsg);
             log.error("[Image-{}] 超过最大重试次数{}, 标记为永久失败", imageId, config.getMaxRetry());
         }
-    }
-
-    /**
-     * 从URL或Content-Disposition提取文件名
-     */
-    private String extractFileName(String url, Response response, long imageId) {
-        // 优先从响应头Content-Disposition获取文件名
-        String contentDisp = response.header("Content-Disposition");
-        if (contentDisp != null && contentDisp.contains("filename=")) {
-            String name = contentDisp.split("filename=")[1]
-                    .replace("\"", "").trim();
-            if (!name.isEmpty()) {
-                return sanitizeFileName(name);
-            }
-        }
-
-        // 从图片URL中提取文件名
-        try {
-            String path = new URL(url).getPath();
-            String fileName = path.substring(path.lastIndexOf('/') + 1);
-            if (fileName.isEmpty() || !fileName.contains(".")) {
-                fileName = "image_" + imageId + "_" + System.currentTimeMillis() + ".jpg";
-            }
-            return sanitizeFileName(fileName);
-        } catch (Exception e) {
-            return "image_" + imageId + "_" + System.currentTimeMillis() + ".jpg";
-        }
-    }
-
-    /**
-     * 文件名清洗, 防止路径注入和非法字符
-     */
-    private String sanitizeFileName(String name) {
-        return name.replaceAll("[\\\\/:*?\"<>|]", "_")
-                .replaceAll("\\s+", "_")
-                .substring(0, Math.min(name.length(), 200));
     }
 
     /**
