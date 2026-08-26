@@ -23,4 +23,33 @@ public interface MangaImageMapper {
 
     // 添加批量插入方法
     int batchInsert(@Param("list") List<MangaImage> imageList);
+
+    // 查询待下载任务
+    List<MangaImage> selectPendingTasks(@Param("status") Integer status, @Param("limit") Integer limit);
+
+    // 查询超时下载中任务
+    List<MangaImage> selectTimeoutDownloadingTasks(@Param("timeout") Integer timeout, @Param("limit") Integer limit);
+
+    // 更新下载状态
+    int updateStatus(@Param("imageId") Long imageId, @Param("status") Integer status,
+                     @Param("downloadedSize") Long downloadedSize, @Param("errorMsg") String errorMsg);
+
+    // 标记为下载中
+    int markAsDownloading(@Param("imageId") Long imageId);
+
+    // 标记为下载成功
+    int markAsSuccess(@Param("imageId") Long imageId, @Param("fileSize") Long fileSize);
+
+    // 增加重试次数
+    int incrementRetryCount(@Param("imageId") Long imageId);
+
+    // 根据ID查询
+    MangaImage selectById(@Param("imageId") Long imageId);
+
+    // 统计待下载任务数
+    int countPendingTasks();
+
+    // 统计下载中任务数
+    int countDownloadingTasks();
+
 }

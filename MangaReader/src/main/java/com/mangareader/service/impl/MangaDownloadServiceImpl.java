@@ -40,13 +40,15 @@ public class MangaDownloadServiceImpl implements MangaDownloadService {
     @Autowired
     private MangaImageMapper mangaImageMapper;
 
+    private String BASE_URL;
+
     @Override
     public void downloadManga(Manga manga, int threadCount) throws IOException {
         String mangaUrl = manga.getMangaUrl();
         System.out.println("Downloading manga: " + manga.getMangaName());
         System.out.println("Manga URL: " + mangaUrl);
         System.out.println("Thread count: " + threadCount);
-
+        BASE_URL = downloadProperties.getBaseUrl();
         Document doc = getDocument(mangaUrl);
 
         Elements liElements = doc.select(downloadProperties.getCssSelector());
@@ -89,9 +91,7 @@ public class MangaDownloadServiceImpl implements MangaDownloadService {
                 file.mkdirs();
             }
 
-            // 拼接构成一个完整的章节详情页面的 url = manga.mangaUrl + chapter.chapterUrl
-            // 需要注意两个 url 之间是否会存在重复 '/'
-            String pageUrl = mangaUrl + chapterInfo.getChapterUrl(); // todo: 可能存在重复 '/', 导致地址不正确
+            String pageUrl = chapterInfo.getChapterUrl();
             Long chapterId = chapterInfo.getChapterId(); // 标记该章节的id
             // 解析图片信息并保存到数据库
             parseAndSaveImagesPlus(pageUrl, chapterId, fullPath); // todo: 需要添加失败重试机制, 防止网络波动导致网页加载失败问题
@@ -101,7 +101,8 @@ public class MangaDownloadServiceImpl implements MangaDownloadService {
     }
 
     // todo: 待优化, 可以使用多线程并行处理每一个章节
-    private void parseAndSaveImagesPlus(String pageUrl, Long chapterId, String savePath) {
+    private void parseAndSaveImagesPlus(String pageSuffixUrl, Long chapterId, String savePath) {
+        String pageUrl = BASE_URL + pageSuffixUrl; // 前缀 + 后缀组合成完整 url
         Document doc = getDocument(pageUrl);
 
         // 使用List替代Map，提高遍历效率

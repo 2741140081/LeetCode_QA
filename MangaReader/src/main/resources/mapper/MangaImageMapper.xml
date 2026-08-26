@@ -14,6 +14,7 @@
         <result column="download_url" property="downloadUrl" jdbcType="VARCHAR"/>
         <result column="download_status" property="downloadStatus" jdbcType="TINYINT"/>
         <result column="sort_order" property="sortOrder" jdbcType="INTEGER"/>
+
         <result column="created_at" property="createdAt" jdbcType="TIMESTAMP"/>
     </resultMap>
 
@@ -45,4 +46,81 @@
             )
         </foreach>
     </insert>
+
+    <!-- 查询待下载任务 -->
+    <select id="selectPendingTasks" resultMap="MangaImageResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM manga_image
+        WHERE download_status = #{status}
+        ORDER BY image_id ASC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 查询超时下载中任务 -->
+    <select id="selectTimeoutDownloadingTasks" resultMap="MangaImageResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM manga_image
+        WHERE download_status = 1
+        AND DATE_SUB(NOW(), INTERVAL #{timeout} SECOND) > last_trigger_time
+        LIMIT #{limit}
+    </select>
+
+    <!-- 更新下载状态 -->
+    <update id="updateStatus">
+        UPDATE manga_image
+        SET download_status = #{status},
+        downloaded_size = #{downloadedSize},
+        error_msg = #{errorMsg},
+        update_time = NOW()
+        WHERE image_id = #{imageId}
+    </update>
+
+    <!-- 标记为下载中 -->
+    <update id="markAsDownloading">
+        UPDATE manga_image
+        SET download_status = 1,
+        last_trigger_time = NOW()
+        WHERE image_id = #{imageId}
+    </update>
+
+    <!-- 标记为下载成功 -->
+    <update id="markAsSuccess">
+        UPDATE manga_image
+        SET download_status = 0,
+        file_size = #{fileSize},
+        update_time = NOW()
+        WHERE image_id = #{imageId}
+    </update>
+
+    <!-- 增加重试次数 -->
+    <update id="incrementRetryCount">
+        UPDATE manga_image
+        SET retry_count = retry_count + 1
+        WHERE image_id = #{imageId}
+    </update>
+
+    <!-- 根据ID查询 -->
+    <select id="selectById" resultMap="MangaImageResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM manga_image
+        WHERE image_id = #{imageId}
+    </select>
+
+    <!-- 统计待下载任务数 -->
+    <select id="countPendingTasks" resultType="int">
+        SELECT COUNT(*)
+        FROM manga_image
+        WHERE download_status = 1
+    </select>
+
+    <!-- 统计下载中任务数 -->
+    <select id="countDownloadingTasks" resultType="int">
+        SELECT COUNT(*)
+        FROM manga_image
+        WHERE download_status = 1
+    </select>
+
 </mapper>

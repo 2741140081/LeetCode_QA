@@ -54,7 +54,6 @@ public class MangaImage {
      */
     private String downloadUrl;
 
-
     /**
      * 下载状态: 0:已下载 1:未下载 2:下载失败
      */
@@ -64,6 +63,32 @@ public class MangaImage {
      * 图片在章节内的排序序号
      */
     private Integer sortOrder;
+
+    /**
+     * 文件大小(字节)
+     */
+    private Long fileSize;
+
+    /**
+     * 已下载大小(字节,用于断点续传)
+     */
+    private Long downloadedSize;
+
+    /**
+     * 重试次数
+     */
+    private Integer retryCount;
+
+    /**
+     * 错误信息
+     */
+    private String errorMsg;
+
+    /**
+     * 最后定时任务触发时间
+     */
+    private LocalDateTime lastTriggerTime;
+
 
     /**
      * 创建时间
