@@ -11,3 +11,11 @@
    - retryCount: 重试次数 
    - errorMsg: 错误信息 
    - lastTriggerTime: 最后定时任务触发时间
+
+
+08-27:
+1. manga 表添加3个字段用于下载中心设置为缓存下载漫画, 增加心跳检测异常下载
+   - lastHeartBeat: 最后心跳时间
+   - totalChapters: 总章节数目
+   - processedChapters: 已处理的章节数
+2. 昨天新增 MangaChapterPageRecord 表

@@ -46,7 +46,7 @@ public class Manga {
     private String coverImage;
 
     /**
-     * 状态: 0:启用 1:禁用 2:待下载
+     * 状态: 0:启用 1:禁用 2:待下载 3:异常中断
      */
     private Integer mangaStatus;
 
@@ -59,4 +59,19 @@ public class Manga {
      * 更新时间
      */
     private LocalDateTime updatedAt;
+
+    /**
+     * 最后心跳时间
+     */
+    private LocalDateTime lastHeartBeat;
+
+    /**
+     * 总章节数
+     */
+    private Integer totalChapters;
+
+    /**
+     * 已处理章节数
+     */
+    private Integer processedChapters;
 }

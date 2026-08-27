@@ -4,6 +4,7 @@ import com.mangareader.model.entity.Manga;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -38,4 +39,34 @@ public interface MangaMapper {
      * @return 影响行数
      */
     int insertManga(Manga manga);
+
+    /**
+     * 查询正在下载的漫画
+     */
+    Manga selectProcessingManga();
+
+    /**
+     * 查询待下载的漫画
+     */
+    Manga selectPendingManga();
+
+    /**
+     * 更新漫画状态
+     */
+    int updateMangaStatus(@Param("mangaId") Long mangaId, @Param("status") Integer status);
+
+    /**
+     * 更新心跳时间
+     */
+    int updateHeartBeat(@Param("mangaId") Long mangaId, @Param("lastHeartBeat") LocalDateTime lastHeartBeat);
+
+    /**
+     * 更新已处理章节数
+     */
+    int updateProcessedChapters(@Param("mangaId") Long mangaId, @Param("processedChapters") Integer processedChapters);
+
+    /**
+     * 更新总章节数
+     */
+    int updateTotalChapters(@Param("mangaId") Long mangaId, @Param("totalChapters") Integer totalChapters);
 }

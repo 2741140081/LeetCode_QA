@@ -14,6 +14,9 @@
         <result property="mangaStatus" column="manga_status"/>
         <result property="createdAt" column="created_at"/>
         <result property="updatedAt" column="updated_at"/>
+        <result column="last_heart_beat" property="lastHeartBeat"/>
+        <result column="total_chapters" property="totalChapters"/>
+        <result column="processed_chapters" property="processedChapters"/>
     </resultMap>
 
     <!-- 基础列 -->
@@ -49,5 +52,29 @@
         #{coverImage}, #{mangaStatus}, NOW(), NOW()
         )
     </insert>
+
+    <select id="selectProcessingManga" resultMap="BaseResultMap">
+        SELECT * FROM manga WHERE manga_status = 1 LIMIT 1
+    </select>
+
+    <select id="selectPendingManga" resultMap="BaseResultMap">
+        SELECT * FROM manga WHERE manga_status = 0 ORDER BY created_at ASC LIMIT 1
+    </select>
+
+    <update id="updateMangaStatus">
+        UPDATE manga SET manga_status = #{status}, updated_at = NOW() WHERE manga_id = #{mangaId}
+    </update>
+
+    <update id="updateHeartBeat">
+        UPDATE manga SET last_heart_beat = #{lastHeartBeat} WHERE manga_id = #{mangaId}
+    </update>
+
+    <update id="updateProcessedChapters">
+        UPDATE manga SET processed_chapters = #{processedChapters} WHERE manga_id = #{mangaId}
+    </update>
+
+    <update id="updateTotalChapters">
+        UPDATE manga SET total_chapters = #{totalChapters} WHERE manga_id = #{mangaId}
+    </update>
 
 </mapper>

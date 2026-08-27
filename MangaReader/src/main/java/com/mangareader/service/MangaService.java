@@ -23,4 +23,6 @@ public interface MangaService {
     Manga addManga(Manga manga);
 
     Manga addManga(String mangaName, String mangaUrl);
+
+    void updateMangaStatus(Long mangaId, int mangaStatus);
 }

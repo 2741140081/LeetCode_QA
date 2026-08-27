@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mangareader.mapper.MangaChapterPageRecordMapper">
+
+    <resultMap id="BaseResultMap" type="com.mangareader.model.entity.MangaChapterPageRecord">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="chapter_id" property="chapterId" jdbcType="BIGINT"/>
+        <result column="page_num" property="pageNum" jdbcType="INTEGER"/>
+        <result column="page_url" property="pageUrl" jdbcType="VARCHAR"/>
+        <result column="download_status" property="downloadStatus" jdbcType="TINYINT"/>
+        <result column="retry_count" property="retryCount" jdbcType="INTEGER"/>
+        <result column="last_fail_reason" property="lastFailReason" jdbcType="VARCHAR"/>
+        <result column="gmt_create" property="gmtCreate" jdbcType="TIMESTAMP"/>
+        <result column="gmt_modify" property="gmtModify" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, chapter_id, page_num, page_url, download_status, retry_count, last_fail_reason, gmt_create, gmt_modify
+    </sql>
+
+    <insert id="insertSelective" parameterType="com.mangareader.model.entity.MangaChapterPageRecord" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO manga_chapter_page_record
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="chapterId != null">chapter_id,</if>
+            <if test="pageNum != null">page_num,</if>
+            <if test="pageUrl != null">page_url,</if>
+            <if test="downloadStatus != null">download_status,</if>
+            <if test="retryCount != null">retry_count,</if>
+            <if test="lastFailReason != null">last_fail_reason,</if>
+            <if test="gmtCreate != null">gmt_create,</if>
+            <if test="gmtModify != null">gmt_modify,</if>
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <if test="chapterId != null">#{chapterId},</if>
+            <if test="pageNum != null">#{pageNum},</if>
+            <if test="pageUrl != null">#{pageUrl},</if>
+            <if test="downloadStatus != null">#{downloadStatus},</if>
+            <if test="retryCount != null">#{retryCount},</if>
+            <if test="lastFailReason != null">#{lastFailReason},</if>
+            <if test="gmtCreate != null">#{gmtCreate},</if>
+            <if test="gmtModify != null">#{gmtModify},</if>
+        </trim>
+    </insert>
+
+    <update id="updateByPrimaryKeySelective" parameterType="com.mangareader.model.entity.MangaChapterPageRecord">
+        UPDATE manga_chapter_page_record
+        <set>
+            <if test="downloadStatus != null">download_status = #{downloadStatus},</if>
+            <if test="retryCount != null">retry_count = #{retryCount},</if>
+            <if test="lastFailReason != null">last_fail_reason = #{lastFailReason},</if>
+            <if test="gmtModify != null">gmt_modify = #{gmtModify},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <select id="selectByChapterId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM manga_chapter_page_record
+        WHERE chapter_id = #{chapterId}
+        ORDER BY page_num
+    </select>
+
+    <select id="selectFailedPages" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM manga_chapter_page_record
+        WHERE download_status = 2
+        ORDER BY chapter_id, page_num
+    </select>
+
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO manga_chapter_page_record
+        (chapter_id, page_num, page_url, download_status, retry_count, gmt_create, gmt_modify)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.chapterId}, #{item.pageNum}, #{item.pageUrl}, #{item.downloadStatus},
+            #{item.retryCount}, #{item.gmtCreate}, #{item.gmtModify})
+        </foreach>
+    </insert>
+</mapper>

@@ -83,4 +83,9 @@ public class MangaServiceImpl implements MangaService {
 
         return addManga(manga);
     }
+
+    @Override
+    public void updateMangaStatus(Long mangaId, int mangaStatus) {
+        mangaMapper.updateMangaStatus(mangaId, mangaStatus);
+    }
 }
