@@ -123,7 +123,18 @@ public class MangaDownloadServiceImpl implements MangaDownloadService {
      * todo: 需要新增更新 manga 表状态, 实现心跳更新
      */
     private void processSingleChapter(Chapter chapterInfo, String mangaDir, long mangaId) {
-        // todo: 判断 manga 状态是否是正在处理状态, 如果不是正在处理状态, 则返回
+        Manga manga = mangaMapper.selectMangaById(mangaId);
+        if (manga == null || manga.getMangaStatus() == null) {
+            log.warn("漫画信息不存在或状态为空，跳过章节[{}]的处理", chapterInfo.getChapterId());
+            return;
+        }
+        if (manga.getMangaStatus() != ProcessStatus.PROCESSING) {
+            log.warn("漫画[{}]当前状态为[{}]，不是正在处理状态，跳过章节[{}]的处理",
+                    manga.getMangaName(),
+                    manga.getMangaStatus().getDesc(),
+                    chapterInfo.getChapterId());
+            return;
+        }
 
         int currChapterNum = chapterInfo.getChapterNum();
         // 将章节号格式化为001、002格式作为目录名

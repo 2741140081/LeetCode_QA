@@ -34,6 +34,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Service
 public class ImageServiceImpl implements ImageService {
 
+    // todo: 将多线程统一放入一个文件
     private final ExecutorService imageLoadExecutor = new ThreadPoolExecutor(
             4, 8, 60, TimeUnit.SECONDS,
             new LinkedBlockingQueue<>(200),
