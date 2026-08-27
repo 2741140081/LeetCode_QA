@@ -2,6 +2,7 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
 <HBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.mangareader.controller.TopNavigationController"
@@ -15,6 +16,6 @@
 
     <Region HBox.hgrow="ALWAYS"/>
 
-    <Button text="我的书架" onAction="#handleSwitchToShelf" styleClass="nav-button"/>
-    <Button text="下载中心" onAction="#handleSwitchToDownloadCenter" styleClass="nav-button"/>
+    <Button fx:id="shelfButton" text="我的书架" onAction="#handleSwitchToShelf" styleClass="nav-button"/>
+    <Button fx:id="downloadCenterButton" text="下载中心" onAction="#handleSwitchToDownloadCenter" styleClass="nav-button"/>
 </HBox>

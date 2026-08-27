@@ -1,6 +1,7 @@
 package com.mangareader.service.impl;
 
 import com.mangareader.config.MangaDownloadConfig;
+import com.mangareader.enums.ProcessStatus;
 import com.mangareader.mapper.MangaImageMapper;
 import com.mangareader.model.entity.MangaImage;
 import com.mangareader.service.MangaImageDownloadService;
@@ -59,8 +60,12 @@ public class MangaImageDownloadServiceImpl implements MangaImageDownloadService 
             long contentLength = response.body().contentLength();
             long startPos = task.getDownloadedSize() != null ? task.getDownloadedSize() : 0;
 
-            // 生成合法文件名, 避免冲突
+            // 从下载URL中提取文件扩展名, 拼接到文件名
             String fileName = task.getImageName();
+            String extension = extractExtension(task.getDownloadUrl());
+            if (extension != null && !extension.isEmpty()) {
+                fileName = fileName + extension;
+            }
             Path targetPath = Paths.get(task.getImageUrl()).resolve(fileName);
             targetPath = resolveConflict(targetPath);
 
@@ -105,7 +110,7 @@ public class MangaImageDownloadServiceImpl implements MangaImageDownloadService 
         } catch (IOException e) {
             // 断点续传中途异常, 保留已下载进度, 等待下一次定时任务自动重试
             if (task.getDownloadedSize() != null && task.getDownloadedSize() > 0) {
-                mapper.updateStatus(imageId, 1, task.getDownloadedSize(), "断点续传中途异常: " + e.getMessage());
+                mapper.updateStatus(imageId, ProcessStatus.PENDING.getCode(), task.getDownloadedSize(), "断点续传中途异常: " + e.getMessage());
                 log.warn("[Image-{}] 断点续传中断, 已保存下载进度: {} 字节, 等待下次定时任务重试", imageId, task.getDownloadedSize());
             } else {
                 handleFailure(imageId, e.getMessage());
@@ -129,11 +134,11 @@ public class MangaImageDownloadServiceImpl implements MangaImageDownloadService 
         if (retryCount < config.getMaxRetry()) {
             // 未达到最大重试次数,重置为待下载状态,等待下一次定时调度自动重试
             mapper.incrementRetryCount(imageId);
-            mapper.updateStatus(imageId, 1, task.getDownloadedSize(), errorMsg);
+            mapper.updateStatus(imageId, ProcessStatus.PENDING.getCode(), task.getDownloadedSize(), errorMsg);
             log.info("[Image-{}] 已自动安排定时重试, 当前重试次数: {}/{}", imageId, retryCount + 1, config.getMaxRetry());
         } else {
             // 达到最大重试次数,标记为永久失败
-            mapper.updateStatus(imageId, 2, task.getDownloadedSize(), errorMsg);
+            mapper.updateStatus(imageId, ProcessStatus.FAILED.getCode(), task.getDownloadedSize(), errorMsg);
             log.error("[Image-{}] 超过最大重试次数{}, 标记为永久失败", imageId, config.getMaxRetry());
         }
     }
@@ -165,5 +170,20 @@ public class MangaImageDownloadServiceImpl implements MangaImageDownloadService 
         stats.put("maxRetry", config.getMaxRetry());
         stats.put("scanCron", config.getScanCron());
         return stats;
+    }
+
+    /**
+     * 从URL中提取文件扩展名 (如 .jpg, .png, .webp)
+     */
+    private String extractExtension(String url) {
+        if (url == null) return null;
+        // 去除URL参数部分
+        String path = url.contains("?") ? url.substring(0, url.indexOf("?")) : url;
+        int dotIndex = path.lastIndexOf('.');
+        int slashIndex = path.lastIndexOf('/');
+        if (dotIndex > slashIndex && dotIndex < path.length() - 1) {
+            return path.substring(dotIndex);
+        }
+        return null;
     }
 }

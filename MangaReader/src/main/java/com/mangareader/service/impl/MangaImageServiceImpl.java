@@ -36,17 +36,10 @@ public class MangaImageServiceImpl implements MangaImageService {
     }
 
     @Override
-    public String getFullImagePath(String relativePath) {
-        if (relativePath == null || relativePath.isEmpty()) {
-            return "";
-        }
-
-        String basePath = mangaProperties.getStorage().getImagePath();
-        // 确保路径分隔符正确
-        if (!basePath.endsWith(File.separator) && !relativePath.startsWith(File.separator)) {
-            return basePath + File.separator + relativePath;
-        } else {
-            return basePath + relativePath;
-        }
+    public String getFullImagePath(MangaImage image) {
+        String path = image.getImageUrl();
+        String imageName = image.getImageName();
+        String imageType = image.getImageType();
+        return path + File.separator + imageName + "." + imageType;
     }
 }

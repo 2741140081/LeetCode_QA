@@ -30,6 +30,11 @@ public enum ProcessStatus {
     // 静态 Map 用于快速查找
     private static final Map<Integer, ProcessStatus> CODE_MAP = new HashMap<>();
 
+    static {
+        for (ProcessStatus status : values()) {
+            CODE_MAP.put(status.getCode(), status);
+        }
+    }
     /**
      * 根据状态码获取枚举
      * @param code 状态码

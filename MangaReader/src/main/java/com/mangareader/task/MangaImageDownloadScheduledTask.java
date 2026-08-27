@@ -2,6 +2,7 @@ package com.mangareader.task;
 
 
 import com.mangareader.config.MangaDownloadConfig;
+import com.mangareader.enums.ProcessStatus;
 import com.mangareader.mapper.MangaImageMapper;
 import com.mangareader.model.entity.MangaImage;
 import com.mangareader.service.MangaImageDownloadService;
@@ -37,9 +38,9 @@ public class MangaImageDownloadScheduledTask {
     /**
      * 定时扫描待下载任务
      */
-    @Scheduled(cron = "${manga.download.scan-cron:0/2 * * * * ?}")
+    @Scheduled(cron = "${manga.download-config.scan-cron}")
     public void scanPendingTasks() {
-        List<MangaImage> tasks = mapper.selectPendingTasks(1, config.getBatchSize()); // 1表示未下载
+        List<MangaImage> tasks = mapper.selectPendingTasks(ProcessStatus.PENDING.getCode(), config.getBatchSize()); // 0表示未下载
         if (tasks.isEmpty()) {
             return;
         }

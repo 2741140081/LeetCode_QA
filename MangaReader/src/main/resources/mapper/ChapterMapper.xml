@@ -32,7 +32,7 @@
         SELECT
         <include refid="Base_Column_List"/>
         FROM chapter
-        WHERE id = #{chapterId}
+        WHERE chapter_id = #{chapterId}
     </select>
 
     <!-- 根据漫画ID和章节序号查询章节 -->

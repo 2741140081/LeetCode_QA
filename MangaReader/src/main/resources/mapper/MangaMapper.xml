@@ -25,12 +25,12 @@
         cover_image, manga_status, created_at, updated_at
     </sql>
 
-    <!-- 查询所有漫画 -->
+    <!-- 查询所有已完成漫画 manga_status = 2 -->
     <select id="selectAllManga" resultMap="MangaResultMap">
         SELECT
         <include refid="Base_Column_List"/>
         FROM manga
-        WHERE manga_status = 0
+        WHERE manga_status = 2
         ORDER BY created_at DESC
     </select>
 
@@ -53,11 +53,11 @@
         )
     </insert>
 
-    <select id="selectProcessingManga" resultMap="BaseResultMap">
+    <select id="selectProcessingManga" resultMap="MangaResultMap">
         SELECT * FROM manga WHERE manga_status = 1 LIMIT 1
     </select>
 
-    <select id="selectPendingManga" resultMap="BaseResultMap">
+    <select id="selectPendingManga" resultMap="MangaResultMap">
         SELECT * FROM manga WHERE manga_status = 0 ORDER BY created_at ASC LIMIT 1
     </select>
 
@@ -73,7 +73,7 @@
     </update>
 
     <!-- 更新已处理章节数 - 使用原子累加操作 -->
-    <update id="updateProcessedChapters">
+    <update id="incrementProcessedChapters">
         UPDATE manga
         SET processed_chapters = processed_chapters + 1, updated_at = NOW()
         WHERE manga_id = #{mangaId}

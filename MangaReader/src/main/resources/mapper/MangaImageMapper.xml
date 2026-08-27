@@ -20,6 +20,7 @@
         <result column="error_msg" property="errorMsg" jdbcType="VARCHAR"/>
         <result column="last_trigger_time" property="lastTriggerTime" jdbcType="TIMESTAMP"/>
         <result column="created_at" property="createdAt" jdbcType="TIMESTAMP"/>
+        <result column="updated_at" property="updatedAt" jdbcType="TIMESTAMP"/>
     </resultMap>
 
 
@@ -27,7 +28,7 @@
     <sql id="Base_Column_List">
         image_id, chapter_id, image_name, image_type, image_width, image_height,
         image_url, download_url, download_status, sort_order, file_size, downloaded_size,
-        retry_count, error_msg, last_trigger_time, created_at
+        retry_count, error_msg, last_trigger_time, created_at, updated_at
     </sql>
 
 
@@ -43,13 +44,16 @@
     <!-- 批量插入图片信息 -->
     <insert id="batchInsert" parameterType="java.util.List" useGeneratedKeys="true" keyProperty="imageId">
         INSERT INTO manga_image (
-        chapter_id, image_name, image_type, image_width, image_height,
-        image_url, download_url, download_status, sort_order, created_at
+        chapter_id, image_name, image_url, download_url, image_type, download_status, sort_order
         ) VALUES
         <foreach collection="list" item="item" separator=",">
             (
-            #{item.chapterId}, #{item.imageName}, #{item.imageType}, #{item.imageWidth}, #{item.imageHeight},
-            #{item.imageUrl}, #{item.downloadUrl}, #{item.downloadStatus}, #{item.sortOrder}, #{item.createdAt}
+            #{item.chapterId}, #{item.imageName},
+            #{item.imageUrl}, #{item.downloadUrl}, #{item.imageType}, #{item.downloadStatus},
+            <choose>
+                <when test="item.sortOrder != null">#{item.sortOrder}</when>
+                <otherwise>0</otherwise>
+            </choose>
             )
         </foreach>
     </insert>
@@ -80,7 +84,7 @@
         SET download_status = #{status},
         downloaded_size = #{downloadedSize},
         error_msg = #{errorMsg},
-        update_time = NOW()
+        updated_at = NOW()
         WHERE image_id = #{imageId}
     </update>
 
@@ -95,9 +99,9 @@
     <!-- 标记为下载成功 -->
     <update id="markAsSuccess">
         UPDATE manga_image
-        SET download_status = 0,
+        SET download_status = 2,
         file_size = #{fileSize},
-        update_time = NOW()
+        updated_at = NOW()
         WHERE image_id = #{imageId}
     </update>
 

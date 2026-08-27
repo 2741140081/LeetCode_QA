@@ -128,6 +128,13 @@
             <artifactId>imageio-jpeg</artifactId>
             <version>${imageio.version}</version>
         </dependency>
+
+        <!-- WebP 图片格式支持 -->
+        <dependency>
+            <groupId>com.github.nicoulaj</groupId>
+            <artifactId>webp-imageio</artifactId>
+            <version>0.1.6</version>
+        </dependency>
 <!--        <dependency>-->
 <!--            <groupId>com.twelvemonkeys.imageio</groupId>-->
 <!--            <artifactId>imageio-png</artifactId>-->

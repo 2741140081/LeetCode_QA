@@ -165,7 +165,7 @@ public class ReaderController implements Initializable {
         ObservableList<String> imagePaths = FXCollections.observableArrayList();
         for (MangaImage image : images) {
             // 使用MangaImageService获取完整的图片路径
-            String fullPath = mangaImageService.getFullImagePath(image.getImageUrl());
+            String fullPath = mangaImageService.getFullImagePath(image);
             imagePaths.add(fullPath);
         }
         // 设置图片数据

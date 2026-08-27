@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "manga.download-config")
 public class MangaDownloadConfig {
     /** 定时任务扫描Cron表达式 */
-    private String scanCron = "0/2 * * * * ?";
+    private String scanCron;
     /** 下载中任务超时时间(秒,防止僵死任务) */
     private int downloadTimeout = 300;
     /** 线程池核心线程数 */

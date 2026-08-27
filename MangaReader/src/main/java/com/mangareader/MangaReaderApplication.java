@@ -9,6 +9,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.io.IOException;
 
@@ -25,6 +26,7 @@ import java.io.IOException;
 @SpringBootApplication
 @MapperScan("com.mangareader.mapper")
 @EnableConfigurationProperties
+@EnableScheduling
 public class MangaReaderApplication extends Application {
 
     private static ConfigurableApplicationContext springContext;

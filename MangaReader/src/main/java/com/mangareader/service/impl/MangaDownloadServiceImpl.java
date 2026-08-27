@@ -114,7 +114,13 @@ public class MangaDownloadServiceImpl implements MangaDownloadService {
         log.info("开始处理 {} 个章节，存储路径: {}", chapterInfos.size(), mangaDir);
         // 提交所有章节的并行处理任务
         for (Chapter chapterInfo : chapterInfos) {
-            chapterExecutor.submit(() -> processSingleChapter(chapterInfo, mangaDir, mangaId));
+            chapterExecutor.submit(() -> {
+                try {
+                    processSingleChapter(chapterInfo, mangaDir, mangaId);
+                } catch (Exception e) {
+                    log.error("章节[{}]处理失败: {}", chapterInfo.getChapterId(), e.getMessage(), e);
+                }
+            });
         }
     }
 
@@ -190,7 +196,9 @@ public class MangaDownloadServiceImpl implements MangaDownloadService {
                     image.setImageName(imageId);
                     image.setImageUrl(fullPath);
                     image.setDownloadUrl(imageAddress);
+                    image.setImageType(extractImageType(imageAddress));
                     image.setDownloadStatus(ProcessStatus.PENDING);
+                    image.setSortOrder(Integer.parseInt(imageId.substring(3))); // imageId = img56, 需要提取56
                     imageList.add(image);
                 }
             }
@@ -245,6 +253,20 @@ public class MangaDownloadServiceImpl implements MangaDownloadService {
             return matcher.group(1);
         }
         log.info("当前是最后一页");
+        return null;
+    }
+
+    /**
+     * 从URL中提取图片类型 (如 jpg, png, webp)
+     */
+    private String extractImageType(String url) {
+        if (url == null) return null;
+        String path = url.contains("?") ? url.substring(0, url.indexOf("?")) : url;
+        int dotIndex = path.lastIndexOf('.');
+        int slashIndex = path.lastIndexOf('/');
+        if (dotIndex > slashIndex && dotIndex < path.length() - 1) {
+            return path.substring(dotIndex + 1).toLowerCase();
+        }
         return null;
     }
 
