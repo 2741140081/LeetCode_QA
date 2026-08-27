@@ -5,11 +5,13 @@ import javafx.scene.image.Image;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Iterator;
 
 /**
  * <p>项目名称: LeetCode_QA </p>
@@ -67,8 +69,20 @@ public class ImageUtil {
      */
     public static Image decodeAndScale(String path, double scale) {
         try {
-            // 加载原始图片
-            BufferedImage originalImage = ImageIO.read(new File(path));
+            File imageFile = new File(path);
+            if (!imageFile.exists()) {
+                log.error("图片文件不存在: {}", path);
+                return null;
+            }
+
+            BufferedImage originalImage;
+            String lowerPath = path.toLowerCase();
+            if (lowerPath.endsWith(".webp")) {
+                originalImage = readWebp(imageFile);
+            } else {
+                originalImage = ImageIO.read(imageFile);
+            }
+
             if (originalImage == null) {
                 log.error("无法读取图片文件: {}", path);
                 return null;
@@ -108,6 +122,26 @@ public class ImageUtil {
             return SwingFXUtils.toFXImage(scaledImage, null);
         } catch (IOException e) {
             log.error("解码图片失败: {}", path, e);
+            return null;
+        }
+    }
+
+    /**
+     * 使用 webp-imageio 读取 WebP 格式图片
+     */
+    private static BufferedImage readWebp(File webpFile) throws IOException {
+        try (FileInputStream fis = new FileInputStream(webpFile)) {
+            Iterator<ImageReader> readers = ImageIO.getImageReadersByMIMEType("image/webp");
+            if (readers.hasNext()) {
+                ImageReader reader = readers.next();
+                try {
+                    reader.setInput(ImageIO.createImageInputStream(fis));
+                    return reader.read(0);
+                } finally {
+                    reader.dispose();
+                }
+            }
+            log.error("未找到 WebP 图片读取器, 请确认 webp-imageio 依赖已正确引入");
             return null;
         }
     }

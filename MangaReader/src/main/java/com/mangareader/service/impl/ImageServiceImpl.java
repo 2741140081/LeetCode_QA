@@ -94,6 +94,10 @@ public class ImageServiceImpl implements ImageService {
 
             // 3. 磁盘读取解码缩放
             Image img = ImageUtil.decodeAndScale(path, scale);
+            if (img == null) {
+                log.warn("图片解码失败, 返回默认错误图 path:{}", path);
+                return getDefaultErrorImage();
+            }
             // 4. 写入磁盘缓存
             ImageUtil.saveToDiskCache(img, cacheFile);
             memoryCache.put(path + "_" + scale, img);
