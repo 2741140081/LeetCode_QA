@@ -23,6 +23,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Configuration
 public class ThreadPoolConfig {
 
+    /**
+     * 图片下载处理线程池
+     * 用于并行处理漫画图片的下载任务
+     */
     @Bean("imageLoadExecutor")
     public ExecutorService imageLoadExecutor() {
         AtomicInteger threadNumber = new AtomicInteger(1);
@@ -33,6 +37,23 @@ public class ThreadPoolConfig {
                 new LinkedBlockingDeque<>(200),
                 r -> new Thread(r, "image-load-thread-" + threadNumber.getAndIncrement()),
                 new ThreadPoolExecutor.CallerRunsPolicy()
+        );
+    }
+
+    /**
+     * 章节处理线程池
+     * 用于并行处理漫画章节的下载任务
+     */
+    @Bean("chapterProcessExecutor")
+    public ExecutorService chapterProcessExecutor() {
+        AtomicInteger threadNumber = new AtomicInteger(1);
+        return new ThreadPoolExecutor(
+                3, // 核心线程数
+                6, // 最大线程数
+                60, TimeUnit.MILLISECONDS, // 空闲线程存活时间
+                new LinkedBlockingDeque<>(100), // 任务队列容量
+                r -> new Thread(r, "manga-chapter-process-thread-" + threadNumber.getAndIncrement()),
+                new ThreadPoolExecutor.CallerRunsPolicy() // 队列满时的处理策略
         );
     }
 }

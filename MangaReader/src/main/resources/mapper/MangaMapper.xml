@@ -65,16 +65,25 @@
         UPDATE manga SET manga_status = #{status}, updated_at = NOW() WHERE manga_id = #{mangaId}
     </update>
 
+    <!-- 更新心跳时间 - 使用行级锁 -->
     <update id="updateHeartBeat">
-        UPDATE manga SET last_heart_beat = #{lastHeartBeat} WHERE manga_id = #{mangaId}
+        UPDATE manga
+        SET last_heart_beat = #{lastHeartBeat}, updated_at = NOW()
+        WHERE manga_id = #{mangaId}
     </update>
 
+    <!-- 更新已处理章节数 - 使用原子累加操作 -->
     <update id="updateProcessedChapters">
-        UPDATE manga SET processed_chapters = #{processedChapters} WHERE manga_id = #{mangaId}
+        UPDATE manga
+        SET processed_chapters = processed_chapters + 1, updated_at = NOW()
+        WHERE manga_id = #{mangaId}
     </update>
 
+    <!-- 更新总章节数 -->
     <update id="updateTotalChapters">
-        UPDATE manga SET total_chapters = #{totalChapters} WHERE manga_id = #{mangaId}
+        UPDATE manga
+        SET total_chapters = #{totalChapters}, updated_at = NOW()
+        WHERE manga_id = #{mangaId}
     </update>
 
 </mapper>

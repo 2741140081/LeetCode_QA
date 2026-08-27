@@ -1,42 +1,46 @@
 package com.mangareader.service.impl;
 
 import com.mangareader.config.MangaDownloadProperties;
+import com.mangareader.enums.ProcessStatus;
 import com.mangareader.mapper.ChapterMapper;
 import com.mangareader.mapper.MangaChapterPageRecordMapper;
 import com.mangareader.mapper.MangaImageMapper;
+import com.mangareader.mapper.MangaMapper;
 import com.mangareader.model.entity.Chapter;
 import com.mangareader.model.entity.Manga;
 import com.mangareader.model.entity.MangaChapterPageRecord;
 import com.mangareader.model.entity.MangaImage;
 import com.mangareader.service.MangaDownloadService;
-import org.jetbrains.annotations.NotNull;
+import lombok.extern.slf4j.Slf4j;
+import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Slf4j
 @Service
 public class MangaDownloadServiceImpl implements MangaDownloadService {
 
     @Autowired
     private MangaDownloadProperties downloadProperties;
+
+    @Autowired
+    private MangaMapper mangaMapper;
 
     @Autowired
     private ChapterMapper chapterMapper;
@@ -47,18 +51,30 @@ public class MangaDownloadServiceImpl implements MangaDownloadService {
     @Autowired
     private MangaChapterPageRecordMapper pageRecordMapper;
 
+    @Autowired
+    @Qualifier("chapterProcessExecutor")
+    private ExecutorService chapterExecutor;
+
     private String BASE_URL;
     // 最大重试次数配置，可根据实际网络情况调整
     private static final int MAX_RETRY_TIMES = 3;
+    private static final long BASE_SLEEP_MS = 1000; // 基础休眠1秒
 
     @Override
-    public void downloadManga(Manga manga, int threadCount) throws IOException {
+    public void downloadManga(Manga manga) {
         String mangaUrl = manga.getMangaUrl();
-        System.out.println("Downloading manga: " + manga.getMangaName());
-        System.out.println("Manga URL: " + mangaUrl);
-        System.out.println("Thread count: " + threadCount);
+        Long mangaId = manga.getMangaId();
+        log.info("开始下载漫画: {}, URL: {}", manga.getMangaName(), mangaUrl);
         BASE_URL = downloadProperties.getBaseUrl();
-        Document doc = getDocumentWithRetry(mangaUrl);
+        Document doc;
+        try {
+            doc = getDocumentWithRetry(mangaUrl);
+            log.info("成功获取漫画目录页: {}", mangaUrl);
+        } catch (RuntimeException e) {
+            log.error("加载漫画网页失败, 漫画: {}, URL: {}", manga.getMangaName(), mangaUrl);
+            mangaMapper.updateMangaStatus(mangaId, ProcessStatus.FAILED.getCode());
+            throw new RuntimeException(e);
+        }
 
         Elements liElements = doc.select(downloadProperties.getCssSelector());
         TreeMap<String, String> chapterMap = new TreeMap<>();
@@ -67,10 +83,10 @@ public class MangaDownloadServiceImpl implements MangaDownloadService {
             String chapterName = liElement.attr("title").trim();
             chapterMap.put(chapterUrlId, chapterName);
         }
+        log.info("解析到 {} 个章节", chapterMap.size());
 
         // 批量保存章节信息到数据库
         List<Chapter> chapters = new ArrayList<>();
-        Long mangaId = manga.getMangaId();
         int idx = 0;
         for (Map.Entry<String, String> entry : chapterMap.entrySet()) {
             Chapter chapter = new Chapter();
@@ -84,44 +100,21 @@ public class MangaDownloadServiceImpl implements MangaDownloadService {
 
         if (!chapters.isEmpty()) {
             int insertedCount = chapterMapper.batchInsert(chapters);
-            System.out.println("Successfully inserted " + insertedCount + " chapters");
+            log.info("成功插入 {} 个章节到数据库", insertedCount);
+            // 更新总章节数
+            mangaMapper.updateTotalChapters(mangaId, chapters.size());
+        } else {
+            mangaMapper.updateMangaStatus(mangaId, ProcessStatus.FAILED.getCode());
+            log.error("漫画[{}]没有可下载的章节，已标记为异常中断状态", manga.getMangaName());
         }
         // 通过 mangaId 获取章节信息, 用于创建目录
         String mangaDir = manga.getDirId();
         List<Chapter> chapterInfos = chapterMapper.findByMangaId(mangaId);
 
-        // 初始化自定义线程池，每个线程独立处理完整章节逻辑
-        ExecutorService chapterExecutor = new ThreadPoolExecutor(
-                threadCount,
-                threadCount,
-                0L, TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<>(),
-                new java.util.concurrent.ThreadFactory() {
-                    private final AtomicInteger threadIndex = new AtomicInteger(1);
-                    @Override
-                    public Thread newThread(@NotNull Runnable r) {
-                        return new Thread(r, "manga-chapter-process-thread-" + threadIndex.getAndIncrement());
-                    }
-                },
-                new ThreadPoolExecutor.CallerRunsPolicy()
-        );
-
+        log.info("开始处理 {} 个章节，存储路径: {}", chapterInfos.size(), mangaDir);
         // 提交所有章节的并行处理任务
         for (Chapter chapterInfo : chapterInfos) {
-            chapterExecutor.submit(() -> processSingleChapter(chapterInfo, mangaDir));
-        }
-
-        // 等待所有章节任务执行完成，优雅关闭线程池
-        chapterExecutor.shutdown();
-        try {
-            if (!chapterExecutor.awaitTermination(24, TimeUnit.HOURS)) {
-                List<Runnable> unfinishedTasks = chapterExecutor.shutdownNow();
-                System.err.printf("章节下载任务超时，剩余未处理任务数：%d%n", unfinishedTasks.size());
-            }
-        } catch (InterruptedException e) {
-            chapterExecutor.shutdownNow();
-            Thread.currentThread().interrupt();
-            throw new RuntimeException("章节多线程下载任务被中断", e);
+            chapterExecutor.submit(() -> processSingleChapter(chapterInfo, mangaDir, mangaId));
         }
     }
 
@@ -129,7 +122,9 @@ public class MangaDownloadServiceImpl implements MangaDownloadService {
      * 单线程内处理单个章节的全流程：创建目录 + 遍历所有分页 + 图片入库 + 状态记录
      * todo: 需要新增更新 manga 表状态, 实现心跳更新
      */
-    private void processSingleChapter(Chapter chapterInfo, String mangaDir) {
+    private void processSingleChapter(Chapter chapterInfo, String mangaDir, long mangaId) {
+        // todo: 判断 manga 状态是否是正在处理状态, 如果不是正在处理状态, 则返回
+
         int currChapterNum = chapterInfo.getChapterNum();
         // 将章节号格式化为001、002格式作为目录名
         String chapterNum = String.format("%03d", currChapterNum);
@@ -141,6 +136,8 @@ public class MangaDownloadServiceImpl implements MangaDownloadService {
         }
 
         Long chapterId = chapterInfo.getChapterId();
+        log.info("开始处理章节: ID={}, 序号={}, 标题={}", chapterId, currChapterNum, chapterInfo.getTitle());
+
         String firstPageUrl = BASE_URL + chapterInfo.getChapterUrl();
         int currentPageNum = 1;
 
@@ -149,70 +146,61 @@ public class MangaDownloadServiceImpl implements MangaDownloadService {
         while (currentPageUrl != null) {
             MangaChapterPageRecord pageRecord = buildInitPageRecord(chapterId, currentPageNum, currentPageUrl);
             int executeRetryTimes = 0;
-            Document currentDoc = null;
-            boolean pageLoadSuccess = false;
-            String lastErrorMsg = "";
-
-            // 执行页面重试逻辑，直到达到最大重试次数
-            while (executeRetryTimes < MAX_RETRY_TIMES) {
-                try {
-                    currentDoc = getDocumentWithRetry(currentPageUrl);
-                    pageLoadSuccess = true;
-                    break;
-                } catch (Exception e) {
-                    executeRetryTimes++;
-                    lastErrorMsg = e.getMessage();
-                    System.err.printf("章节[%d]第%d页加载失败，已重试%d次，错误信息：%s%n", chapterId, currentPageNum, executeRetryTimes, lastErrorMsg);
-                }
+            Document currentDoc;
+            try {
+                currentDoc = getDocumentWithRetry(currentPageUrl);
+            } catch (RuntimeException e) {
+                // 标记页面加载失败
+                pageRecord.setDownloadStatus(ProcessStatus.FAILED);
+                pageRecord.setRetryCount(executeRetryTimes);
+                pageRecord.setLastFailReason(e.getMessage());
+                pageRecord.setGmtModify(LocalDateTime.now());
+                pageRecordMapper.updateByPrimaryKeySelective(pageRecord);
+                log.error("章节[{}]第[{}]页加载失败: {}", chapterId, currentPageNum, e.getMessage());
+                mangaMapper.updateMangaStatus(mangaId, ProcessStatus.FAILED.getCode());
+                throw new RuntimeException(e);
             }
 
-            if (pageLoadSuccess) {
-                // 更新页面状态为下载成功
-                pageRecord.setDownloadStatus(1);
-                pageRecord.setRetryCount(executeRetryTimes);
-                pageRecord.setGmtModify(LocalDateTime.now());
-                pageRecordMapper.updateByPrimaryKeySelective(pageRecord);
+            // 更新页面状态为下载成功
+            pageRecord.setDownloadStatus(ProcessStatus.COMPLETED);
+            pageRecord.setRetryCount(executeRetryTimes);
+            pageRecord.setGmtModify(LocalDateTime.now());
+            pageRecordMapper.updateByPrimaryKeySelective(pageRecord);
 
-                // 解析当前页的所有图片信息批量入库
-                List<MangaImage> imageList = new ArrayList<>();
-                Elements imgElements = currentDoc.select("img[data-original][id]");
-                for (Element img : imgElements) {
-                    String imageAddress = img.attr("data-original");
-                    String imageId = img.attr("id");
-                    if (!imageAddress.isEmpty()) {
-                        MangaImage image = new MangaImage();
-                        image.setChapterId(chapterId);
-                        image.setImageName(imageId);
-                        image.setImageUrl(fullPath);
-                        image.setDownloadUrl(imageAddress);
-                        image.setDownloadStatus(1);
-                        imageList.add(image);
-                    }
+            // 解析当前页的所有图片信息批量入库
+            List<MangaImage> imageList = new ArrayList<>();
+            Elements imgElements = currentDoc.select("img[data-original][id]");
+            for (Element img : imgElements) {
+                String imageAddress = img.attr("data-original");
+                String imageId = img.attr("id");
+                if (!imageAddress.isEmpty()) {
+                    MangaImage image = new MangaImage();
+                    image.setChapterId(chapterId);
+                    image.setImageName(imageId);
+                    image.setImageUrl(fullPath);
+                    image.setDownloadUrl(imageAddress);
+                    image.setDownloadStatus(ProcessStatus.PENDING);
+                    imageList.add(image);
                 }
-                if (!imageList.isEmpty()) {
-                    mangaImageMapper.batchInsert(imageList);
-                    System.out.printf("章节[%d]第%d页成功入库%d张图片%n", chapterId, currentPageNum, imageList.size());
-                }
+            }
+            if (!imageList.isEmpty()) {
+                mangaImageMapper.batchInsert(imageList);
+                System.out.printf("章节[%d]第%d页成功入库%d张图片%n", chapterId, currentPageNum, imageList.size());
+            }
+            // 原子更新 manga 表心跳时间 - 使用行级锁保证并发安全
+            mangaMapper.updateHeartBeat(mangaId, LocalDateTime.now());
 
-                // 通过next_page标签获取下一页地址
-                String nextPageUrl = findNextPageUrl(currentDoc);
-                if (nextPageUrl != null) {
-                    currentPageUrl = BASE_URL + nextPageUrl;
-                    currentPageNum++;
-                } else {
-                    // 不存在next_page标签说明已经到当前章节最后一页，结束循环
-                    currentPageUrl = null;
-                }
+            // 通过next_page标签获取下一页地址
+            String nextPageUrl = findNextPageUrl(currentDoc);
+            if (nextPageUrl != null) {
+                currentPageUrl = BASE_URL + nextPageUrl;
+                currentPageNum++;
             } else {
-                // 页面重试次数耗尽，标记为下载失败，记录错误信息
-                pageRecord.setDownloadStatus(2);
-                pageRecord.setRetryCount(executeRetryTimes);
-                pageRecord.setLastFailReason(lastErrorMsg);
-                pageRecord.setGmtModify(LocalDateTime.now());
-                pageRecordMapper.updateByPrimaryKeySelective(pageRecord);
-                System.err.printf("章节[%d]第%d页重试%d次仍然失败，已记录失败状态，可后续单独重试处理%n", chapterId, currentPageNum, MAX_RETRY_TIMES);
-                // 终止循环，不再尝试加载后续页面
+                // 不存在next_page标签说明已经到当前章节最后一页，结束循环
                 currentPageUrl = null;
+                // 原子递增已处理章节数 - 使用数据库原子操作避免并发问题
+                mangaMapper.incrementProcessedChapters(mangaId);
+                log.info("章节[{}]处理完成，已更新处理进度", chapterId);
             }
         }
     }
@@ -225,7 +213,7 @@ public class MangaDownloadServiceImpl implements MangaDownloadService {
         record.setChapterId(chapterId);
         record.setPageNum(pageNum);
         record.setPageUrl(pageUrl);
-        record.setDownloadStatus(0);
+        record.setDownloadStatus(ProcessStatus.PENDING);
         record.setRetryCount(0);
         record.setGmtCreate(LocalDateTime.now());
         record.setGmtModify(LocalDateTime.now());
@@ -242,42 +230,67 @@ public class MangaDownloadServiceImpl implements MangaDownloadService {
         Pattern nextPagePattern = Pattern.compile("<a href=\"([^\"]*)\" class=\"down-page\"[^>]*>下一页</a>");
         Matcher matcher = nextPagePattern.matcher(doc.html());
         if (matcher.find()) {
-            System.out.println("下一页地址: " + matcher.group(1));
+            log.info("下一页 url: {}", matcher.group(1));
             return matcher.group(1);
         }
+        log.info("当前是最后一页");
         return null;
     }
 
     /**
      * 自带基础重试逻辑的网页加载方法，基础请求失败自动重试
-     * todo: 代码逻辑存在问题
      */
     private Document getDocumentWithRetry(String url) {
         int retryCount = 0;
-        MangaDownloadProperties.Headers headers = downloadProperties.getHeaders();
+        Exception lastException = null;
+        log.debug("开始请求URL: {}", url);
         while (retryCount < MAX_RETRY_TIMES) {
             try {
-                return Jsoup.connect(url)
+                // 1. 构建连接
+                Connection connection = Jsoup.connect(url)
                         .userAgent(downloadProperties.getUserAgent())
-                        .header("Accept", headers.getAccept())
-                        .header("Accept-encoding", headers.getAcceptEncoding())
-                        .header("Accept-Language", headers.getAcceptLanguage())
-                        .header("Referer", downloadProperties.getReferer())
                         .timeout(downloadProperties.getTimeout())
-                        .get();
-            } catch (Exception e) {
-                retryCount++;
-                if (retryCount >= MAX_RETRY_TIMES) {
-                    throw new RuntimeException("网页加载最终失败，地址：" + url, e);
+                        .followRedirects(false) // 禁止自动重定向，避免陷入重定向循环
+                        .header("Accept", downloadProperties.getHeaders().getAccept())
+                        .header("Accept-Encoding", downloadProperties.getHeaders().getAcceptEncoding())
+                        .header("Accept-Language", downloadProperties.getHeaders().getAcceptLanguage())
+                        .header("Referer", downloadProperties.getReferer());
+
+                // 2. 执行请求并获取响应对象（关键：先拿Response，再判断状态码）
+                Connection.Response response = connection.execute();
+
+                // 3. 校验状态码
+                int statusCode = response.statusCode();
+                if (statusCode != 200) {
+                    log.warn("HTTP状态码异常: {}, URL: {}", statusCode, url);
+                    throw new RuntimeException("HTTP错误码: " + statusCode + ", URL: " + url);
                 }
-                try {
-                    // 重试前休眠2秒，避免请求频率过高被服务器拦截
-                    TimeUnit.SECONDS.sleep(2);
-                } catch (InterruptedException ie) {
-                    Thread.currentThread().interrupt();
+
+                // 4. 解析为Document
+                // 注意：如果页面很大，确保JVM堆内存充足，或者限制maxBodySize
+                log.debug("成功获取响应: URL={}, 状态码={}", url, statusCode);
+                return response.parse();
+            } catch (Exception e) {
+                lastException = e;
+                retryCount++;
+                log.warn("第{}次请求失败: {}, URL: {}, 原因: {}", retryCount, e.getClass().getSimpleName(), url, e.getMessage());
+
+                // 如果不是最后一次重试，则等待
+                if (retryCount < MAX_RETRY_TIMES) {
+                    long sleepTime = BASE_SLEEP_MS * (long) Math.pow(2, retryCount - 1);
+                    long jitter = (long) (Math.random() * 1000);
+                    try {
+                        log.debug("等待 {}ms 后重试", sleepTime + jitter);
+                        TimeUnit.MILLISECONDS.sleep(sleepTime + jitter);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        throw new RuntimeException("重试等待被中断", ie);
+                    }
                 }
             }
         }
-        return null;
+        log.error("网页加载最终失败，地址: {}, 重试次数: {}", url, MAX_RETRY_TIMES);
+        // 所有重试均失败
+        throw new RuntimeException("网页加载最终失败，地址：" + url, lastException);
     }
 }

@@ -1,5 +1,6 @@
 package com.mangareader.model.entity;
 
+import com.mangareader.enums.ProcessStatus;
 import lombok.Data;
 import java.time.LocalDateTime;
 
@@ -46,9 +47,9 @@ public class Manga {
     private String coverImage;
 
     /**
-     * 状态: 0:启用 1:禁用 2:待下载 3:异常中断
+     * 状态: 0:待处理 1:处理中 2:处理完成 3:处理失败
      */
-    private Integer mangaStatus;
+    private ProcessStatus mangaStatus;
 
     /**
      * 创建时间

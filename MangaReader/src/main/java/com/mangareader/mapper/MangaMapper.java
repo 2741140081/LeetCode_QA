@@ -57,16 +57,19 @@ public interface MangaMapper {
 
     /**
      * 更新心跳时间
+     * 使用主键索引自动加行锁，保证并发安全性
      */
     int updateHeartBeat(@Param("mangaId") Long mangaId, @Param("lastHeartBeat") LocalDateTime lastHeartBeat);
 
     /**
-     * 更新已处理章节数
+     * 原子递增已处理章节数
+     * 直接在数据库层完成计数+1，避免线程间竞争
      */
-    int updateProcessedChapters(@Param("mangaId") Long mangaId, @Param("processedChapters") Integer processedChapters);
+    int incrementProcessedChapters(@Param("mangaId") Long mangaId);
 
     /**
      * 更新总章节数
      */
     int updateTotalChapters(@Param("mangaId") Long mangaId, @Param("totalChapters") Integer totalChapters);
+
 }
