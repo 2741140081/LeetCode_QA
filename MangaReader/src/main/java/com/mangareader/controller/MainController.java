@@ -4,6 +4,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
@@ -13,6 +14,8 @@ import java.io.IOException;
 /**
  * 主控制器，管理应用的主要界面切换
  */
+
+@Slf4j
 @Component
 public class MainController {
 
@@ -67,7 +70,7 @@ public class MainController {
 
         } catch (IOException e) {
             e.printStackTrace();
-            System.err.println("加载界面失败: " + e.getMessage());
+            log.error("加载界面失败: {}", e.getMessage());
         }
     }
 
@@ -86,7 +89,7 @@ public class MainController {
 
         } catch (Exception e) {
             e.printStackTrace();
-            System.err.println("切换到阅读界面失败: " + e.getMessage());
+            log.error("切换到阅读界面失败: {}", e.getMessage());
         }
     }
 

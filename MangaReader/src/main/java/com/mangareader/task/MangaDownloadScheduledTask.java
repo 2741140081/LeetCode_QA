@@ -55,7 +55,7 @@ public class MangaDownloadScheduledTask {
                 if (isHeartbeatTimeout(processingManga.getLastHeartBeat())) {
                     // 心跳超时，标记为异常中断
                     mangaMapper.updateMangaStatus(processingManga.getMangaId(), ProcessStatus.FAILED.getCode());
-                    System.out.println("漫画[" + processingManga.getMangaName() + "]心跳超时，已标记为异常中断");
+                    log.info("漫画[{}]心跳超时，已标记为异常中断", processingManga.getMangaName());
                 }
                 // 检查是否所有章节都已处理完成
                 Integer totalChapters = processingManga.getTotalChapters();
@@ -87,7 +87,7 @@ public class MangaDownloadScheduledTask {
             mangaMapper.updateMangaStatus(pendingManga.getMangaId(), ProcessStatus.PROCESSING.getCode());
             mangaMapper.updateHeartBeat(pendingManga.getMangaId(), LocalDateTime.now());
 
-            System.out.println("开始处理漫画: " + pendingManga.getMangaName());
+            log.info("开始处理漫画: {}", pendingManga.getMangaName());
 
             // 4. 获取章节信息
             List<Chapter> chapters = chapterMapper.findByMangaId(pendingManga.getMangaId());

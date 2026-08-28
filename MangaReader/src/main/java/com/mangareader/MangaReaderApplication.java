@@ -4,6 +4,7 @@ import com.mangareader.controller.MainController;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.stage.Stage;
+import lombok.extern.slf4j.Slf4j;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -23,6 +24,7 @@ import java.io.IOException;
  * @date 2026/8/14 10:05
  * @update [序号][日期YYYY-MM-DD] [更改人姓名][变更描述]
  */
+@Slf4j
 @SpringBootApplication
 @MapperScan("com.mangareader.mapper")
 @EnableConfigurationProperties
@@ -39,15 +41,15 @@ public class MangaReaderApplication extends Application {
 
     @Override
     public void init() {
-        System.out.println("[JavaFX] 正在启动 Spring Boot 容器...");
+        log.info("[JavaFX] 正在启动 Spring Boot 容器...");
         // 初始化Spring容器，完成所有Bean的创建和依赖注入
         springContext = SpringApplication.run(MangaReaderApplication.class);
-        System.out.println("[Spring] 容器启动完成，Bean 已就绪");
+        log.info("[Spring] 容器启动完成，Bean 已就绪");
     }
 
     @Override
     public void start(Stage primaryStage) {
-        System.out.println("[JavaFX] 正在加载 FXML 界面...");
+        log.info("[JavaFX] 正在加载 FXML 界面...");
 
         // 从 Spring 容器中获取 MainController
         MainController mainController = springContext.getBean(MainController.class);
@@ -57,19 +59,19 @@ public class MangaReaderApplication extends Application {
 
         primaryStage.setTitle("漫画阅读器");
         primaryStage.setOnCloseRequest(event -> {
-            System.out.println("[JavaFX] 窗口关闭，停止 Spring 容器...");
+            log.info("[JavaFX] 窗口关闭，停止 Spring 容器...");
             Platform.exit();
             int exitCode = SpringApplication.exit(springContext, () -> 0);
             System.exit(exitCode);
         });
         primaryStage.show();
 
-        System.out.println("[JavaFX] 界面已渲染，可以开始测试");
+        log.info("[JavaFX] 界面已渲染，可以开始测试");
     }
 
     @Override
     public void stop() {
-        System.out.println("[JavaFX] 应用退出，释放资源...");
+        log.info("[JavaFX] 应用退出，释放资源...");
         if (springContext != null && springContext.isRunning()) {
             springContext.close();
         }

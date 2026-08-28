@@ -204,7 +204,7 @@ public class MangaDownloadServiceImpl implements MangaDownloadService {
             }
             if (!imageList.isEmpty()) {
                 mangaImageMapper.batchInsert(imageList);
-                System.out.printf("章节[%d]第%d页成功入库%d张图片%n", chapterId, currentPageNum, imageList.size());
+                log.info("章节[{}]第{}页成功入库{}张图片", chapterId, currentPageNum, imageList.size());
             }
             // 原子更新 manga 表心跳时间 - 使用行级锁保证并发安全
             mangaMapper.updateHeartBeat(mangaId, LocalDateTime.now());
