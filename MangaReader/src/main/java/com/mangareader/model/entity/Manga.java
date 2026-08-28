@@ -32,9 +32,9 @@ public class Manga {
     private String dirId;
 
     /**
-     * 作者
+     * 网址唯一标识(截取自mangaUrl)
      */
-    private String authorName;
+    private String urlId;
 
     /**
      * 漫画下载地址

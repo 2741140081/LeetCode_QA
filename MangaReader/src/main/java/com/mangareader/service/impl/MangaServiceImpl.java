@@ -47,6 +47,9 @@ public class MangaServiceImpl implements MangaService {
     @Override
     public Manga addManga(Manga manga) {
         if (manga == null) {
+            return null; // todo: 需要统一返回结果类, 需要一个类似于 Result 给出 code, desc, data
+        }
+        if (manga.getUrlId() != null && isExistsManga(manga.getUrlId())) {
             return null;
         }
 
@@ -72,6 +75,7 @@ public class MangaServiceImpl implements MangaService {
         Manga manga = new Manga();
         manga.setMangaName(mangaName);
         manga.setMangaUrl(mangaUrl);
+        manga.setUrlId(getUrlIdBySubMangaUrl(mangaUrl));
         // 根据 mangaName 创建本地文件
         String mangaBasePath = mangaProperties.getStorage().getImagePath();
         String fullPath = mangaBasePath + File.separator + mangaName;
@@ -88,5 +92,27 @@ public class MangaServiceImpl implements MangaService {
     @Override
     public void updateMangaStatus(Long mangaId, int mangaStatus) {
         mangaMapper.updateMangaStatus(mangaId, mangaStatus);
+    }
+
+    /**
+     * 根据 mangaUrl 截取 urlId
+     * 规则: 提取 /xxx.html 最后一个 '/' 与 '.html' 之间的字符
+     */
+    private String getUrlIdBySubMangaUrl(String mangaUrl) {
+        if (mangaUrl == null || !mangaUrl.contains("/") || !mangaUrl.contains(".html")) {
+            // todo: 需要抛出异常
+            return "";
+        }
+        int lastSlashIndex = mangaUrl.lastIndexOf('/');
+        int htmlIndex = mangaUrl.lastIndexOf(".html");
+        if (htmlIndex > lastSlashIndex) {
+             return mangaUrl.substring(lastSlashIndex + 1, htmlIndex);
+        }
+        return mangaUrl; // 直接把整个 mangaUrl 作为唯一标识
+    }
+
+    private boolean isExistsManga(String urlId) {
+        Manga manga = mangaMapper.selectMangaByUrlId(urlId);
+        return manga == null;
     }
 }

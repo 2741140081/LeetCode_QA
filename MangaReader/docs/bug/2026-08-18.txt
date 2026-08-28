@@ -47,3 +47,9 @@ public int getCurrentVisibleIndex() {
     // 边界约束保证索引合法
     return Math.max(0, Math.min(estimatedIndex, items.size() - 1));
 }
+
+
+如果需要通过 MangaReaderApplication 启动:
+1. 需要下载 javaFx sdk
+2. vm: --module-path "D:\DevTools\javafx-sdk-17.0.20\lib" --add-modules javafx.controls,javafx.fxml,javafx.graphics
+

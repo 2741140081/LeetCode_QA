@@ -50,6 +50,14 @@ public interface MangaMapper {
      */
     Manga selectPendingManga();
 
+
+    /**
+     * 根据下载地址标识 urlId 查询漫画
+     * @param urlId 下载地址标识
+     * @return 漫画对象
+     */
+    Manga selectMangaByUrlId(@Param("urlId") String urlId);
+
     /**
      * 更新漫画状态
      */
@@ -71,5 +79,4 @@ public interface MangaMapper {
      * 更新总章节数
      */
     int updateTotalChapters(@Param("mangaId") Long mangaId, @Param("totalChapters") Integer totalChapters);
-
 }

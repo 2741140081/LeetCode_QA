@@ -19,6 +19,7 @@ spring:
 mybatis:
   mapper-locations: classpath:mapper/*.xml
   type-aliases-package: com.mangareader.model.entity
+  type-handlers-package: com.mangareader.config
   configuration:
     map-underscore-to-camel-case: true
     cache-enabled: true

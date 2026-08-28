@@ -19,3 +19,18 @@
    - totalChapters: 总章节数目
    - processedChapters: 已处理的章节数
 2. 昨天新增 MangaChapterPageRecord 表
+
+
+08-28:
+1. 更改 manga 表 author_name 改成 url_id, 用于标识唯一网址
+   - 重命名列 (以 MySQL 为例，其他数据库语法可能略有不同)
+   ALTER TABLE manga CHANGE COLUMN author_name url_id VARCHAR(255) DEFAULT NULL COMMENT '网址唯一标识';
+
+   - 根据已有 manga_url 初始化 url_id (截取最后一个 '/' 和 '.html' 之间的字符)
+   UPDATE manga
+   SET url_id = SUBSTRING_INDEX(SUBSTRING_INDEX(manga_url, '/', -1), '.html', 1)
+   WHERE manga_url LIKE '%/%.html%';
+
+   - 为 url_id 添加唯一索引，用于判断漫画是否已存在（重复网址识别）
+   ALTER TABLE manga ADD UNIQUE INDEX uk_url_id (url_id);
+2. 

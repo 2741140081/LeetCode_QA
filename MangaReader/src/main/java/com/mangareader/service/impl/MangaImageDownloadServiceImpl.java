@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
-import java.net.URL;
 import java.nio.file.*;
 import java.util.*;
 
@@ -67,7 +66,7 @@ public class MangaImageDownloadServiceImpl implements MangaImageDownloadService 
                 fileName = fileName + extension;
             }
             Path targetPath = Paths.get(task.getImageUrl()).resolve(fileName);
-            targetPath = resolveConflict(targetPath);
+            resolveConflict(targetPath); // 删除原文件
 
             // 确保目录存在
             try {
@@ -146,21 +145,16 @@ public class MangaImageDownloadServiceImpl implements MangaImageDownloadService 
     /**
      * 文件名冲突自动处理, 自动追加序号后缀
      */
-    private Path resolveConflict(Path path) {
-        if (!Files.exists(path)) return path;
-        String name = path.getFileName().toString();
-        int dotIndex = name.lastIndexOf('.');
-        String base = dotIndex > 0 ? name.substring(0, dotIndex) : name;
-        String ext = dotIndex > 0 ? name.substring(dotIndex) : "";
-
-        int counter = 1;
-        Path newPath;
-        do {
-            newPath = path.getParent().resolve(base + "_" + counter++ + ext);
-        } while (Files.exists(newPath));
-
-        return newPath;
+    private void resolveConflict(Path path) {
+        if (!Files.exists(path)) return;
+        try {
+            Files.delete(path);
+            log.info("文件已存在，采用覆盖重写模式删除原文件: {}", path);
+        } catch (IOException e) {
+            log.error("覆盖重写模式删除原文件失败: {}", path, e);
+        }
     }
+
 
     @Override
     public Map<String, Object> getStatistics() {
