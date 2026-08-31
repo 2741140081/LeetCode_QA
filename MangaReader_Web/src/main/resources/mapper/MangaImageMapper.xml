@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mangareader.mapper.MangaImageMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="MangaImageResultMap" type="com.mangareader.model.entity.MangaImage">
+        <id column="image_id" property="imageId" jdbcType="BIGINT"/>
+        <result column="chapter_id" property="chapterId" jdbcType="BIGINT"/>
+        <result column="image_name" property="imageName" jdbcType="VARCHAR"/>
+        <result column="image_type" property="imageType" jdbcType="VARCHAR"/>
+        <result column="image_width" property="imageWidth" jdbcType="INTEGER"/>
+        <result column="image_height" property="imageHeight" jdbcType="INTEGER"/>
+        <result column="image_url" property="imageUrl" jdbcType="VARCHAR"/>
+        <result column="download_url" property="downloadUrl" jdbcType="VARCHAR"/>
+        <result column="download_status" property="downloadStatus" jdbcType="TINYINT"/>
+        <result column="sort_order" property="sortOrder" jdbcType="INTEGER"/>
+        <result column="file_size" property="fileSize" jdbcType="BIGINT"/>
+        <result column="downloaded_size" property="downloadedSize" jdbcType="BIGINT"/>
+        <result column="retry_count" property="retryCount" jdbcType="INTEGER"/>
+        <result column="error_msg" property="errorMsg" jdbcType="VARCHAR"/>
+        <result column="last_trigger_time" property="lastTriggerTime" jdbcType="TIMESTAMP"/>
+        <result column="created_at" property="createdAt" jdbcType="TIMESTAMP"/>
+        <result column="updated_at" property="updatedAt" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        image_id, chapter_id, image_name, image_type, image_width, image_height,
+        image_url, download_url, download_status, sort_order, file_size, downloaded_size,
+        retry_count, error_msg, last_trigger_time, created_at, updated_at
+    </sql>
+
+
+    <!-- 根据章节ID查询图片列表 -->
+    <select id="findByChapterId" resultMap="MangaImageResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM manga_image
+        WHERE chapter_id = #{chapterId}
+        ORDER BY sort_order
+    </select>
+
+    <!-- 批量插入图片信息 -->
+    <insert id="batchInsert" parameterType="java.util.List" useGeneratedKeys="true" keyProperty="imageId">
+        INSERT INTO manga_image (
+        chapter_id, image_name, image_url, download_url, image_type, download_status, sort_order
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+            #{item.chapterId}, #{item.imageName},
+            #{item.imageUrl}, #{item.downloadUrl}, #{item.imageType}, #{item.downloadStatus},
+            <choose>
+                <when test="item.sortOrder != null">#{item.sortOrder}</when>
+                <otherwise>0</otherwise>
+            </choose>
+            )
+        </foreach>
+    </insert>
+
+    <!-- 查询待下载任务 -->
+    <select id="selectPendingTasks" resultMap="MangaImageResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM manga_image
+        WHERE download_status = #{status}
+        ORDER BY image_id ASC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 查询超时下载中任务 -->
+    <select id="selectTimeoutDownloadingTasks" resultMap="MangaImageResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM manga_image
+        WHERE download_status = 1
+        AND DATE_SUB(NOW(), INTERVAL #{timeout} SECOND) > last_trigger_time
+        LIMIT #{limit}
+    </select>
+
+    <!-- 更新下载状态 -->
+    <update id="updateStatus">
+        UPDATE manga_image
+        SET download_status = #{status},
+        downloaded_size = #{downloadedSize},
+        error_msg = #{errorMsg},
+        updated_at = NOW()
+        WHERE image_id = #{imageId}
+    </update>
+
+    <!-- 标记为下载中 -->
+    <update id="markAsDownloading">
+        UPDATE manga_image
+        SET download_status = 1,
+        last_trigger_time = NOW()
+        WHERE image_id = #{imageId}
+    </update>
+
+    <!-- 标记为下载成功 -->
+    <update id="markAsSuccess">
+        UPDATE manga_image
+        SET download_status = 2,
+        file_size = #{fileSize},
+        updated_at = NOW()
+        WHERE image_id = #{imageId}
+    </update>
+
+    <!-- 增加重试次数 -->
+    <update id="incrementRetryCount">
+        UPDATE manga_image
+        SET retry_count = retry_count + 1
+        WHERE image_id = #{imageId}
+    </update>
+
+    <!-- 根据ID查询 -->
+    <select id="selectById" resultMap="MangaImageResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM manga_image
+        WHERE image_id = #{imageId}
+    </select>
+
+    <!-- 统计待下载任务数 -->
+    <select id="countPendingTasks" resultType="int">
+        SELECT COUNT(*)
+        FROM manga_image
+        WHERE download_status = 1
+    </select>
+
+    <!-- 统计下载中任务数 -->
+    <select id="countDownloadingTasks" resultType="int">
+        SELECT COUNT(*)
+        FROM manga_image
+        WHERE download_status = 1
+    </select>
+
+</mapper>

@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mangareader.mapper.MangaMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="MangaResultMap" type="com.mangareader.model.entity.Manga">
+        <id property="mangaId" column="manga_id"/>
+        <result property="mangaName" column="manga_name"/>
+        <result property="dirId" column="dir_id"/>
+        <result property="urlId" column="url_id"/>
+        <result property="mangaUrl" column="manga_url"/>
+        <result property="coverImage" column="cover_image"/>
+        <result property="mangaStatus" column="manga_status"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <result column="last_heart_beat" property="lastHeartBeat"/>
+        <result column="total_chapters" property="totalChapters"/>
+        <result column="processed_chapters" property="processedChapters"/>
+    </resultMap>
+
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        manga_id, manga_name, dir_id, url_id, manga_url,
+        cover_image, manga_status, created_at, updated_at
+    </sql>
+
+    <!-- 查询所有已完成漫画 manga_status = 2 -->
+    <select id="selectAllManga" resultMap="MangaResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM manga
+        WHERE manga_status = 2
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 根据ID查询漫画 -->
+    <select id="selectMangaById" resultMap="MangaResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM manga
+        WHERE manga_id = #{mangaId}
+    </select>
+
+    <!-- 新增漫画 -->
+    <insert id="insertManga" parameterType="com.mangareader.model.entity.Manga" useGeneratedKeys="true" keyProperty="mangaId">
+        INSERT INTO manga (
+        manga_name, dir_id, url_id, manga_url,
+        cover_image, manga_status, created_at, updated_at
+        ) VALUES (
+        #{mangaName}, #{dirId}, #{urlId}, #{mangaUrl},
+        #{coverImage}, #{mangaStatus}, NOW(), NOW()
+        )
+    </insert>
+
+    <select id="selectProcessingManga" resultMap="MangaResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM manga WHERE manga_status = 1 LIMIT 1
+    </select>
+
+    <select id="selectPendingManga" resultMap="MangaResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM manga WHERE manga_status = 0 ORDER BY created_at ASC LIMIT 1
+    </select>
+
+    <!-- 根据ID查询漫画 -->
+    <select id="selectMangaByUrlId" resultMap="MangaResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM manga
+        WHERE url_id = #{urlId}
+    </select>
+
+    <update id="updateMangaStatus">
+        UPDATE manga SET manga_status = #{status}, updated_at = NOW() WHERE manga_id = #{mangaId}
+    </update>
+
+    <!-- 更新心跳时间 - 使用行级锁 -->
+    <update id="updateHeartBeat">
+        UPDATE manga
+        SET last_heart_beat = #{lastHeartBeat}, updated_at = NOW()
+        WHERE manga_id = #{mangaId}
+    </update>
+
+    <!-- 更新已处理章节数 - 使用原子累加操作 -->
+    <update id="incrementProcessedChapters">
+        UPDATE manga
+        SET processed_chapters = processed_chapters + 1, updated_at = NOW()
+        WHERE manga_id = #{mangaId}
+    </update>
+
+    <!-- 更新总章节数 -->
+    <update id="updateTotalChapters">
+        UPDATE manga
+        SET total_chapters = #{totalChapters}, updated_at = NOW()
+        WHERE manga_id = #{mangaId}
+    </update>
+
+</mapper>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mangareader.mapper.ChapterMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="ChapterResultMap" type="com.mangareader.model.entity.Chapter">
+        <id column="chapter_id" property="chapterId" jdbcType="BIGINT"/>
+        <result column="manga_id" property="mangaId" jdbcType="BIGINT"/>
+        <result column="chapter_num" property="chapterNum" jdbcType="INTEGER"/>
+        <result column="chapter_url" property="chapterUrl" jdbcType="VARCHAR"/>
+        <result column="title" property="title" jdbcType="VARCHAR"/>
+        <result column="image_count" property="imageCount" jdbcType="INTEGER"/>
+        <result column="created_at" property="createdAt" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        chapter_id, manga_id, chapter_num, chapter_url, title, image_count, created_at
+    </sql>
+
+    <!-- 根据漫画ID查询章节列表 -->
+    <select id="findByMangaId" resultMap="ChapterResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM chapter
+        WHERE manga_id = #{mangaId}
+        ORDER BY chapter_num
+    </select>
+
+    <!-- 根据章节ID查询章节 -->
+    <select id="findById" resultMap="ChapterResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM chapter
+        WHERE chapter_id = #{chapterId}
+    </select>
+
+    <!-- 根据漫画ID和章节序号查询章节 -->
+    <select id="findByMangaIdAndChapterNum" resultMap="ChapterResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM chapter
+        WHERE manga_id = #{mangaId} AND chapter_num = #{chapterNum}
+    </select>
+
+    <!-- 查找下一章 -->
+    <select id="findNextChapter" resultMap="ChapterResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM chapter
+        WHERE manga_id = #{mangaId} AND chapter_num > #{currentChapterNum}
+        ORDER BY chapter_num
+        LIMIT 1
+    </select>
+
+    <!-- 查找上一章 -->
+    <select id="findPrevChapter" resultMap="ChapterResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM chapter
+        WHERE manga_id = #{mangaId} AND #{currentChapterNum} > chapter_num
+        ORDER BY chapter_num DESC
+        LIMIT 1
+    </select>
+
+    <!-- 批量插入章节 -->
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO chapter (manga_id, chapter_num, chapter_url, title, image_count, created_at)
+        VALUES
+        <foreach collection="chapters" item="chapter" separator=",">
+            (#{chapter.mangaId}, #{chapter.chapterNum}, #{chapter.chapterUrl},
+            #{chapter.title}, #{chapter.imageCount}, #{chapter.createdAt})
+        </foreach>
+    </insert>
+
+
+</mapper>
