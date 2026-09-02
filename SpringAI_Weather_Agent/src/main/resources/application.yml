@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: spring-ai-weather-agent
+  ai:
+    dashscope:
+      api-key: ${AI_DASHSCOPE_API_KEY}
+      chat:
+        options:
+          # 使用的通义千问模型，可按需改为 qwen-turbo / qwen-max
+          model: qwen-plus
+
+logging:
+  level:
+    com.weather: INFO

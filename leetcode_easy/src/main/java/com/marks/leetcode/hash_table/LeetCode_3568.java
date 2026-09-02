@@ -156,7 +156,7 @@ public class LeetCode_3568 {
                     queue.offer(new int[] {nextI, nextJ, next_mask, remainEnergy});
                 }
             } else {
-                // 已经收集过了, 但是这个路径还是可以同行的
+                // 已经收集过了, 但是这个路径还是可以通行的
                 if (dist[nextI][nextJ][curr_mask] < remainEnergy) {
                     dist[nextI][nextJ][curr_mask] = remainEnergy;
                     queue.offer(new int[] {nextI, nextJ, curr_mask, remainEnergy});
