@@ -41,6 +41,21 @@
         ORDER BY sort_order
     </select>
 
+    <!-- 分页查询章节图片 -->
+    <select id="findByChapterIdPaged" resultMap="MangaImageResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM manga_image
+        WHERE chapter_id = #{chapterId}
+        ORDER BY sort_order
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- 统计章节图片总数 -->
+    <select id="countByChapterId" resultType="int">
+        SELECT COUNT(*) FROM manga_image WHERE chapter_id = #{chapterId}
+    </select>
+
     <!-- 批量插入图片信息 -->
     <insert id="batchInsert" parameterType="java.util.List" useGeneratedKeys="true" keyProperty="imageId">
         INSERT INTO manga_image (

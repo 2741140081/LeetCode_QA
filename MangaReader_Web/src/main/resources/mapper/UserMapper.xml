@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mangareader.mapper.UserMapper">
+
+    <resultMap id="UserResultMap" type="com.mangareader.model.entity.User">
+        <id property="userId" column="user_id"/>
+        <result property="username" column="username"/>
+        <result property="passwordHash" column="password_hash"/>
+        <result property="email" column="email"/>
+        <result property="nickname" column="nickname"/>
+        <result property="avatarUrl" column="avatar_url"/>
+        <result property="status" column="status"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <select id="findByUsername" resultMap="UserResultMap">
+        SELECT * FROM user WHERE username = #{username}
+    </select>
+
+    <select id="findByEmail" resultMap="UserResultMap">
+        SELECT * FROM user WHERE email = #{email} AND email != ''
+    </select>
+
+    <select id="findByUserId" resultMap="UserResultMap">
+        SELECT * FROM user WHERE user_id = #{userId}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="userId">
+        INSERT INTO user (username, password_hash, email, nickname, avatar_url, status)
+        VALUES (#{username}, #{passwordHash}, #{email}, #{nickname}, #{avatarUrl}, #{status})
+    </insert>
+
+    <update id="updateProfile">
+        UPDATE user
+        <set>
+            <if test="nickname != null">nickname = #{nickname},</if>
+            <if test="avatarUrl != null">avatar_url = #{avatarUrl},</if>
+            <if test="email != null">email = #{email},</if>
+        </set>
+        WHERE user_id = #{userId}
+    </update>
+
+    <update id="updatePassword">
+        UPDATE user SET password_hash = #{passwordHash} WHERE user_id = #{userId}
+    </update>
+
+</mapper>

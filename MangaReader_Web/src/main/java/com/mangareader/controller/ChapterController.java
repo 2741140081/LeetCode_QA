@@ -12,7 +12,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -25,6 +27,8 @@ import java.util.stream.Collectors;
 @RestController
 @RequiredArgsConstructor
 public class ChapterController {
+
+    private static final int DEFAULT_PAGE_SIZE = 100;
 
     private final ChapterService chapterService;
     private final MangaImageService mangaImageService;
@@ -67,7 +71,7 @@ public class ChapterController {
     }
 
     /**
-     * 章节图片列表
+     * 章节图片列表（全量）
      */
     @GetMapping("/api/chapter/{chapterId}/images")
     public Result<List<ChapterImageVO>> images(@PathVariable Long chapterId) {
@@ -76,6 +80,35 @@ public class ChapterController {
                 .map(this::toImageVO)
                 .collect(Collectors.toList());
         return Result.ok(voList);
+    }
+
+    /**
+     * 章节图片分页接口
+     * GET /api/chapter/{chapterId}/images/paged?page=0&size=100
+     */
+    @GetMapping("/api/chapter/{chapterId}/images/paged")
+    public Result<Map<String, Object>> imagesPaged(
+            @PathVariable Long chapterId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "100") int size) {
+
+        int offset = page * size;
+        List<MangaImage> images = mangaImageService.getImagesByChapterIdPaged(chapterId, offset, size);
+        int totalCount = mangaImageService.countImagesByChapterId(chapterId);
+        int totalPages = (int) Math.ceil((double) totalCount / size);
+
+        List<ChapterImageVO> voList = images.stream()
+                .map(this::toImageVO)
+                .collect(Collectors.toList());
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("images", voList);
+        result.put("currentPage", page);
+        result.put("totalPages", totalPages);
+        result.put("totalCount", totalCount);
+        result.put("hasNext", page < totalPages - 1);
+
+        return Result.ok(result);
     }
 
     /**

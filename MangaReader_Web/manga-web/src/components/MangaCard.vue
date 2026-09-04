@@ -27,14 +27,15 @@
 
 <script setup lang="ts">
 import type { MangaVO } from '@/api/manga'
+import type { ShelfMangaVO } from '@/api/shelf'
 import defaultCover from '@/assets/default_cover.png'
 
 const props = defineProps<{
-  manga: MangaVO
+  manga: MangaVO | ShelfMangaVO
 }>()
 
 defineEmits<{
-  click: [manga: MangaVO]
+  click: [manga: MangaVO | ShelfMangaVO]
 }>()
 
 const statusType = computed(() => {

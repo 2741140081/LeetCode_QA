@@ -18,6 +18,22 @@
             <span>下载中心</span>
           </el-menu-item>
         </el-menu>
+        <div class="header-right">
+          <template v-if="userStore.isLoggedIn">
+            <UserAvatar
+              :display-name="userStore.nickname"
+              :avatar-url="userStore.avatarUrl"
+            />
+          </template>
+          <template v-else>
+            <el-button type="primary" size="small" @click="router.push('/login')">
+              登录
+            </el-button>
+            <el-button size="small" @click="router.push('/register')">
+              注册
+            </el-button>
+          </template>
+        </div>
       </div>
     </el-header>
     <el-main class="app-main">
@@ -29,9 +45,12 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useUserStore } from '@/stores/user'
+import UserAvatar from '@/components/UserAvatar.vue'
 
 const route = useRoute()
 const router = useRouter()
+const userStore = useUserStore()
 
 const activeMenu = computed(() => {
   if (route.path.startsWith('/reader')) return '/'
@@ -85,6 +104,14 @@ body {
 
 .nav-menu {
   border-bottom: none !important;
+  flex: 1;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
 }
 
 .app-main {

@@ -40,6 +40,16 @@ public class MangaImageServiceImpl implements MangaImageService {
     }
 
     @Override
+    public List<MangaImage> getImagesByChapterIdPaged(Long chapterId, int offset, int limit) {
+        return mangaImageMapper.findByChapterIdPaged(chapterId, offset, limit);
+    }
+
+    @Override
+    public int countImagesByChapterId(Long chapterId) {
+        return mangaImageMapper.countByChapterId(chapterId);
+    }
+
+    @Override
     public String getFullImagePath(MangaImage image) {
         String path = image.getImageUrl();
         String imageName = image.getImageName();

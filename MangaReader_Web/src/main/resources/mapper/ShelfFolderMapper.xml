@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mangareader.mapper.ShelfFolderMapper">
+
+    <resultMap id="FolderResultMap" type="com.mangareader.model.entity.ShelfFolder">
+        <id property="folderId" column="folder_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="folderName" column="folder_name"/>
+        <result property="sortOrder" column="sort_order"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <select id="findByUserId" resultMap="FolderResultMap">
+        SELECT * FROM shelf_folder WHERE user_id = #{userId} ORDER BY sort_order ASC
+    </select>
+
+    <select id="findByFolderId" resultMap="FolderResultMap">
+        SELECT * FROM shelf_folder WHERE folder_id = #{folderId}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="folderId">
+        INSERT INTO shelf_folder (user_id, folder_name, sort_order)
+        VALUES (#{userId}, #{folderName}, #{sortOrder})
+    </insert>
+
+    <update id="updateFolderName">
+        UPDATE shelf_folder SET folder_name = #{folderName} WHERE folder_id = #{folderId}
+    </update>
+
+    <delete id="deleteByFolderId">
+        DELETE FROM shelf_folder WHERE folder_id = #{folderId}
+    </delete>
+
+    <select id="getMaxSortOrder" resultType="java.lang.Integer">
+        SELECT COALESCE(MAX(sort_order), 0) FROM shelf_folder WHERE user_id = #{userId}
+    </select>
+
+</mapper>

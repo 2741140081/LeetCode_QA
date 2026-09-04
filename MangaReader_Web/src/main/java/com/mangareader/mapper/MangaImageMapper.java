@@ -21,6 +21,18 @@ import java.util.List;
 public interface MangaImageMapper {
     List<MangaImage> findByChapterId(@Param("chapterId") Long chapterId);
 
+    /**
+     * 分页查询章节图片
+     */
+    List<MangaImage> findByChapterIdPaged(@Param("chapterId") Long chapterId,
+                                          @Param("offset") int offset,
+                                          @Param("limit") int limit);
+
+    /**
+     * 统计章节图片总数
+     */
+    int countByChapterId(@Param("chapterId") Long chapterId);
+
     // 添加批量插入方法
     int batchInsert(@Param("list") List<MangaImage> imageList);
 

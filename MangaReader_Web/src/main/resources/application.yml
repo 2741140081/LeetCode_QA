@@ -14,6 +14,20 @@ spring:
       idle-timeout: 600000
       max-lifetime: 1800000
       auto-commit: true
+  # Redis 配置
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password:
+      database: 0
+      timeout: 10000ms
+      lettuce:
+        pool:
+          max-active: 16
+          max-idle: 8
+          min-idle: 2
+          max-wait: 3000ms
   web:
     resources:
       static-locations: classpath:/static/,file:${manga.storage.image-path}/
@@ -94,3 +108,17 @@ logging:
     rollingpolicy:
       max-file-size: 100MB
       file-name-pattern: logs/manga-reader.%d{yyyy-MM-dd}.%i.log
+
+# PageHelper 分页插件配置
+pagehelper:
+  helper-dialect: mysql
+  reasonable: true
+  support-methods-arguments: true
+  params: count=countSql
+
+# JWT 配置
+jwt:
+  # 签名密钥（至少 32 字符，生产环境请使用更安全的随机字符串）
+  secret: MangaReader2026SecretKeyForJwtTokenSigningMustBeLongEnough
+  # Token 过期时间（分钟），默认 7 天
+  expiration: 10080

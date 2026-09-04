@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mangareader.mapper.ShelfMangaMapper">
+
+    <resultMap id="ShelfMangaResultMap" type="com.mangareader.model.entity.ShelfManga">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="mangaId" column="manga_id"/>
+        <result property="folderId" column="folder_id"/>
+        <result property="addedAt" column="added_at"/>
+    </resultMap>
+
+    <select id="findByUserId" resultMap="ShelfMangaResultMap">
+        SELECT * FROM shelf_manga WHERE user_id = #{userId} ORDER BY added_at DESC
+    </select>
+
+    <select id="findByUserIdAndFolderId" resultMap="ShelfMangaResultMap">
+        SELECT * FROM shelf_manga WHERE user_id = #{userId} AND folder_id = #{folderId} ORDER BY added_at DESC
+    </select>
+
+    <select id="findUncategorized" resultMap="ShelfMangaResultMap">
+        SELECT * FROM shelf_manga WHERE user_id = #{userId} AND folder_id IS NULL ORDER BY added_at DESC
+    </select>
+
+    <select id="findByUserIdAndMangaId" resultMap="ShelfMangaResultMap">
+        SELECT * FROM shelf_manga WHERE user_id = #{userId} AND manga_id = #{mangaId}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO shelf_manga (user_id, manga_id, folder_id)
+        VALUES (#{userId}, #{mangaId}, #{folderId})
+    </insert>
+
+    <update id="updateFolder">
+        UPDATE shelf_manga SET folder_id = #{folderId}
+        WHERE user_id = #{userId} AND manga_id = #{mangaId}
+    </update>
+
+    <update id="clearFolder">
+        UPDATE shelf_manga SET folder_id = NULL WHERE folder_id = #{folderId}
+    </update>
+
+    <delete id="deleteByUserIdAndMangaId">
+        DELETE FROM shelf_manga WHERE user_id = #{userId} AND manga_id = #{mangaId}
+    </delete>
+
+</mapper>

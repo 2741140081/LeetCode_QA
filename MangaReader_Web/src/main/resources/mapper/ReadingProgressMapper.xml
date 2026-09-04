@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mangareader.mapper.ReadingProgressMapper">
+
+    <resultMap id="ProgressResultMap" type="com.mangareader.model.entity.ReadingProgress">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="mangaId" column="manga_id"/>
+        <result property="chapterId" column="chapter_id"/>
+        <result property="imageIndex" column="image_index"/>
+        <result property="pageIndex" column="page_index"/>
+        <result property="totalImages" column="total_images"/>
+        <result property="progressPct" column="progress_pct"/>
+        <result property="lastReadAt" column="last_read_time"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <select id="findByUserIdAndMangaId" resultMap="ProgressResultMap">
+        SELECT * FROM reading_progress
+        WHERE user_id = #{userId} AND manga_id = #{mangaId}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO reading_progress
+            (user_id, manga_id, chapter_id, image_index, page_index, total_images, progress_pct, last_read_time)
+        VALUES
+            (#{userId}, #{mangaId}, #{chapterId}, #{imageIndex}, #{pageIndex}, #{totalImages}, #{progressPct}, NOW())
+    </insert>
+
+    <update id="update">
+        UPDATE reading_progress
+        SET chapter_id = #{chapterId},
+            image_index = #{imageIndex},
+            page_index = #{pageIndex},
+            total_images = #{totalImages},
+            progress_pct = #{progressPct},
+            last_read_time = NOW()
+        WHERE user_id = #{userId} AND manga_id = #{mangaId}
+    </update>
+
+</mapper>

@@ -23,6 +23,14 @@ export interface ChapterImageVO {
   height: number
 }
 
+export interface PagedImagesResult {
+  images: ChapterImageVO[]
+  currentPage: number
+  totalPages: number
+  totalCount: number
+  hasNext: boolean
+}
+
 /** 获取章节列表 */
 export function getChapters(mangaId: number) {
   return request.get<any, { code: number; data: Chapter[] }>(`/manga/${mangaId}/chapters`)
@@ -33,9 +41,16 @@ export function getChapterDetail(chapterId: number) {
   return request.get<any, { code: number; data: ChapterVO }>(`/chapter/${chapterId}`)
 }
 
-/** 获取章节图片列表 */
+/** 获取章节图片列表（全量） */
 export function getChapterImages(chapterId: number) {
   return request.get<any, { code: number; data: ChapterImageVO[] }>(`/chapter/${chapterId}/images`)
+}
+
+/** 分页获取章节图片 */
+export function getChapterImagesPaged(chapterId: number, page: number = 0, size: number = 100) {
+  return request.get<any, { code: number; data: PagedImagesResult }>(`/chapter/${chapterId}/images/paged`, {
+    params: { page, size },
+  })
 }
 
 /** 获取上一章 */

@@ -16,6 +16,13 @@ import java.util.List;
  */
 public interface MangaImageService {
     List<MangaImage> getImagesByChapterId(Long chapterId);
+
+    /** 分页查询章节图片 */
+    List<MangaImage> getImagesByChapterIdPaged(Long chapterId, int offset, int limit);
+
+    /** 统计章节图片总数 */
+    int countImagesByChapterId(Long chapterId);
+
     String getFullImagePath(MangaImage image);
     /** 获取浏览器可访问的图片 URL（/images/...） */
     String getImageUrl(MangaImage image);
