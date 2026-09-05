@@ -1,0 +1,18 @@
+# 前端构建产物
+manga-web/dist/
+
+# 前端依赖
+manga-web/node_modules/
+
+# Java 构建产物
+target/
+
+# IDE
+.idea/
+
+# 日志
+logs/
+
+# Canvas 报告（按需）
+*.canvas.tsx
+*.canvas.status.json
