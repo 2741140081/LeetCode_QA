@@ -1,5 +1,6 @@
 package com.mangareader.model.common;
 
+import com.mangareader.constant.ResultCode;
 import lombok.Data;
 
 /**
@@ -24,11 +25,11 @@ public class Result<T> {
     }
 
     public static <T> Result<T> ok(T data) {
-        return new Result<>(200, "success", data);
+        return new Result<>(ResultCode.SUCCESS, "success", data);
     }
 
     public static <T> Result<T> ok(String message, T data) {
-        return new Result<>(200, message, data);
+        return new Result<>(ResultCode.SUCCESS, message, data);
     }
 
     public static <T> Result<T> fail(Integer code, String message) {
@@ -36,6 +37,6 @@ public class Result<T> {
     }
 
     public static <T> Result<T> fail(String message) {
-        return new Result<>(500, message, null);
+        return new Result<>(ResultCode.SERVER_ERROR, message, null);
     }
 }

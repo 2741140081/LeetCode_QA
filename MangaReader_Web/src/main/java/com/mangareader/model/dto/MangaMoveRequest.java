@@ -1,5 +1,6 @@
 package com.mangareader.model.dto;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 /**
@@ -11,6 +12,7 @@ import lombok.Data;
 @Data
 public class MangaMoveRequest {
 
+    @NotNull(message = "漫画ID不能为空")
     private Long mangaId;
 
     /**

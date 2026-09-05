@@ -5,6 +5,7 @@
       v-model:visible="sidebarVisible"
       :chapters="chapters"
       :current-chapter-id="currentChapterId"
+      :hover-mode="sidebarMode === SidebarMode.HOVER_SHOW"
       @select="onChapterSelect"
     />
 
@@ -15,6 +16,9 @@
         <el-button @click="sidebarVisible = !sidebarVisible">
           <el-icon><Menu /></el-icon>
           目录
+        </el-button>
+        <el-button size="small" @click="cycleSidebarMode" :title="'侧边栏模式: ' + sidebarModeLabel">
+          {{ sidebarModeIcon }}
         </el-button>
         <el-button @click="loadPrevChapter" :disabled="!chapterDetail?.prevChapterId">
           <el-icon><ArrowLeft /></el-icon>
@@ -35,6 +39,7 @@
           ref="scroller"
           :images="images"
           :reset-key="resetKey"
+          :zoom-scale="zoomScale"
           @page-change="onPageChange"
           @scroll-end="onScrollEnd"
         />
@@ -51,6 +56,12 @@
         <el-button size="small" @click="loadNextPage" :disabled="currentImagePage >= totalPages - 1">
           下一页
         </el-button>
+        <!-- 缩放控制 -->
+        <div class="zoom-controls">
+          <el-button size="small" @click="zoomOut" :disabled="zoomScale <= MIN_ZOOM_SCALE">-</el-button>
+          <span class="zoom-info">{{ Math.round(zoomScale * 100) }}%</span>
+          <el-button size="small" @click="zoomIn" :disabled="zoomScale >= MAX_ZOOM_SCALE">+</el-button>
+        </div>
         <AutoPlayBar
           :is-playing="isPlaying"
           :scroll-distance="scrollDistance"
@@ -64,7 +75,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute } from 'vue-router'
 import { getChapters, getChapterDetail, getChapterImagesPaged } from '@/api/chapter'
 import type { Chapter, ChapterVO, ChapterImageVO } from '@/api/chapter'
@@ -73,8 +84,17 @@ import { getAutoplayConfig, type AutoplayConfig as AutoplayConfigType } from '@/
 import ComicScroller from '@/components/ComicScroller.vue'
 import AutoPlayBar from '@/components/AutoPlayBar.vue'
 import ChapterList from '@/components/ChapterList.vue'
-
-const PAGE_SIZE = 20
+import {
+  PAGE_SIZE,
+  PROGRESS_SAVE_INTERVAL,
+  ZOOM_SCALE_KEY,
+  DEFAULT_ZOOM_SCALE,
+  MIN_ZOOM_SCALE,
+  MAX_ZOOM_SCALE,
+  ZOOM_STEP,
+  SIDEBAR_MODE_KEY,
+  SidebarMode,
+} from '@/constants'
 
 const route = useRoute()
 const mangaId = Number(route.params.mangaId)
@@ -87,9 +107,47 @@ const currentImageIndex = ref(0)
 const currentImagePage = ref(0)
 const totalPages = ref(0)
 const totalImageCount = ref(0)
-const sidebarVisible = ref(true)
+const sidebarVisible = ref(false)
 const scroller = ref<InstanceType<typeof ComicScroller>>()
 const resetKey = ref(0)
+
+// 侧边栏模式（从 sessionStorage 恢复）
+const sidebarMode = ref<SidebarMode>(
+  (sessionStorage.getItem(SIDEBAR_MODE_KEY) as SidebarMode) || SidebarMode.AUTO_COLLAPSE
+)
+
+const sidebarModeLabel = computed(() => {
+  switch (sidebarMode.value) {
+    case SidebarMode.AUTO_COLLAPSE: return '自动收起'
+    case SidebarMode.HOVER_SHOW: return '悬停唤出'
+    case SidebarMode.ALWAYS_VISIBLE: return '常驻显示'
+    default: return '未知'
+  }
+})
+
+const sidebarModeIcon = computed(() => {
+  switch (sidebarMode.value) {
+    case SidebarMode.AUTO_COLLAPSE: return '📖'
+    case SidebarMode.HOVER_SHOW: return '👁'
+    case SidebarMode.ALWAYS_VISIBLE: return '📌'
+    default: return '📖'
+  }
+})
+
+function cycleSidebarMode() {
+  const modes: SidebarMode[] = [
+    SidebarMode.AUTO_COLLAPSE,
+    SidebarMode.HOVER_SHOW,
+    SidebarMode.ALWAYS_VISIBLE,
+  ]
+  const currentIdx = modes.indexOf(sidebarMode.value)
+  const nextMode = modes[(currentIdx + 1) % modes.length]
+  sidebarMode.value = nextMode
+  sessionStorage.setItem(SIDEBAR_MODE_KEY, nextMode)
+}
+
+// 缩放状态（从 sessionStorage 恢复）
+const zoomScale = ref(Number(sessionStorage.getItem(ZOOM_SCALE_KEY)) || DEFAULT_ZOOM_SCALE)
 
 // 自动播放状态
 const isPlaying = ref(false)
@@ -152,8 +210,12 @@ async function loadImagesPage(chapterId: number, page: number, scrollToIndex: nu
   const res = await getChapterImagesPaged(chapterId, page, PAGE_SIZE)
   const data = res.data
 
-  // 每次翻页只保留当前页图片，不累计
-  images.value = data.images
+  // 自动播放模式下追加图片，手动翻页时替换
+  if (isPlaying.value && page > 0) {
+    images.value = [...images.value, ...data.images]
+  } else {
+    images.value = data.images
+  }
   resetKey.value++
 
   totalPages.value = data.totalPages
@@ -196,23 +258,21 @@ function onPageChange(index: number) {
 let isLoadingNextPage = false
 
 async function onScrollEnd() {
-  // 自动播放到底时切换下一章
-  if (isPlaying.value) {
-    loadNextChapter()
-    return
-  }
-
   // 防止重复加载
   if (isLoadingNextPage) return
 
   // 检查是否需要加载下一页图片
   if (currentImagePage.value < totalPages.value - 1) {
+    // 还有下一页：加载下一页图片（无论是否自动播放）
     isLoadingNextPage = true
     try {
       await loadNextPage()
     } finally {
       isLoadingNextPage = false
     }
+  } else if (isPlaying.value) {
+    // 自动播放且已到本章最后一页：切换下一章
+    loadNextChapter()
   }
 }
 
@@ -292,6 +352,19 @@ function speedDown() {
   }
 }
 
+// 缩放控制
+function zoomIn() {
+  const newScale = Math.min(zoomScale.value + ZOOM_STEP, MAX_ZOOM_SCALE)
+  zoomScale.value = Math.round(newScale * 10) / 10
+  sessionStorage.setItem(ZOOM_SCALE_KEY, String(zoomScale.value))
+}
+
+function zoomOut() {
+  const newScale = Math.max(zoomScale.value - ZOOM_STEP, MIN_ZOOM_SCALE)
+  zoomScale.value = Math.round(newScale * 10) / 10
+  sessionStorage.setItem(ZOOM_SCALE_KEY, String(zoomScale.value))
+}
+
 // 保存阅读进度
 async function doSaveProgress() {
   if (!currentChapterId.value) return
@@ -314,7 +387,7 @@ onMounted(() => {
   // 每 30 秒自动保存进度
   saveProgressTimer = setInterval(() => {
     doSaveProgress()
-  }, 30000)
+  }, PROGRESS_SAVE_INTERVAL)
 })
 
 onBeforeUnmount(() => {
@@ -330,7 +403,7 @@ onBeforeUnmount(() => {
 <style scoped>
 .reader-view {
   display: flex;
-  height: calc(100vh - 60px);
+  height: calc(100% + 24px);
   background: #1a1a1a;
   border-radius: 8px;
   overflow: hidden;
@@ -383,5 +456,18 @@ onBeforeUnmount(() => {
 .page-info {
   color: #999;
   font-size: 12px;
+}
+
+.zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.zoom-info {
+  font-size: 12px;
+  color: #666;
+  min-width: 40px;
+  text-align: center;
 }
 </style>

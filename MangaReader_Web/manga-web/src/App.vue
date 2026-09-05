@@ -72,7 +72,7 @@ body {
 }
 
 .app-container {
-  min-height: 100vh;
+  height: 100vh;
 }
 
 .app-header {
@@ -115,6 +115,8 @@ body {
 }
 
 .app-main {
+  flex: 1;
+  min-height: 0;
   max-width: 1400px;
   margin: 0 auto;
   padding: 24px;

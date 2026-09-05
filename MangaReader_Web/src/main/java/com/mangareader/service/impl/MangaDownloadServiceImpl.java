@@ -101,8 +101,6 @@ public class MangaDownloadServiceImpl implements MangaDownloadService {
         if (!chapters.isEmpty()) {
             int insertedCount = chapterMapper.batchInsert(chapters);
             log.info("成功插入 {} 个章节到数据库", insertedCount);
-            // 更新总章节数
-            mangaMapper.updateTotalChapters(mangaId, chapters.size());
         } else {
             mangaMapper.updateMangaStatus(mangaId, ProcessStatus.FAILED.getCode());
             log.error("漫画[{}]没有可下载的章节，已标记为异常中断状态", manga.getMangaName());
@@ -129,18 +127,6 @@ public class MangaDownloadServiceImpl implements MangaDownloadService {
      * todo: 需要新增更新 manga 表状态, 实现心跳更新
      */
     private void processSingleChapter(Chapter chapterInfo, String mangaDir, long mangaId) {
-        Manga manga = mangaMapper.selectMangaById(mangaId);
-        if (manga == null || manga.getMangaStatus() == null) {
-            log.warn("漫画信息不存在或状态为空，跳过章节[{}]的处理", chapterInfo.getChapterId());
-            return;
-        }
-        if (manga.getMangaStatus() != ProcessStatus.PROCESSING) {
-            log.warn("漫画[{}]当前状态为[{}]，不是正在处理状态，跳过章节[{}]的处理",
-                    manga.getMangaName(),
-                    manga.getMangaStatus().getDesc(),
-                    chapterInfo.getChapterId());
-            return;
-        }
 
         int currChapterNum = chapterInfo.getChapterNum();
         // 将章节号格式化为001、002格式作为目录名
@@ -174,8 +160,7 @@ public class MangaDownloadServiceImpl implements MangaDownloadService {
                 pageRecord.setGmtModify(LocalDateTime.now());
                 pageRecordMapper.updateByPrimaryKeySelective(pageRecord);
                 log.error("章节[{}]第[{}]页加载失败: {}", chapterId, currentPageNum, e.getMessage());
-                mangaMapper.updateMangaStatus(mangaId, ProcessStatus.FAILED.getCode());
-                throw new RuntimeException(e);
+                return;
             }
 
             // 更新页面状态为下载成功

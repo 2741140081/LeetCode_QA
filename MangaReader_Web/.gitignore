@@ -6,6 +6,7 @@ manga-web/node_modules/
 
 # Java 构建产物
 target/
+canvases/
 
 # IDE
 .idea/

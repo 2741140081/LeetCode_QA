@@ -1,5 +1,7 @@
 package com.mangareader.service.impl;
 
+import com.mangareader.constant.ResultCode;
+import com.mangareader.enums.UserStatus;
 import com.mangareader.model.common.BusinessException;
 import com.mangareader.model.entity.User;
 import com.mangareader.model.vo.LoginVO;
@@ -7,6 +9,7 @@ import com.mangareader.model.vo.UserVO;
 import com.mangareader.mapper.UserMapper;
 import com.mangareader.security.JwtUtils;
 import com.mangareader.service.UserService;
+import com.mangareader.util.NicknameGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -39,20 +42,26 @@ public class UserServiceImpl implements UserService {
     public UserVO register(String username, String password, String email, String nickname) {
         // 检查用户名是否已存在
         if (userMapper.findByUsername(username) != null) {
-            throw new BusinessException(400, "用户名已存在");
+            throw new BusinessException(ResultCode.BAD_REQUEST, "用户名已存在");
         }
         // 检查邮箱是否已注册
         if (email != null && !email.isEmpty() && userMapper.findByEmail(email) != null) {
-            throw new BusinessException(400, "邮箱已被注册");
+            throw new BusinessException(ResultCode.BAD_REQUEST, "邮箱已被注册");
         }
 
         User user = new User();
         user.setUsername(username);
         user.setPasswordHash(passwordEncoder.encode(password));
         user.setEmail(email != null ? email : "");
-        user.setNickname(nickname != null ? nickname : username);
+        // 昵称为空时随机生成，格式: nick_ + 18位随机数字
+        String finalNickname = (nickname != null && !nickname.isEmpty()) ? nickname : NicknameGenerator.generate();
+        // 兆底检查昵称唯一性
+        if (userMapper.findByNickname(finalNickname) != null) {
+            finalNickname = NicknameGenerator.generate();
+        }
+        user.setNickname(finalNickname);
         user.setAvatarUrl("");
-        user.setStatus(1);
+        user.setStatus(UserStatus.ACTIVE.getCode());
 
         userMapper.insert(user);
         log.info("用户注册成功: {}", username);
@@ -63,13 +72,13 @@ public class UserServiceImpl implements UserService {
     public LoginVO login(String username, String password) {
         User user = userMapper.findByUsername(username);
         if (user == null) {
-            throw new BusinessException(401, "用户名或密码错误");
+            throw new BusinessException(ResultCode.UNAUTHORIZED, "用户名或密码错误");
         }
         if (!passwordEncoder.matches(password, user.getPasswordHash())) {
-            throw new BusinessException(401, "用户名或密码错误");
+            throw new BusinessException(ResultCode.UNAUTHORIZED, "用户名或密码错误");
         }
-        if (user.getStatus() != 1) {
-            throw new BusinessException(403, "用户已被禁用");
+        if (user.getStatus() != UserStatus.ACTIVE.getCode()) {
+            throw new BusinessException(ResultCode.FORBIDDEN, "用户已被禁用");
         }
 
         // 生成 JWT
@@ -104,7 +113,7 @@ public class UserServiceImpl implements UserService {
         Long userId = jwtUtils.getUserIdFromToken(token);
         User user = userMapper.findByUserId(userId);
         if (user == null) {
-            throw new BusinessException(404, "用户不存在");
+            throw new BusinessException(ResultCode.NOT_FOUND, "用户不存在");
         }
         return toUserVO(user);
     }
@@ -113,18 +122,25 @@ public class UserServiceImpl implements UserService {
     public UserVO getUserById(Long userId) {
         User user = userMapper.findByUserId(userId);
         if (user == null) {
-            throw new BusinessException(404, "用户不存在");
+            throw new BusinessException(ResultCode.NOT_FOUND, "用户不存在");
         }
         return toUserVO(user);
     }
 
     @Override
     public void updateProfile(Long userId, String nickname, String avatarUrl, String email) {
+        // 检查昵称是否被其他用户使用
+        if (nickname != null && !nickname.isEmpty()) {
+            User existingByNickname = userMapper.findByNickname(nickname);
+            if (existingByNickname != null && !existingByNickname.getUserId().equals(userId)) {
+                throw new BusinessException(ResultCode.BAD_REQUEST, "昵称已被其他用户使用");
+            }
+        }
         // 检查邮箱是否被其他用户使用
         if (email != null && !email.isEmpty()) {
             User existing = userMapper.findByEmail(email);
             if (existing != null && !existing.getUserId().equals(userId)) {
-                throw new BusinessException(400, "邮箱已被其他用户使用");
+                throw new BusinessException(ResultCode.BAD_REQUEST, "邮箱已被其他用户使用");
             }
         }
 
@@ -141,10 +157,10 @@ public class UserServiceImpl implements UserService {
     public void changePassword(Long userId, String oldPassword, String newPassword) {
         User user = userMapper.findByUserId(userId);
         if (user == null) {
-            throw new BusinessException(404, "用户不存在");
+            throw new BusinessException(ResultCode.NOT_FOUND, "用户不存在");
         }
         if (!passwordEncoder.matches(oldPassword, user.getPasswordHash())) {
-            throw new BusinessException(400, "旧密码错误");
+            throw new BusinessException(ResultCode.BAD_REQUEST, "旧密码错误");
         }
         userMapper.updatePassword(userId, passwordEncoder.encode(newPassword));
         log.info("用户密码修改: userId={}", userId);
@@ -154,7 +170,7 @@ public class UserServiceImpl implements UserService {
     public void sendResetCode(String email) {
         User user = userMapper.findByEmail(email);
         if (user == null) {
-            throw new BusinessException(404, "该邮箱未注册");
+            throw new BusinessException(ResultCode.NOT_FOUND, "该邮箱未注册");
         }
 
         // 生成 6 位数字验证码
@@ -176,12 +192,12 @@ public class UserServiceImpl implements UserService {
     public void resetPassword(String email, String verifyCode, String newPassword) {
         String storedCode = redisTemplate.opsForValue().get(REDIS_CODE_PREFIX + email);
         if (storedCode == null || !storedCode.equals(verifyCode)) {
-            throw new BusinessException(400, "验证码无效或已过期");
+            throw new BusinessException(ResultCode.BAD_REQUEST, "验证码无效或已过期");
         }
 
         User user = userMapper.findByEmail(email);
         if (user == null) {
-            throw new BusinessException(404, "该邮箱未注册");
+            throw new BusinessException(ResultCode.NOT_FOUND, "该邮箱未注册");
         }
 
         userMapper.updatePassword(user.getUserId(), passwordEncoder.encode(newPassword));

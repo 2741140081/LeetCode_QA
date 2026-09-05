@@ -1,12 +1,15 @@
 package com.mangareader.controller;
 
+import com.mangareader.constant.ResultCode;
 import com.mangareader.model.common.BusinessException;
 import com.mangareader.model.common.Result;
 import com.mangareader.model.dto.FolderCreateRequest;
+import com.mangareader.model.dto.FolderRenameRequest;
 import com.mangareader.model.dto.MangaMoveRequest;
 import com.mangareader.model.vo.ShelfFolderVO;
 import com.mangareader.model.vo.ShelfMangaVO;
 import com.mangareader.security.JwtUtils;
+import com.mangareader.security.TokenResolver;
 import com.mangareader.service.ShelfService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -38,7 +41,7 @@ public class ShelfController {
      */
     @GetMapping("/folders")
     public Result<List<ShelfFolderVO>> getFolders(HttpServletRequest request) {
-        Long userId = getCurrentUserId(request);
+        Long userId = TokenResolver.getCurrentUserId(request, jwtUtils);
         return Result.ok(shelfService.getFolders(userId));
     }
 
@@ -48,7 +51,7 @@ public class ShelfController {
     @PostMapping("/folder")
     public Result<ShelfFolderVO> createFolder(@Valid @RequestBody FolderCreateRequest body,
                                                HttpServletRequest request) {
-        Long userId = getCurrentUserId(request);
+        Long userId = TokenResolver.getCurrentUserId(request, jwtUtils);
         ShelfFolderVO folder = shelfService.createFolder(userId, body.getFolderName());
         return Result.ok("文件夹创建成功", folder);
     }
@@ -58,14 +61,10 @@ public class ShelfController {
      */
     @PutMapping("/folder/{folderId}")
     public Result<Void> renameFolder(@PathVariable Long folderId,
-                                     @RequestBody Map<String, String> body,
+                                     @Valid @RequestBody FolderRenameRequest body,
                                      HttpServletRequest request) {
-        Long userId = getCurrentUserId(request);
-        String newName = body.get("folderName");
-        if (!StringUtils.hasText(newName)) {
-            throw new BusinessException(400, "文件夹名称不能为空");
-        }
-        shelfService.renameFolder(userId, folderId, newName);
+        Long userId = TokenResolver.getCurrentUserId(request, jwtUtils);
+        shelfService.renameFolder(userId, folderId, body.getFolderName());
         return Result.ok("重命名成功", null);
     }
 
@@ -75,7 +74,7 @@ public class ShelfController {
     @DeleteMapping("/folder/{folderId}")
     public Result<Void> deleteFolder(@PathVariable Long folderId,
                                      HttpServletRequest request) {
-        Long userId = getCurrentUserId(request);
+        Long userId = TokenResolver.getCurrentUserId(request, jwtUtils);
         shelfService.deleteFolder(userId, folderId);
         return Result.ok("文件夹已删除", null);
     }
@@ -88,7 +87,7 @@ public class ShelfController {
             @RequestParam(required = false) Long folderId,
             @RequestParam(required = false, defaultValue = "false") boolean uncategorized,
             HttpServletRequest request) {
-        Long userId = getCurrentUserId(request);
+        Long userId = TokenResolver.getCurrentUserId(request, jwtUtils);
         if (uncategorized) {
             return Result.ok(shelfService.getUncategorizedMangas(userId));
         }
@@ -101,7 +100,7 @@ public class ShelfController {
     @PostMapping("/manga")
     public Result<Void> addManga(@Valid @RequestBody MangaMoveRequest body,
                                   HttpServletRequest request) {
-        Long userId = getCurrentUserId(request);
+        Long userId = TokenResolver.getCurrentUserId(request, jwtUtils);
         shelfService.addMangaToShelf(userId, body.getMangaId(), body.getFolderId());
         return Result.ok("已添加到书架", null);
     }
@@ -113,7 +112,7 @@ public class ShelfController {
     public Result<Void> moveManga(@PathVariable Long mangaId,
                                    @RequestBody Map<String, Long> body,
                                    HttpServletRequest request) {
-        Long userId = getCurrentUserId(request);
+        Long userId = TokenResolver.getCurrentUserId(request, jwtUtils);
         Long folderId = body.get("folderId");
         shelfService.moveMangaToFolder(userId, mangaId, folderId);
         return Result.ok("移动成功", null);
@@ -125,16 +124,8 @@ public class ShelfController {
     @DeleteMapping("/manga/{mangaId}")
     public Result<Void> removeManga(@PathVariable Long mangaId,
                                      HttpServletRequest request) {
-        Long userId = getCurrentUserId(request);
+        Long userId = TokenResolver.getCurrentUserId(request, jwtUtils);
         shelfService.removeMangaFromShelf(userId, mangaId);
         return Result.ok("已从书架移除", null);
-    }
-
-    private Long getCurrentUserId(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        if (!StringUtils.hasText(bearerToken) || !bearerToken.startsWith("Bearer ")) {
-            throw new BusinessException(401, "未登录");
-        }
-        return jwtUtils.getUserIdFromToken(bearerToken.substring(7));
     }
 }

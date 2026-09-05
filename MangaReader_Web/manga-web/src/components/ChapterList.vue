@@ -1,5 +1,11 @@
 <template>
-  <div class="chapter-sidebar" :class="{ collapsed: !visible }">
+  <div
+    class="chapter-sidebar"
+    :class="{ collapsed: !visible }"
+    @mouseenter="onMouseEnter"
+    @mouseleave="onMouseLeave"
+    @mousemove="onMouseMove"
+  >
     <div class="sidebar-toggle" @click="$emit('update:visible', !visible)">
       <el-icon :size="16">
         <component :is="visible ? 'DArrowLeft' : 'DArrowRight'" />
@@ -27,18 +33,66 @@
 </template>
 
 <script setup lang="ts">
+import { ref, watch } from 'vue'
 import type { Chapter } from '@/api/chapter'
+import { useAutoHide } from '@/composables/useAutoHide'
+import { SIDEBAR_AUTO_HIDE_DELAY } from '@/constants'
 
-defineProps<{
+const props = defineProps<{
   visible: boolean
   chapters: Chapter[]
   currentChapterId: number | null
+  /** 是否启用悬停唤出模式 */
+  hoverMode?: boolean
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   'update:visible': [value: boolean]
   select: [chapter: Chapter]
 }>()
+
+// 悬停唤出模式：鼠标悬停时展开，离开后自动收起
+const isHovering = ref(false)
+
+const autoHide = useAutoHide(SIDEBAR_AUTO_HIDE_DELAY, () => {
+  if (props.hoverMode) {
+    emit('update:visible', false)
+  }
+})
+
+function onMouseEnter() {
+  if (props.hoverMode) {
+    isHovering.value = true
+    // 鼠标进入时展开侧边栏
+    if (!props.visible) {
+      emit('update:visible', true)
+    }
+    autoHide.resetTimer()
+  }
+}
+
+function onMouseLeave() {
+  if (props.hoverMode) {
+    isHovering.value = false
+    // 鼠标离开后启动空闲计时
+    autoHide.resetTimer()
+  }
+}
+
+function onMouseMove() {
+  if (props.hoverMode && props.visible) {
+    autoHide.resetTimer()
+  }
+}
+
+// 当 hoverMode 变化时启动/停止空闲检测
+watch(() => props.hoverMode, (val) => {
+  if (val) {
+    autoHide.start()
+  } else {
+    autoHide.stop()
+  }
+}, { immediate: true })
 </script>
 
 <style scoped>

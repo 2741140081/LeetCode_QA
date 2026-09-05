@@ -23,6 +23,10 @@
         SELECT * FROM user WHERE email = #{email} AND email != ''
     </select>
 
+    <select id="findByNickname" resultMap="UserResultMap">
+        SELECT * FROM user WHERE nickname = #{nickname}
+    </select>
+
     <select id="findByUserId" resultMap="UserResultMap">
         SELECT * FROM user WHERE user_id = #{userId}
     </select>

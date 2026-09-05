@@ -38,7 +38,8 @@ function handleCommand(command: string) {
     router.push('/profile')
   } else if (command === 'logout') {
     userStore.logout()
-    router.push('/login')
+    // 使用 replace 避免用户通过浏览器后退按钮回到需要认证的页面
+    router.replace('/login')
   }
 }
 </script>

@@ -78,6 +78,7 @@ import MangaCard from '@/components/MangaCard.vue'
 import FolderSidebar from '@/components/FolderSidebar.vue'
 import FolderDialog from '@/components/FolderDialog.vue'
 import type { ShelfMangaVO } from '@/api/shelf'
+import { UNCATEGORIZED_FOLDER_ID, MANGA_STATUS_COMPLETED } from '@/constants'
 
 const router = useRouter()
 const shelfStore = useShelfStore()
@@ -95,8 +96,8 @@ function refreshShelf() {
 }
 
 function onFolderSelect(folderId: number | null) {
-  // -1 表示未分类
-  if (folderId === -1) {
+  // 未分类标识
+  if (folderId === UNCATEGORIZED_FOLDER_ID) {
     shelfStore.selectFolder(null, true)
   } else {
     shelfStore.selectFolder(folderId, false)
@@ -143,7 +144,7 @@ async function onFolderDialogSubmit(name: string) {
 }
 
 function goToReader(manga: any) {
-  if (manga.mangaStatusCode === 2) {
+  if (manga.mangaStatusCode === MANGA_STATUS_COMPLETED) {
     router.push(`/reader/${manga.mangaId}`)
   }
 }

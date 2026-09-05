@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ChapterController {
 
-    private static final int DEFAULT_PAGE_SIZE = 100;
+    private static final int DEFAULT_PAGE_SIZE = 50;
 
     private final ChapterService chapterService;
     private final MangaImageService mangaImageService;
@@ -90,7 +90,7 @@ public class ChapterController {
     public Result<Map<String, Object>> imagesPaged(
             @PathVariable Long chapterId,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "100") int size) {
+            @RequestParam(defaultValue = "50") int size) {
 
         int offset = page * size;
         List<MangaImage> images = mangaImageService.getImagesByChapterIdPaged(chapterId, offset, size);

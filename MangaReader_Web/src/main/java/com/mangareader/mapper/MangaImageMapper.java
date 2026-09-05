@@ -64,4 +64,9 @@ public interface MangaImageMapper {
     // 统计下载中任务数
     int countDownloadingTasks();
 
+    /**
+     * 查询章节中第一张图片（按 sort_order 升序）
+     */
+    MangaImage findFirstImageByChapterId(@Param("chapterId") Long chapterId);
+
 }

@@ -2,10 +2,15 @@ package com.mangareader.controller;
 
 import com.mangareader.config.MangaProperties;
 import com.mangareader.enums.ProcessStatus;
+import com.mangareader.mapper.ChapterMapper;
+import com.mangareader.mapper.MangaImageMapper;
+import com.mangareader.mapper.MangaMapper;
 import com.mangareader.model.common.BusinessException;
 import com.mangareader.model.common.Result;
 import com.mangareader.model.dto.MangaAddRequest;
+import com.mangareader.model.entity.Chapter;
 import com.mangareader.model.entity.Manga;
+import com.mangareader.model.entity.MangaImage;
 import com.mangareader.model.vo.MangaVO;
 import com.mangareader.service.MangaService;
 import jakarta.validation.Valid;
@@ -30,6 +35,9 @@ import java.util.stream.Collectors;
 public class MangaController {
 
     private final MangaService mangaService;
+    private final ChapterMapper chapterMapper;
+    private final MangaImageMapper mangaImageMapper;
+    private final MangaMapper mangaMapper;
     private final MangaProperties mangaProperties;
 
     /**
@@ -94,29 +102,45 @@ public class MangaController {
 
     /**
      * 构建封面图片 URL
+     * coverImage 存储的是相对于 imagePath 的路径，通过 /images/ 端点访问
+     * 若 coverImage 为空，则懒加载：查询第一章第一图并持久化到数据库
      */
     private String buildCoverUrl(Manga manga) {
         if (manga.getCoverImage() != null && !manga.getCoverImage().isEmpty()) {
-            return "/covers/" + manga.getCoverImage();
+            return "/images/" + manga.getCoverImage();
         }
-        // 尝试从本地目录查找封面
-        String dirId = manga.getDirId();
-        if (dirId != null) {
-            File dir = new File(dirId);
-            if (dir.exists() && dir.isDirectory()) {
-                File[] covers = dir.listFiles((d, name) ->
-                        name.toLowerCase().startsWith("cover") &&
-                                (name.endsWith(".jpg") || name.endsWith(".png") || name.endsWith(".webp")));
-                if (covers != null && covers.length > 0) {
-                    // 返回相对路径
-                    String basePath = mangaProperties.getStorage().getRoot();
-                    String fullPath = covers[0].getAbsolutePath();
-                    if (fullPath.startsWith(basePath)) {
-                        return "/covers" + fullPath.substring(basePath.length()).replace("\\", "/");
-                    }
+        // 懒加载：查询第一章第一图作为封面
+        return resolveAndPersistCoverImage(manga);
+    }
+
+    /**
+     * 懒加载封面：查询第一章的第一张图片，计算相对路径，持久化到数据库并返回 URL
+     */
+    private String resolveAndPersistCoverImage(Manga manga) {
+        try {
+            Chapter firstChapter = chapterMapper.findByMangaIdAndChapterNum(manga.getMangaId(), 0);
+            if (firstChapter == null) return null;
+
+            MangaImage firstImage = mangaImageMapper.findFirstImageByChapterId(firstChapter.getChapterId());
+            if (firstImage == null) return null;
+
+            String basePath = mangaProperties.getStorage().getImagePath();
+            String fullPath = firstImage.getImageUrl() + File.separator
+                    + firstImage.getImageName() + "." + firstImage.getImageType();
+
+            if (fullPath.startsWith(basePath)) {
+                String relativePath = fullPath.substring(basePath.length());
+                relativePath = relativePath.replace("\\", "/");
+                if (relativePath.startsWith("/")) {
+                    relativePath = relativePath.substring(1);
                 }
+                // 持久化到数据库（仅当 cover_image 为空时更新）
+                mangaMapper.updateCoverImage(manga.getMangaId(), relativePath);
+                return "/images/" + relativePath;
             }
+        } catch (Exception e) {
+            log.warn("漫画[{}]懒加载封面失败: {}", manga.getMangaName(), e.getMessage());
         }
-        return null; // 前端使用默认封面兜底
+        return null;
     }
 }

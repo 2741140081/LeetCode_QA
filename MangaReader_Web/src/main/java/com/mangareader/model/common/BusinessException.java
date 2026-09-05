@@ -1,5 +1,6 @@
 package com.mangareader.model.common;
 
+import com.mangareader.constant.ResultCode;
 import lombok.Getter;
 
 /**
@@ -15,7 +16,7 @@ public class BusinessException extends RuntimeException {
 
     public BusinessException(String message) {
         super(message);
-        this.code = 500;
+        this.code = ResultCode.SERVER_ERROR;
     }
 
     public BusinessException(Integer code, String message) {

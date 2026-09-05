@@ -36,9 +36,13 @@ export function login(data: LoginRequest) {
   return request.post<any, { code: number; message: string; data: LoginVO }>('/auth/login', data)
 }
 
-/** 用户登出 */
-export function logout() {
-  return request.post<any, { code: number; message: string }>('/auth/logout')
+/** 用户登出（支持传入指定 token，避免依赖 localStorage） */
+export function logout(token?: string) {
+  const headers: Record<string, string> = {}
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`
+  }
+  return request.post<any, { code: number; message: string }>('/auth/logout', null, { headers })
 }
 
 /** 获取当前用户信息 */

@@ -1,5 +1,6 @@
 package com.mangareader.controller;
 
+import com.mangareader.constant.ResultCode;
 import com.mangareader.model.common.BusinessException;
 import com.mangareader.model.common.Result;
 import com.mangareader.model.dto.PasswordChangeRequest;
@@ -7,6 +8,7 @@ import com.mangareader.model.dto.PasswordResetRequest;
 import com.mangareader.model.dto.ProfileUpdateRequest;
 import com.mangareader.model.vo.UserVO;
 import com.mangareader.security.JwtUtils;
+import com.mangareader.security.TokenResolver;
 import com.mangareader.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -36,9 +38,9 @@ public class UserController {
      * 修改个人信息（昵称、头像、邮箱）
      */
     @PutMapping("/profile")
-    public Result<UserVO> updateProfile(@RequestBody ProfileUpdateRequest request,
+    public Result<UserVO> updateProfile(@Valid @RequestBody ProfileUpdateRequest request,
                                         HttpServletRequest httpRequest) {
-        Long userId = getCurrentUserId(httpRequest);
+        Long userId = TokenResolver.getCurrentUserId(httpRequest, jwtUtils);
         userService.updateProfile(userId, request.getNickname(), request.getAvatarUrl(), request.getEmail());
         UserVO user = userService.getUserById(userId);
         return Result.ok("信息更新成功", user);
@@ -50,7 +52,7 @@ public class UserController {
     @PutMapping("/password")
     public Result<Void> changePassword(@Valid @RequestBody PasswordChangeRequest request,
                                        HttpServletRequest httpRequest) {
-        Long userId = getCurrentUserId(httpRequest);
+        Long userId = TokenResolver.getCurrentUserId(httpRequest, jwtUtils);
         userService.changePassword(userId, request.getOldPassword(), request.getNewPassword());
         return Result.ok("密码修改成功", null);
     }
@@ -62,7 +64,7 @@ public class UserController {
     public Result<Void> sendResetCode(@RequestBody Map<String, String> body) {
         String email = body.get("email");
         if (!StringUtils.hasText(email)) {
-            throw new BusinessException(400, "邮箱不能为空");
+            throw new BusinessException(ResultCode.BAD_REQUEST, "邮箱不能为空");
         }
         userService.sendResetCode(email);
         return Result.ok("验证码已发送", null);
@@ -75,17 +77,5 @@ public class UserController {
     public Result<Void> resetPassword(@Valid @RequestBody PasswordResetRequest request) {
         userService.resetPassword(request.getEmail(), request.getVerifyCode(), request.getNewPassword());
         return Result.ok("密码重置成功", null);
-    }
-
-    /**
-     * 从请求头 Token 中提取当前用户 ID
-     */
-    private Long getCurrentUserId(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        if (!StringUtils.hasText(bearerToken) || !bearerToken.startsWith("Bearer ")) {
-            throw new BusinessException(401, "未登录");
-        }
-        String token = bearerToken.substring(7);
-        return jwtUtils.getUserIdFromToken(token);
     }
 }

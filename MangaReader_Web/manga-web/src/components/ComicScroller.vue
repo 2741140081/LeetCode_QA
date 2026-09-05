@@ -14,6 +14,7 @@
         :alt="`第 ${img.sortOrder} 页`"
         class="comic-image"
         :class="{ 'loaded': loadedImages.has(index), 'error': errorImages.has(index) }"
+        :style="{ transform: `scale(${zoomScale || 1})`, transformOrigin: 'top center' }"
         loading="lazy"
         @load="onImageLoad($event, index)"
         @error="onImageError($event, index)"
@@ -33,10 +34,12 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import type { ChapterImageVO } from '@/api/chapter'
+import { SCROLL_END_THROTTLE, BOTTOM_DISTANCE_THRESHOLD, RECYCLE_DISTANCE_MULTIPLIER } from '@/constants'
 
 const props = defineProps<{
   images: ChapterImageVO[]
   resetKey?: number
+  zoomScale?: number
 }>()
 
 const emit = defineEmits<{
@@ -53,7 +56,6 @@ let observer: IntersectionObserver | null = null
 
 // scroll-end 节流
 let lastScrollEndEmit = 0
-const SCROLL_END_THROTTLE = 500 // ms
 
 function setSlotRef(el: HTMLElement | null, index: number) {
   if (el) {
@@ -63,11 +65,12 @@ function setSlotRef(el: HTMLElement | null, index: number) {
 }
 
 function getPlaceholderHeight(img: ChapterImageVO): number {
+  const scale = props.zoomScale || 1
   if (img.width && img.height) {
     const containerWidth = scrollContainer.value?.clientWidth || 800
-    return (img.height / img.width) * containerWidth
+    return (img.height / img.width) * containerWidth * scale
   }
-  return 600
+  return 600 * scale
 }
 
 /** 图片进入视口时标记为可见，触发 img 元素渲染 */
@@ -101,7 +104,7 @@ function onScroll() {
   const distanceFromBottom = scrollHeight - scrollTop - clientHeight
 
   // 检测是否滚动到底部（节流）
-  if (distanceFromBottom < 100) {
+  if (distanceFromBottom < BOTTOM_DISTANCE_THRESHOLD) {
     const now = Date.now()
     if (now - lastScrollEndEmit > SCROLL_END_THROTTLE) {
       lastScrollEndEmit = now
@@ -151,8 +154,8 @@ onMounted(() => {
             // 回收远离视口的图片（释放内存）
             const containerRect = scrollContainer.value?.getBoundingClientRect()
             const entryRect = entry.boundingClientRect
-            if (containerRect && (entryRect.bottom < containerRect.top - window.innerHeight * 2 ||
-                entryRect.top > containerRect.bottom + window.innerHeight * 2)) {
+            if (containerRect && (entryRect.bottom < containerRect.top - window.innerHeight * RECYCLE_DISTANCE_MULTIPLIER ||
+                entryRect.top > containerRect.bottom + window.innerHeight * RECYCLE_DISTANCE_MULTIPLIER)) {
               visibleImages.value.delete(index)
               loadedImages.value.delete(index)
             }

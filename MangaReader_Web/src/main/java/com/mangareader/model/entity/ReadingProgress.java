@@ -42,7 +42,7 @@ public class ReadingProgress {
     private Integer imageIndex;
 
     /**
-     * 分页页码(从0开始, 每页100张图)
+     * 分页页码(从0开始, 每页50张图)
      */
     private Integer pageIndex;
 

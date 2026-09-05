@@ -5,11 +5,10 @@ import com.mangareader.model.common.Result;
 import com.mangareader.model.entity.ReadingProgress;
 import com.mangareader.mapper.ReadingProgressMapper;
 import com.mangareader.security.JwtUtils;
+import com.mangareader.security.TokenResolver;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -38,7 +37,7 @@ public class ReadingProgressController {
     @GetMapping("/{mangaId}")
     public Result<Map<String, Object>> getProgress(@PathVariable Long mangaId,
                                                     HttpServletRequest request) {
-        Long userId = getCurrentUserId(request);
+        Long userId = TokenResolver.getCurrentUserId(request, jwtUtils);
         ReadingProgress progress = readingProgressMapper.findByUserIdAndMangaId(userId, mangaId);
 
         Map<String, Object> result = new HashMap<>();
@@ -65,7 +64,7 @@ public class ReadingProgressController {
     @PostMapping
     public Result<Void> saveProgress(@RequestBody ProgressSaveRequest body,
                                      HttpServletRequest request) {
-        Long userId = getCurrentUserId(request);
+        Long userId = TokenResolver.getCurrentUserId(request, jwtUtils);
 
         ReadingProgress existing = readingProgressMapper.findByUserIdAndMangaId(userId, body.getMangaId());
 
@@ -101,15 +100,7 @@ public class ReadingProgressController {
         return Result.ok("进度已保存", null);
     }
 
-    private Long getCurrentUserId(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        if (!StringUtils.hasText(bearerToken) || !bearerToken.startsWith("Bearer ")) {
-            throw new BusinessException(401, "未登录");
-        }
-        return jwtUtils.getUserIdFromToken(bearerToken.substring(7));
-    }
-
-    @Data
+    @lombok.Data
     public static class ProgressSaveRequest {
         private Long mangaId;
         private Long chapterId;

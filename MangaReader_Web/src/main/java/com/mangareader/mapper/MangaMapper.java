@@ -79,4 +79,9 @@ public interface MangaMapper {
      * 更新总章节数
      */
     int updateTotalChapters(@Param("mangaId") Long mangaId, @Param("totalChapters") Integer totalChapters);
+
+    /**
+     * 更新封面图片路径（仅当 cover_image 为空时才更新，避免并发覆盖）
+     */
+    int updateCoverImage(@Param("mangaId") Long mangaId, @Param("coverImage") String coverImage);
 }

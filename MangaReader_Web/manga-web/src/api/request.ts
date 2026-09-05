@@ -1,8 +1,8 @@
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import router from '@/router'
-
-const TOKEN_KEY = 'manga_token'
+import { TOKEN_KEY } from '@/constants'
+import { decryptFields, ENCRYPTED_FIELDS } from '@/utils/crypto'
 
 const request = axios.create({
   baseURL: '/api',
@@ -25,6 +25,10 @@ request.interceptors.request.use(
 request.interceptors.response.use(
   (response) => {
     const res = response.data
+    // 对加密字段自动解密（在 code 检查之前）
+    if (res.data && typeof res.data === 'object') {
+      decryptFields(res.data, ENCRYPTED_FIELDS)
+    }
     if (res.code !== 200) {
       ElMessage.error(res.message || '请求失败')
       return Promise.reject(new Error(res.message || '请求失败'))
@@ -37,7 +41,7 @@ request.interceptors.response.use(
 
     if (status === 401) {
       // Token 过期或无效，清除本地状态并跳转登录
-      localStorage.removeItem('manga_token')
+      localStorage.removeItem(TOKEN_KEY)
       localStorage.removeItem('manga_user')
       ElMessage.error('登录已过期，请重新登录')
       router.push('/login')

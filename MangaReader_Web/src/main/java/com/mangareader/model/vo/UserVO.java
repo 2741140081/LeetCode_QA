@@ -1,5 +1,6 @@
 package com.mangareader.model.vo;
 
+import com.mangareader.annotation.EncryptedField;
 import lombok.Data;
 import java.time.LocalDateTime;
 
@@ -16,8 +17,10 @@ public class UserVO {
 
     private String username;
 
+    @EncryptedField
     private String email;
 
+    @EncryptedField
     private String nickname;
 
     private String avatarUrl;

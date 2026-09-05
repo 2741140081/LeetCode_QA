@@ -5,12 +5,12 @@ import com.mangareader.model.dto.LoginRequest;
 import com.mangareader.model.dto.RegisterRequest;
 import com.mangareader.model.vo.LoginVO;
 import com.mangareader.model.vo.UserVO;
+import com.mangareader.security.TokenResolver;
 import com.mangareader.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -55,7 +55,7 @@ public class AuthController {
      */
     @PostMapping("/logout")
     public Result<Void> logout(HttpServletRequest request) {
-        String token = resolveToken(request);
+        String token = TokenResolver.resolveToken(request);
         userService.logout(token);
         return Result.ok("登出成功", null);
     }
@@ -65,19 +65,8 @@ public class AuthController {
      */
     @GetMapping("/me")
     public Result<UserVO> me(HttpServletRequest request) {
-        String token = resolveToken(request);
+        String token = TokenResolver.resolveToken(request);
         UserVO user = userService.getCurrentUser(token);
         return Result.ok(user);
-    }
-
-    /**
-     * 从请求头提取 Bearer Token
-     */
-    private String resolveToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
-        }
-        return null;
     }
 }

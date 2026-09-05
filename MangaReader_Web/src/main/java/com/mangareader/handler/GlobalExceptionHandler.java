@@ -1,5 +1,6 @@
 package com.mangareader.handler;
 
+import com.mangareader.constant.ResultCode;
 import com.mangareader.model.common.BusinessException;
 import com.mangareader.model.common.Result;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +33,7 @@ public class GlobalExceptionHandler {
                 .map(FieldError::getDefaultMessage)
                 .collect(Collectors.joining("; "));
         log.warn("参数校验失败: {}", message);
-        return Result.fail(400, message);
+        return Result.fail(ResultCode.BAD_REQUEST, message);
     }
 
     /**
@@ -52,6 +53,6 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public Result<Void> handleException(Exception e) {
         log.error("系统内部错误", e);
-        return Result.fail(500, "系统内部错误，请稍后重试");
+        return Result.fail(ResultCode.SERVER_ERROR, "系统内部错误，请稍后重试");
     }
 }

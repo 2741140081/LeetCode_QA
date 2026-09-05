@@ -75,7 +75,7 @@ manga:
     max-memory-cache-size: 50
     default-error-image: /images/error_placeholder.png
   autoplay:
-    default-scroll-distance: 0.5
+    default-scroll-distance: 2.5
     default-scroll-interval: 16
     scroll-distance-step: 0.1
     min-scroll-distance: 0.1
@@ -100,6 +100,10 @@ manga:
     connect-timeout: 10000
     read-timeout: 30000
     buffer-size: 8192
+  encrypt:
+    secret-key: MangaReader2026A
+    enabled: true
+    fields: email,nickname
 
 # 日志配置
 logging:
@@ -115,7 +119,7 @@ logging:
     max-history: 30
     total-size-cap: 3GB
   logback:
-    rollingpolicy:
+    rolling policy:
       max-file-size: 100MB
       file-name-pattern: logs/manga-reader.%d{yyyy-MM-dd}.%i.log
 
