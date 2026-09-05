@@ -113,6 +113,6 @@ public class MangaServiceImpl implements MangaService {
 
     private boolean isExistsManga(String urlId) {
         Manga manga = mangaMapper.selectMangaByUrlId(urlId);
-        return manga == null;
+        return manga != null;
     }
 }

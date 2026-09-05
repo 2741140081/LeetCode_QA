@@ -6,6 +6,7 @@ import com.mangareader.model.entity.Chapter;
 import com.mangareader.model.entity.Manga;
 import com.mangareader.model.entity.MangaImage;
 import com.mangareader.service.ChapterService;
+import com.mangareader.service.ImageService;
 import com.mangareader.service.MangaImageService;
 import com.mangareader.service.MangaService;
 import javafx.animation.Animation;
@@ -81,6 +82,9 @@ public class ReaderController implements Initializable {
     @Autowired
     private MangaService mangaService;
 
+    @Autowired
+    private ImageService imageService;
+
     // 漫画ID，实际应用中应该从参数或上下文中获取
     private Long MANGA_ID;
 
@@ -154,34 +158,30 @@ public class ReaderController implements Initializable {
      * @param chapter 章节对象
      */
     private void loadChapter(Chapter chapter) {
-        // 如果正在自动播放，先停止
         currentChapter = chapter;
         statusLabel.setText("当前加载状态：正在加载 " + chapter.getTitle() + "...");
 
-        // 获取章节图片列表
         List<MangaImage> images = mangaImageService.getImagesByChapterId(chapter.getChapterId());
 
-        // 转换为图片路径列表
         ObservableList<String> imagePaths = FXCollections.observableArrayList();
         for (MangaImage image : images) {
-            // 使用MangaImageService获取完整的图片路径
             String fullPath = mangaImageService.getFullImagePath(image);
             imagePaths.add(fullPath);
         }
-        // 设置图片数据
-        virtualFlow.setImageData(imagePaths, 1.0);
 
-        // 重置滚动位置到顶部，确保从第一张图片开始显示
+        List<String> oldPaths = virtualFlow.getItems() != null
+                ? List.copyOf(virtualFlow.getItems())
+                : List.of();
+        virtualFlow.setImageData(imagePaths, 1.0);
+        imageService.evictByPaths(oldPaths);
+
         Platform.runLater(() -> {
             virtualFlow.scrollToTop();
-            // 更新当前页码标签
             currentPageLabel.setText("当前浏览：第 1 张");
         });
 
-        // 更新页面信息
         pageCountLabel.setText("总图片数：" + images.size());
         statusLabel.setText("当前加载状态：" + chapter.getTitle() + " 已加载完成");
-        // 更新按钮状态
         updateButtonStates();
     }
 
@@ -467,7 +467,8 @@ public class ReaderController implements Initializable {
      */
     @FXML
     private void handleBackToShelf() {
-        // 通知主控制器切换回书架界面
+        virtualFlow.clear();
+        imageService.evictAll();
         mainController.switchToShelf();
     }
 }

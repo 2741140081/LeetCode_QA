@@ -34,6 +34,7 @@
         <ComicScroller
           ref="scroller"
           :images="images"
+          :reset-key="resetKey"
           @page-change="onPageChange"
           @scroll-end="onScrollEnd"
         />
@@ -41,10 +42,15 @@
 
       <!-- 底部状态栏 -->
       <div class="reader-footer">
-        <span>第 {{ currentImageIndex + 1 }} / {{ totalImageCount }} 页</span>
+        <el-button size="small" @click="loadPrevPage" :disabled="currentImagePage <= 0">
+          上一页
+        </el-button>
         <span v-if="totalPages > 1" class="page-info">
           图片分页: 第 {{ currentImagePage + 1 }} / {{ totalPages }} 页
         </span>
+        <el-button size="small" @click="loadNextPage" :disabled="currentImagePage >= totalPages - 1">
+          下一页
+        </el-button>
         <AutoPlayBar
           :is-playing="isPlaying"
           :scroll-distance="scrollDistance"
@@ -68,7 +74,7 @@ import ComicScroller from '@/components/ComicScroller.vue'
 import AutoPlayBar from '@/components/AutoPlayBar.vue'
 import ChapterList from '@/components/ChapterList.vue'
 
-const PAGE_SIZE = 100
+const PAGE_SIZE = 20
 
 const route = useRoute()
 const mangaId = Number(route.params.mangaId)
@@ -83,6 +89,7 @@ const totalPages = ref(0)
 const totalImageCount = ref(0)
 const sidebarVisible = ref(true)
 const scroller = ref<InstanceType<typeof ComicScroller>>()
+const resetKey = ref(0)
 
 // 自动播放状态
 const isPlaying = ref(false)
@@ -145,12 +152,9 @@ async function loadImagesPage(chapterId: number, page: number, scrollToIndex: nu
   const res = await getChapterImagesPaged(chapterId, page, PAGE_SIZE)
   const data = res.data
 
-  if (page === 0) {
-    images.value = data.images
-  } else {
-    // 追加图片到现有列表
-    images.value = [...images.value, ...data.images]
-  }
+  // 每次翻页只保留当前页图片，不累计
+  images.value = data.images
+  resetKey.value++
 
   totalPages.value = data.totalPages
   totalImageCount.value = data.totalCount
@@ -188,6 +192,9 @@ function onPageChange(index: number) {
   currentImageIndex.value = index
 }
 
+// 防止重复触发下一页加载
+let isLoadingNextPage = false
+
 async function onScrollEnd() {
   // 自动播放到底时切换下一章
   if (isPlaying.value) {
@@ -195,11 +202,33 @@ async function onScrollEnd() {
     return
   }
 
+  // 防止重复加载
+  if (isLoadingNextPage) return
+
   // 检查是否需要加载下一页图片
   if (currentImagePage.value < totalPages.value - 1) {
+    isLoadingNextPage = true
+    try {
+      await loadNextPage()
+    } finally {
+      isLoadingNextPage = false
+    }
+  }
+}
+
+async function loadPrevPage() {
+  if (currentImagePage.value > 0 && currentChapterId.value) {
+    const prevPage = currentImagePage.value - 1
+    currentImagePage.value = prevPage
+    await loadImagesPage(currentChapterId.value, prevPage)
+  }
+}
+
+async function loadNextPage() {
+  if (currentImagePage.value < totalPages.value - 1 && currentChapterId.value) {
     const nextPage = currentImagePage.value + 1
     currentImagePage.value = nextPage
-    await loadImagesPage(currentChapterId.value!, nextPage)
+    await loadImagesPage(currentChapterId.value, nextPage)
   }
 }
 

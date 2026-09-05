@@ -1,9 +1,7 @@
 package com.mangareader.config;
 
-import com.github.pagehelper.PageHelper;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 
 /**
@@ -17,9 +15,6 @@ import org.springframework.context.annotation.Configuration;
 @Slf4j
 @Configuration
 public class PageHelperConfig {
-
-    @Autowired
-    private PageHelper pageHelper;
 
     /**
      * 启动时验证 PageHelper 已正确初始化

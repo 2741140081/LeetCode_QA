@@ -83,14 +83,21 @@ public class MangaShelfController implements Initializable {
         coverView.setSmooth(true);
 
         // 加载封面图片
+        // 加载封面图片
         try {
-            // 尝试从文件系统加载封面
-            File coverFile = new File(manga.getCoverImage());
-            if (coverFile.exists()) {
-                Image coverImage = new Image(coverFile.toURI().toString());
-                coverView.setImage(coverImage);
+            String coverPath = manga.getCoverImage();
+            if (coverPath != null) {
+                File coverFile = new File(coverPath);
+                if (coverFile.exists()) {
+                    Image coverImage = new Image(coverFile.toURI().toString());
+                    coverView.setImage(coverImage);
+                } else {
+                    // 如果封面不存在，使用默认封面
+                    Image defaultCover = new Image(getClass().getResourceAsStream("/images/default_cover.png"));
+                    coverView.setImage(defaultCover);
+                }
             } else {
-                // 如果封面不存在，使用默认封面
+                // coverImage 为 null，使用默认封面
                 Image defaultCover = new Image(getClass().getResourceAsStream("/images/default_cover.png"));
                 coverView.setImage(defaultCover);
             }

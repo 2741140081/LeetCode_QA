@@ -99,14 +99,15 @@ public class ShelfServiceImpl implements ShelfService {
 
     @Override
     public List<ShelfMangaVO> getShelfMangas(Long userId, Long folderId) {
-        List<ShelfManga> shelfMangas;
         if (folderId != null) {
-            shelfMangas = shelfMangaMapper.findByUserIdAndFolderId(userId, folderId);
+            List<ShelfManga> shelfMangas = shelfMangaMapper.findByUserIdAndFolderId(userId, folderId);
+            return toShelfMangaVOList(shelfMangas, userId);
         } else {
-            // folderId 为 null 表示查全部
-            shelfMangas = shelfMangaMapper.findByUserId(userId);
+            List<Manga> completedMangas = mangaMapper.selectAllManga();
+            return completedMangas.stream()
+                    .map(this::toShelfMangaVOFromManga)
+                    .collect(Collectors.toList());
         }
-        return toShelfMangaVOList(shelfMangas, userId);
     }
 
     @Override
@@ -184,6 +185,25 @@ public class ShelfServiceImpl implements ShelfService {
         vo.setFolderId(shelfManga.getFolderId());
         vo.setFolderName(shelfManga.getFolderId() != null ? folderNameMap.get(shelfManga.getFolderId()) : null);
         vo.setAddedAt(shelfManga.getAddedAt());
+
+        if (manga.getMangaStatus() != null) {
+            vo.setMangaStatusCode(manga.getMangaStatus().getCode());
+            vo.setMangaStatusDesc(manga.getMangaStatus().getDesc());
+        }
+
+        vo.setCoverUrl(buildCoverUrl(manga));
+        return vo;
+    }
+
+    private ShelfMangaVO toShelfMangaVOFromManga(Manga manga) {
+        ShelfMangaVO vo = new ShelfMangaVO();
+        vo.setMangaId(manga.getMangaId());
+        vo.setMangaName(manga.getMangaName());
+        vo.setTotalChapters(manga.getTotalChapters());
+        vo.setProcessedChapters(manga.getProcessedChapters());
+        vo.setFolderId(null);
+        vo.setFolderName(null);
+        vo.setAddedAt(manga.getUpdatedAt());
 
         if (manga.getMangaStatus() != null) {
             vo.setMangaStatusCode(manga.getMangaStatus().getCode());

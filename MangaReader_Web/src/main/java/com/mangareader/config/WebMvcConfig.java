@@ -30,9 +30,10 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // 漫画图片：/images/** -> 本地磁盘目录
+        // 漫画图片：/images/** -> 本地磁盘目录（缓存 7 天）
         registry.addResourceHandler("/images/**")
                 .addResourceLocations("file:" + imagePath + "/")
+                .setCachePeriod(604800)
                 .resourceChain(true)
                 .addResolver(new PathResourceResolver() {
                     @Override
@@ -48,9 +49,10 @@ public class WebMvcConfig implements WebMvcConfigurer {
                     }
                 });
 
-        // 封面/书库：/covers/** -> 本地磁盘根目录
+        // 封面/书库：/covers/** -> 本地磁盘根目录（缓存 7 天）
         registry.addResourceHandler("/covers/**")
                 .addResourceLocations("file:" + storageRoot + "/")
+                .setCachePeriod(604800)
                 .resourceChain(true)
                 .addResolver(new PathResourceResolver() {
                     @Override

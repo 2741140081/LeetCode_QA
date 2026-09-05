@@ -5,11 +5,11 @@ import com.mangareader.service.ImageService;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.geometry.Orientation;
-import javafx.scene.CacheHint;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.skin.ListViewSkin;
 import javafx.scene.control.skin.VirtualFlow;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import org.springframework.stereotype.Component;
@@ -43,8 +43,6 @@ public class ComicVirtualFlow extends ListView<String> {
         setCellFactory(param -> new ImageCell());
         // 设置背景透明
         setStyle("-fx-background-color: transparent;");
-        setCache(true);
-        setCacheHint(CacheHint.SPEED);
     }
 
     /**
@@ -216,6 +214,13 @@ public class ComicVirtualFlow extends ListView<String> {
         return items == null ? 0 : items.size();
     }
 
+    public void clear() {
+        ObservableList<String> items = getItems();
+        if (items != null) {
+            items.clear();
+        }
+    }
+
 
     /**
      * 自定义图片单元格
@@ -236,18 +241,21 @@ public class ComicVirtualFlow extends ListView<String> {
         @Override
         protected void updateItem(String imagePath, boolean empty) {
             super.updateItem(imagePath, empty);
-            // 取消之前的加载任务
             if (currentLoadTask != null && !currentLoadTask.isDone()) {
                 currentLoadTask.cancel(true);
+            }
+
+            // 释放旧图片的本地内存，避免单元格回收时图片引用残留导致内存泄漏
+            Image oldImage = imageView.getImage();
+            if (oldImage != null) {
+                imageView.setImage(null);
             }
 
             if (empty || imagePath == null) {
                 setGraphic(null);
                 return;
             }
-            // 显示加载状态
             loadingIndicator.setVisible(true);
-            imageView.setImage(null);
             setGraphic(container);
             final String currentPath = imagePath;
             currentLoadTask = imageService.loadImageAsync(currentPath, currentScale)
@@ -260,7 +268,6 @@ public class ComicVirtualFlow extends ListView<String> {
                     .exceptionally(e -> {
                         if (currentPath.equals(getItem())) {
                             loadingIndicator.setVisible(false);
-                            // 显示错误占位图
                         }
                         return null;
                     });

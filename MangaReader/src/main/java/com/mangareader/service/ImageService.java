@@ -2,6 +2,7 @@ package com.mangareader.service;
 
 import javafx.scene.image.Image;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -20,9 +21,11 @@ public interface ImageService {
 
     Image loadImage(String path, double scale);
 
-    // 异步加载图片
     CompletableFuture<Image> loadImageAsync(String path, double scale);
 
-    // 清理缓存, 这里缓存是解码后的图片
     void evictCache(String path);
+
+    void evictByPaths(List<String> paths);
+
+    void evictAll();
 }

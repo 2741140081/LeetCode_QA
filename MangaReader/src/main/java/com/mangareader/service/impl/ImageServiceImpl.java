@@ -6,16 +6,17 @@ import com.mangareader.constant.ImageConstant;
 import com.mangareader.service.ImageService;
 import com.mangareader.utils.ImageUtil;
 import jakarta.annotation.PostConstruct;
+import javafx.application.Platform;
 import javafx.scene.image.Image;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import javafx.embed.swing.SwingFXUtils;
+import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -34,7 +35,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Service
 public class ImageServiceImpl implements ImageService {
 
-    // todo: 将多线程统一放入一个文件
     private final ExecutorService imageLoadExecutor = new ThreadPoolExecutor(
             4, 8, 60, TimeUnit.SECONDS,
             new LinkedBlockingQueue<>(200),
@@ -45,22 +45,26 @@ public class ImageServiceImpl implements ImageService {
                 }
             },
             new ThreadPoolExecutor.CallerRunsPolicy()
-    );;
+    );
 
     @Value("${manga.storage.cache-root}")
-    private String diskCacheDir; // 硬盘缓存目录
+    private String diskCacheDir;
 
-    private Cache<String, Image> memoryCache; // 内存缓存
+    @Value("${manga.image.max-memory-cache-size:30}")
+    private int maxMemoryCacheSize;
+
+    private Cache<String, Image> memoryCache;
 
     @PostConstruct
     @Override
     public void init() {
-        // 初始化内存缓存，最大缓存50张图片
         memoryCache = CacheBuilder.newBuilder()
-                .maximumSize(ImageConstant.MAX_MEMORY_CACHE_SIZE)
+                .maximumSize(maxMemoryCacheSize)
+                .removalListener(notification -> {
+                    // Guava Cache 淘汰时移除引用，GC 会自动回收 Image 及其本地内存
+                })
                 .build();
 
-        // 初始化磁盘缓存目录
         File cacheDir = new File(diskCacheDir);
         if (!cacheDir.exists()) {
             boolean created = cacheDir.mkdirs();
@@ -74,33 +78,38 @@ public class ImageServiceImpl implements ImageService {
 
     @Override
     public Image loadImage(String path, double scale) {
-        // 1. 查内存缓存
         try {
-            Image cachedImg = memoryCache.getIfPresent(path + "_" + scale);
+            String cacheKey = path + "_" + scale;
+            Image cachedImg = memoryCache.getIfPresent(cacheKey);
             if (cachedImg != null) return cachedImg;
 
-            // 2. 查磁盘缓存
-            String cacheKey = path.replaceAll("[^a-zA-Z0-9]", "_") + "_" + scale;
-            File cacheFile = new File(diskCacheDir, cacheKey + ".dat");
+            String diskCacheKey = path.replaceAll("[^a-zA-Z0-9]", "_") + "_" + scale;
+            File cacheFile = new File(diskCacheDir, diskCacheKey + ".dat");
+
+            // 尝试从磁盘缓存加载（直接得到 BufferedImage，避免 FX Image 中间层）
             if (cacheFile.exists()) {
-                Image img = ImageUtil.loadFromDiskCache(cacheFile);
-                if (img != null) {
-                    memoryCache.put(path + "_" + scale, img);
+                BufferedImage buffered = ImageUtil.loadFromDiskCacheAsBufferedImage(cacheFile);
+                if (buffered != null) {
+                    Image img = SwingFXUtils.toFXImage(buffered, null);
+                    memoryCache.put(cacheKey, img);
                     return img;
                 }
-                // 如果从缓存加载失败，删除缓存文件并继续加载原始图片
-                cacheFile.delete();
             }
 
-            // 3. 磁盘读取解码缩放
-            Image img = ImageUtil.decodeAndScale(path, scale);
-            if (img == null) {
+            // 使用优化的解码方法：子采样 + 尽早释放原始 BufferedImage
+            BufferedImage decoded = ImageUtil.decodeAndScaleAsBufferedImage(path, scale);
+            if (decoded == null) {
                 log.warn("图片解码失败, 返回默认错误图 path:{}", path);
                 return getDefaultErrorImage();
             }
-            // 4. 写入磁盘缓存
-            ImageUtil.saveToDiskCache(img, cacheFile);
-            memoryCache.put(path + "_" + scale, img);
+
+            // 先将 BufferedImage 写入磁盘缓存（避免后续 FX Image -> BufferedImage 的额外转换）
+            ImageUtil.saveToDiskCache(decoded, cacheFile);
+            // 再转换为 JavaFX Image
+            Image img = SwingFXUtils.toFXImage(decoded, null);
+            decoded.flush();
+
+            memoryCache.put(cacheKey, img);
             return img;
         } catch (OutOfMemoryError e) {
             log.warn("图片加载触发内存溢出，执行缓存回收", e);
@@ -121,13 +130,42 @@ public class ImageServiceImpl implements ImageService {
 
     @Override
     public void evictCache(String path) {
-        memoryCache.invalidate(path);
+        // 淘汰所有匹配路径前缀的缓存条目（兼容不同 scale 后缀）
+        for (String key : memoryCache.asMap().keySet()) {
+            if (key.startsWith(path)) {
+                memoryCache.invalidate(key);
+            }
+        }
     }
 
+    @Override
+    public void evictByPaths(List<String> paths) {
+        if (paths == null || paths.isEmpty()) {
+            return;
+        }
+        int count = 0;
+        for (String path : paths) {
+            // 使用路径前缀匹配，确保能淘汰所有 scale 的缓存条目
+            for (String key : memoryCache.asMap().keySet()) {
+                if (key.startsWith(path)) {
+                    memoryCache.invalidate(key);
+                    count++;
+                }
+            }
+        }
+        log.info("已淘汰 {} 条图片缓存", count);
+    }
+
+    @Override
+    public void evictAll() {
+        long size = memoryCache.size();
+        memoryCache.invalidateAll();
+        System.gc();
+        log.info("已清空全部图片缓存, 释放 {} 条记录", size);
+    }
 
     private Image getDefaultErrorImage() {
         try {
-            // 从类路径加载默认错误图片
             InputStream inputStream = getClass().getResourceAsStream(ImageConstant.DEFAULT_ERROR_IMAGE_PATH);
             if (inputStream != null) {
                 return new Image(inputStream);
@@ -136,7 +174,6 @@ public class ImageServiceImpl implements ImageService {
         } catch (Exception e) {
             log.error("加载默认错误图片失败", e);
         }
-        // 后备方案：返回一个简单的占位图（1x1透明PNG的Base64编码）
         return new Image("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==");
     }
 }

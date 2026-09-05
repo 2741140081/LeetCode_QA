@@ -4,8 +4,8 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/manga_reader?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
-    username: edms
-    password: edms
+    username: root
+    password: 123456
     hikari:
       pool-name: HikariPool-Manga
       maximum-pool-size: 20
@@ -31,12 +31,22 @@ spring:
   web:
     resources:
       static-locations: classpath:/static/,file:${manga.storage.image-path}/
+      cache:
+        cachecontrol:
+          max-age: 7d
+          cache-public: true
   mvc:
     async:
       request-timeout: 300000
 
+
 server:
   port: 8080
+  # 启用 gzip 压缩，减少图片以外的响应体积
+  compression:
+    enabled: true
+    mime-types: text/html,text/css,application/javascript,application/json,text/xml
+    min-response-size: 1024
 
 # MyBatis 配置
 mybatis:
@@ -53,8 +63,8 @@ mybatis:
 manga:
   storage:
     root: D:/MangaLibrary
-    image-path: D:/images/TestManga
-    cache-root: D:/MangaReader/cache
+    image-path: D:/MangaLibrary/manga
+    cache-root: D:/MangaLibrary/cache
   reader:
     preload-count: 20
     save-interval: 30
@@ -71,8 +81,8 @@ manga:
     min-scroll-distance: 0.1
     max-scroll-distance: 10.0
   download:
-    base-url: https://test.com
-    referer: https://test.com/
+    base-url: https://tpmh3.com
+    referer: https://tpmh3.com/
     timeout: 30000
     css-selector: "ul.list-unstyled.bookAll-item-list li a"
     user-agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 Edg/138.0.0.0"
@@ -81,11 +91,11 @@ manga:
       accept-encoding: "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8"
       accept-language: "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6"
   download-config:
-    scan-cron: 0/2 * * * * ?
-    download-timeout: 300
-    core-threads: 8
-    max-threads: 16
-    batch-size: 50
+    scan-cron: 0/30 * * * * ?
+    download-timeout: 600
+    core-threads: 10
+    max-threads: 24
+    batch-size: 100
     max-retry: 3
     connect-timeout: 10000
     read-timeout: 30000
@@ -100,7 +110,7 @@ logging:
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
   file:
-    name: logs/manga-reader.log
+    name: logs/manga-reader-web.log
     max-size: 100MB
     max-history: 30
     total-size-cap: 3GB
