@@ -79,4 +79,14 @@ public interface MangaMapper {
      * 更新总章节数
      */
     int updateTotalChapters(@Param("mangaId") Long mangaId, @Param("totalChapters") Integer totalChapters);
+
+    /**
+     * 根据状态查询漫画列表
+     */
+    List<Manga> selectMangasByStatus(@Param("status") Integer status);
+
+    /**
+     * 根据ID删除漫画
+     */
+    int deleteMangaById(@Param("mangaId") Long mangaId);
 }

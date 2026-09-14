@@ -5,6 +5,7 @@ import com.mangareader.enums.ProcessStatus;
 import com.mangareader.model.common.BusinessException;
 import com.mangareader.model.common.Result;
 import com.mangareader.model.dto.MangaAddRequest;
+import com.mangareader.model.dto.MangaBatchDeleteRequest;
 import com.mangareader.model.entity.Manga;
 import com.mangareader.model.vo.MangaVO;
 import com.mangareader.service.MangaService;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -66,6 +68,43 @@ public class MangaController {
             throw new BusinessException("添加漫画失败，可能已存在或参数无效");
         }
         return Result.ok("漫画已添加到下载队列，系统将自动处理", toVO(manga));
+    }
+
+    /**
+     * 删除漫画（DB + 本地文件）
+     */
+    @DeleteMapping("/{mangaId}")
+    public Result<Void> delete(@PathVariable Long mangaId) {
+        mangaService.deleteManga(mangaId);
+        return Result.ok("漫画已删除", null);
+    }
+
+    /**
+     * 批量删除漫画
+     */
+    @PostMapping("/batch-delete")
+    public Result<Map<String, Object>> batchDelete(@Valid @RequestBody MangaBatchDeleteRequest request) {
+        List<Long> mangaIds = request.getMangaIds();
+        if (mangaIds == null || mangaIds.isEmpty()) {
+            throw new BusinessException(400, "请选择要删除的漫画");
+        }
+
+        int success = 0;
+        int failed = 0;
+        for (Long mangaId : mangaIds) {
+            try {
+                mangaService.deleteManga(mangaId);
+                success++;
+            } catch (Exception e) {
+                log.warn("删除漫画失败: mangaId={}, 原因: {}", mangaId, e.getMessage());
+                failed++;
+            }
+        }
+
+        Map<String, Object> result = new java.util.HashMap<>();
+        result.put("success", success);
+        result.put("failed", failed);
+        return Result.ok(String.format("删除完成，成功 %d 个，失败 %d 个", success, failed), result);
     }
 
     /**

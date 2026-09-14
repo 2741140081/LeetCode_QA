@@ -6,7 +6,7 @@
       class="image-slot"
       :data-index="index"
       :ref="(el) => setSlotRef(el as HTMLElement, index)"
-      :style="{ height: getPlaceholderHeight(img) + 'px' }"
+      :style="{ height: getSlotHeight(img, index) + 'px' }"
     >
       <img
         v-if="visibleImages.has(index)"
@@ -49,6 +49,7 @@ const visibleImages = ref(new Set<number>())
 const loadedImages = ref(new Set<number>())
 const errorImages = ref(new Set<number>())
 const slotRefs = new Map<number, HTMLElement>()
+const actualHeights = ref(new Map<number, number>())
 let observer: IntersectionObserver | null = null
 
 // scroll-end 节流
@@ -70,6 +71,13 @@ function getPlaceholderHeight(img: ChapterImageVO): number {
   return 600
 }
 
+/** 获取 slot 实际高度：优先使用图片加载后的真实高度 */
+function getSlotHeight(img: ChapterImageVO, index: number): number {
+  const actual = actualHeights.value.get(index)
+  if (actual && actual > 0) return actual
+  return getPlaceholderHeight(img)
+}
+
 /** 图片进入视口时标记为可见，触发 img 元素渲染 */
 function onImageVisible(index: number) {
   visibleImages.value.add(index)
@@ -78,6 +86,14 @@ function onImageVisible(index: number) {
 function onImageLoad(event: Event, index: number) {
   loadedImages.value.add(index)
   errorImages.value.delete(index)
+
+  // 根据图片真实尺寸计算渲染高度，更新 slot 容器高度
+  const imgEl = event.target as HTMLImageElement
+  if (imgEl && imgEl.naturalWidth > 0 && imgEl.naturalHeight > 0) {
+    const containerWidth = scrollContainer.value?.clientWidth || 800
+    const renderedHeight = (imgEl.naturalHeight / imgEl.naturalWidth) * containerWidth
+    actualHeights.value.set(index, renderedHeight)
+  }
 }
 
 function onImageError(event: Event, index: number) {
@@ -178,6 +194,7 @@ watch(() => props.resetKey, () => {
   visibleImages.value = new Set()
   loadedImages.value = new Set()
   errorImages.value = new Set()
+  actualHeights.value = new Map()
   slotRefs.clear()
   nextTick(() => scrollToTop())
 })
@@ -201,7 +218,8 @@ watch(() => props.resetKey, () => {
 }
 
 .comic-image {
-  max-width: 100%;
+  width: 100%;
+  height: auto;
   display: block;
   margin: 0 auto;
   opacity: 0;

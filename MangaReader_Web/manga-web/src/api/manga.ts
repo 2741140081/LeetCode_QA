@@ -31,3 +31,13 @@ export function getMangaDetail(mangaId: number) {
 export function addManga(data: MangaAddRequest) {
   return request.post<any, { code: number; message: string; data: MangaVO }>('/manga', data)
 }
+
+/** 删除漫画 */
+export function deleteManga(mangaId: number) {
+  return request.delete<any, { code: number; message: string }>(`/manga/${mangaId}`)
+}
+
+/** 批量删除漫画 */
+export function batchDeleteMangas(mangaIds: number[]) {
+  return request.post<any, { code: number; message: string; data: { success: number; failed: number } }>('/manga/batch-delete', { mangaIds })
+}

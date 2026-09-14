@@ -141,6 +141,9 @@ public class ChapterController {
      * MangaImage -> ChapterImageVO
      */
     private ChapterImageVO toImageVO(MangaImage image) {
+        // 懒填充图片宽高（当 DB 中为空时从本地文件读取）
+        mangaImageService.fillImageDimensions(image);
+
         ChapterImageVO vo = new ChapterImageVO();
         vo.setImageId(image.getImageId());
         vo.setSortOrder(image.getSortOrder());

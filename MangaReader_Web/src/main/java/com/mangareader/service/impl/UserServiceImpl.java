@@ -6,6 +6,7 @@ import com.mangareader.model.vo.LoginVO;
 import com.mangareader.model.vo.UserVO;
 import com.mangareader.mapper.UserMapper;
 import com.mangareader.security.JwtUtils;
+import com.mangareader.service.MailService;
 import com.mangareader.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,11 +30,14 @@ public class UserServiceImpl implements UserService {
 
     private static final String REDIS_TOKEN_PREFIX = "manga:token:";
     private static final String REDIS_CODE_PREFIX = "manga:reset_code:";
+    private static final String REDIS_LIMIT_PREFIX = "manga:reset_limit:";
+    private static final String REDIS_DAILY_LIMIT_PREFIX = "manga:reset_daily:";
 
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
     private final StringRedisTemplate redisTemplate;
+    private final MailService mailService;
 
     @Override
     public UserVO register(String username, String password, String email, String nickname) {
@@ -152,9 +156,32 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void sendResetCode(String email) {
+        // 出于安全考虑，无论邮箱是否注册，都返回相同提示（防止枚举攻击）
         User user = userMapper.findByEmail(email);
         if (user == null) {
-            throw new BusinessException(404, "该邮箱未注册");
+            // 不抛异常，静默返回
+            log.info("密码重置请求: 邮箱未注册 {}", email);
+            return;
+        }
+
+        // 频率限制: 每分钟最多 1 次
+        String limitKey = REDIS_LIMIT_PREFIX + email;
+        Boolean canSend = redisTemplate.opsForValue().setIfAbsent(limitKey, "1", 60, TimeUnit.SECONDS);
+        if (canSend == null || !canSend) {
+            throw new BusinessException(429, "发送过于频繁，请 1 分钟后再试");
+        }
+
+        // 频率限制: 每天最多 5 次
+        String dailyLimitKey = REDIS_DAILY_LIMIT_PREFIX + email;
+        String dailyCount = redisTemplate.opsForValue().get(dailyLimitKey);
+        int count = dailyCount != null ? Integer.parseInt(dailyCount) : 0;
+        if (count >= 5) {
+            throw new BusinessException(429, "今日发送次数已达上限，请明天再试");
+        }
+        redisTemplate.opsForValue().increment(dailyLimitKey);
+        // 设置过期时间为当天剩余时间（简化为 24 小时）
+        if (count == 0) {
+            redisTemplate.expire(dailyLimitKey, 24, TimeUnit.HOURS);
         }
 
         // 生成 6 位数字验证码
@@ -168,8 +195,9 @@ public class UserServiceImpl implements UserService {
                 TimeUnit.MINUTES
         );
 
-        // 实际项目中应发送邮件，此处仅打印日志
-        log.info("密码重置验证码已发送至 {}: {}", email, code);
+        // 创建邮件记录到发送队列
+        mailService.createResetMail(email, code);
+        log.info("密码重置验证码已生成: email={}", email);
     }
 
     @Override

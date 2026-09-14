@@ -21,6 +21,34 @@
             <el-icon><Plus /></el-icon>
             添加漫画
           </el-button>
+          <el-button
+            :type="isManageMode ? 'warning' : 'default'"
+            @click="toggleManageMode"
+          >
+            <el-icon><Setting /></el-icon>
+            {{ isManageMode ? '完成管理' : '管理' }}
+          </el-button>
+        </div>
+
+        <!-- 管理模式底部操作栏 -->
+        <div v-if="isManageMode" class="manage-bar">
+          <el-checkbox
+            :model-value="isAllSelected"
+            @change="toggleSelectAll"
+          >
+            全选
+          </el-checkbox>
+          <span class="selected-count">已选 {{ selectedMangaIds.length }} 项</span>
+          <el-button
+            type="danger"
+            size="small"
+            :disabled="selectedMangaIds.length === 0"
+            :loading="deleting"
+            @click="handleBatchDelete"
+          >
+            <el-icon><Delete /></el-icon>
+            删除
+          </el-button>
         </div>
 
         <el-empty v-if="!shelfStore.loading && shelfStore.mangas.length === 0" description="书架为空，去添加漫画吧" />
@@ -33,7 +61,10 @@
           >
             <MangaCard
               :manga="manga"
+              :selectable="isManageMode"
+              :selected="selectedMangaIds.includes(manga.mangaId)"
               @click="goToReader"
+              @select="onMangaSelect"
             />
             <el-dropdown trigger="click" class="card-menu" @command="(cmd: string) => onMangaAction(manga, cmd)">
               <el-button size="small" circle>
@@ -70,7 +101,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useShelfStore } from '@/stores/shelf'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -78,6 +109,7 @@ import MangaCard from '@/components/MangaCard.vue'
 import FolderSidebar from '@/components/FolderSidebar.vue'
 import FolderDialog from '@/components/FolderDialog.vue'
 import type { ShelfMangaVO } from '@/api/shelf'
+import { batchDeleteMangas } from '@/api/manga'
 
 const router = useRouter()
 const shelfStore = useShelfStore()
@@ -88,6 +120,16 @@ const folderDialogIsEdit = ref(false)
 const folderDialogInitial = ref('')
 const folderDialogEditId = ref<number | null>(null)
 const folderDialogRef = ref<InstanceType<typeof FolderDialog>>()
+
+// 管理模式状态
+const isManageMode = ref(false)
+const selectedMangaIds = ref<number[]>([])
+const deleting = ref(false)
+
+const isAllSelected = computed(() => {
+  if (shelfStore.mangas.length === 0) return false
+  return shelfStore.mangas.every(m => selectedMangaIds.value.includes(m.mangaId))
+})
 
 function refreshShelf() {
   shelfStore.loadFolders()
@@ -145,6 +187,60 @@ async function onFolderDialogSubmit(name: string) {
 function goToReader(manga: any) {
   if (manga.mangaStatusCode === 2) {
     router.push(`/reader/${manga.mangaId}`)
+  }
+}
+
+function toggleManageMode() {
+  isManageMode.value = !isManageMode.value
+  if (!isManageMode.value) {
+    selectedMangaIds.value = []
+  }
+}
+
+function onMangaSelect(manga: any) {
+  const id = manga.mangaId
+  const idx = selectedMangaIds.value.indexOf(id)
+  if (idx >= 0) {
+    selectedMangaIds.value.splice(idx, 1)
+  } else {
+    selectedMangaIds.value.push(id)
+  }
+}
+
+function toggleSelectAll(val: boolean) {
+  if (val) {
+    selectedMangaIds.value = shelfStore.mangas.map(m => m.mangaId)
+  } else {
+    selectedMangaIds.value = []
+  }
+}
+
+async function handleBatchDelete() {
+  if (selectedMangaIds.value.length === 0) return
+
+  const count = selectedMangaIds.value.length
+  try {
+    await ElMessageBox.confirm(
+      `确定要删除选中的 ${count} 部漫画吗？此操作将同时删除本地文件，不可恢复！`,
+      '确认删除',
+      { type: 'warning', confirmButtonText: '删除', cancelButtonText: '取消' }
+    )
+  } catch {
+    return
+  }
+
+  deleting.value = true
+  try {
+    const res = await batchDeleteMangas(selectedMangaIds.value)
+    const data = res.data
+    ElMessage.success(`删除完成，成功 ${data.success} 个，失败 ${data.failed} 个`)
+    selectedMangaIds.value = []
+    isManageMode.value = false
+    refreshShelf()
+  } catch {
+    // 错误已由拦截器处理
+  } finally {
+    deleting.value = false
   }
 }
 
@@ -206,5 +302,21 @@ onMounted(() => {
 
 .manga-card-wrapper:hover .card-menu {
   opacity: 1;
+}
+
+.manage-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  background: #f5f7fa;
+  border-radius: 8px;
+}
+
+.selected-count {
+  font-size: 14px;
+  color: #666;
+  flex: 1;
 }
 </style>

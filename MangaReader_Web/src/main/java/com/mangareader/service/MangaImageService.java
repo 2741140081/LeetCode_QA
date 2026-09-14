@@ -26,4 +26,7 @@ public interface MangaImageService {
     String getFullImagePath(MangaImage image);
     /** 获取浏览器可访问的图片 URL（/images/...） */
     String getImageUrl(MangaImage image);
+
+    /** 懒填充图片宽高：当 DB 中宽高为空时，从本地文件读取并回写 DB */
+    void fillImageDimensions(MangaImage image);
 }

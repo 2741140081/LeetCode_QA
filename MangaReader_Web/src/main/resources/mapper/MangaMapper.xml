@@ -98,4 +98,18 @@
         WHERE manga_id = #{mangaId}
     </update>
 
+    <!-- 根据状态查询漫画列表 -->
+    <select id="selectMangasByStatus" resultMap="MangaResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM manga
+        WHERE manga_status = #{status}
+        ORDER BY created_at ASC
+    </select>
+
+    <!-- 根据ID删除漫画 -->
+    <delete id="deleteMangaById">
+        DELETE FROM manga WHERE manga_id = #{mangaId}
+    </delete>
+
 </mapper>

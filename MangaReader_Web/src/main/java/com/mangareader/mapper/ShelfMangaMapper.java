@@ -54,4 +54,9 @@ public interface ShelfMangaMapper {
      * 从书架移除漫画
      */
     int deleteByUserIdAndMangaId(@Param("userId") Long userId, @Param("mangaId") Long mangaId);
+
+    /**
+     * 删除漫画的所有书架关联记录
+     */
+    int deleteByMangaId(@Param("mangaId") Long mangaId);
 }

@@ -3,12 +3,19 @@ package com.mangareader.service.impl;
 import com.mangareader.config.MangaProperties;
 import com.mangareader.enums.ProcessStatus;
 import com.mangareader.mapper.MangaMapper;
+import com.mangareader.mapper.ShelfMangaMapper;
+import com.mangareader.model.common.BusinessException;
 import com.mangareader.model.entity.Manga;
 import com.mangareader.service.MangaService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -27,6 +34,9 @@ public class MangaServiceImpl implements MangaService {
 
     @Autowired
     private MangaMapper mangaMapper;
+
+    @Autowired
+    private ShelfMangaMapper shelfMangaMapper;
 
     @Autowired
     private MangaProperties mangaProperties;
@@ -114,5 +124,45 @@ public class MangaServiceImpl implements MangaService {
     private boolean isExistsManga(String urlId) {
         Manga manga = mangaMapper.selectMangaByUrlId(urlId);
         return manga != null;
+    }
+
+    @Override
+    @Transactional
+    public void deleteManga(Long mangaId) {
+        Manga manga = mangaMapper.selectMangaById(mangaId);
+        if (manga == null) {
+            throw new BusinessException(404, "漫画不存在");
+        }
+
+        // 1. 删除书架关联记录
+        shelfMangaMapper.deleteByMangaId(mangaId);
+
+        // 2. 删除漫画 DB 记录（外键 CASCADE 自动删除关联的 chapter、manga_image 等）
+        mangaMapper.deleteMangaById(mangaId);
+
+        // 3. 删除本地文件目录
+        String dirId = manga.getDirId();
+        if (dirId != null && !dirId.isEmpty()) {
+            deleteLocalDirectory(dirId);
+        }
+    }
+
+    /**
+     * 递归删除本地目录
+     */
+    private void deleteLocalDirectory(String dirPath) {
+        try {
+            Path path = Paths.get(dirPath);
+            if (Files.exists(path)) {
+                Files.walk(path)
+                        .sorted(java.util.Comparator.reverseOrder())
+                        .map(Path::toFile)
+                        .forEach(File::delete);
+            }
+        } catch (Exception e) {
+            // 文件删除失败不抛异常，仅记录日志
+            org.slf4j.LoggerFactory.getLogger(MangaServiceImpl.class)
+                    .warn("删除本地目录失败: {}, 原因: {}", dirPath, e.getMessage());
+        }
     }
 }

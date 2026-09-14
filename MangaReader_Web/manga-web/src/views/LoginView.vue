@@ -43,6 +43,8 @@
       <div class="auth-footer">
         <span>还没有账号？</span>
         <router-link to="/register">立即注册</router-link>
+        <span class="footer-divider">|</span>
+        <router-link to="/forgot-password">忘记密码？</router-link>
       </div>
     </div>
   </div>
@@ -124,5 +126,10 @@ async function handleLogin() {
 
 .auth-footer a:hover {
   text-decoration: underline;
+}
+
+.footer-divider {
+  margin: 0 8px;
+  color: #ccc;
 }
 </style>

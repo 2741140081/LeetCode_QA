@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
+import java.awt.image.BufferedImage;
+import javax.imageio.ImageIO;
 
 @Slf4j
 @Service
@@ -103,6 +105,20 @@ public class MangaImageDownloadServiceImpl implements MangaImageDownloadService 
                 mapper.markAsSuccess(imageId, finalSize);
                 log.info("[Image-{}] 漫画图片定时下载完成: {} -> {} (总大小: {} 字节)",
                         imageId, task.getDownloadUrl(), targetPath, finalSize);
+
+                // 下载完成后，读取图片宽高并存储到数据库
+                try {
+                    File imageFile = targetPath.toFile();
+                    BufferedImage bufferedImage = ImageIO.read(imageFile);
+                    if (bufferedImage != null) {
+                        int width = bufferedImage.getWidth();
+                        int height = bufferedImage.getHeight();
+                        mapper.updateImageDimensions(imageId, width, height);
+                        log.info("[Image-{}] 图片宽高已存储: {}x{}", imageId, width, height);
+                    }
+                } catch (Exception e) {
+                    log.warn("[Image-{}] 读取图片宽高失败: {}", imageId, e.getMessage());
+                }
 
             }
 

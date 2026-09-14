@@ -45,4 +45,8 @@
         DELETE FROM shelf_manga WHERE user_id = #{userId} AND manga_id = #{mangaId}
     </delete>
 
+    <delete id="deleteByMangaId">
+        DELETE FROM shelf_manga WHERE manga_id = #{mangaId}
+    </delete>
+
 </mapper>

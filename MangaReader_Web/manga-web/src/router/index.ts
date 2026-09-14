@@ -34,6 +34,12 @@ const router = createRouter({
       meta: { title: '注册' },
     },
     {
+      path: '/forgot-password',
+      name: 'forgot-password',
+      component: () => import('@/views/ForgotPasswordView.vue'),
+      meta: { title: '找回密码' },
+    },
+    {
       path: '/profile',
       name: 'profile',
       component: () => import('@/views/ProfileView.vue'),
@@ -49,7 +55,7 @@ router.beforeEach((to, _from, next) => {
   if (to.meta.requiresAuth && !token) {
     // 需要登录但未登录，跳转到登录页
     next({ name: 'login', query: { redirect: to.fullPath } })
-  } else if ((to.name === 'login' || to.name === 'register') && token) {
+  } else if ((to.name === 'login' || to.name === 'register' || to.name === 'forgot-password') && token) {
     // 已登录用户访问登录/注册页，重定向到首页
     next({ name: 'shelf' })
   } else {
