@@ -10,12 +10,13 @@
         <result column="chapter_url" property="chapterUrl" jdbcType="VARCHAR"/>
         <result column="title" property="title" jdbcType="VARCHAR"/>
         <result column="image_count" property="imageCount" jdbcType="INTEGER"/>
+        <result column="chapter_status" property="chapterStatus" jdbcType="TINYINT"/>
         <result column="created_at" property="createdAt" jdbcType="TIMESTAMP"/>
     </resultMap>
 
     <!-- 基础列 -->
     <sql id="Base_Column_List">
-        chapter_id, manga_id, chapter_num, chapter_url, title, image_count, created_at
+        chapter_id, manga_id, chapter_num, chapter_url, title, image_count, chapter_status, created_at
     </sql>
 
     <!-- 根据漫画ID查询章节列表 -->
@@ -65,13 +66,20 @@
 
     <!-- 批量插入章节 -->
     <insert id="batchInsert" parameterType="java.util.List">
-        INSERT INTO chapter (manga_id, chapter_num, chapter_url, title, image_count, created_at)
+        INSERT INTO chapter (manga_id, chapter_num, chapter_url, title, image_count, chapter_status, created_at)
         VALUES
         <foreach collection="chapters" item="chapter" separator=",">
             (#{chapter.mangaId}, #{chapter.chapterNum}, #{chapter.chapterUrl},
-            #{chapter.title}, #{chapter.imageCount}, #{chapter.createdAt})
+            #{chapter.title}, #{chapter.imageCount}, #{chapter.chapterStatus}, #{chapter.createdAt})
         </foreach>
     </insert>
+
+    <!-- 更新章节状态 -->
+    <update id="updateChapterStatus">
+        UPDATE chapter
+        SET chapter_status = #{status}
+        WHERE chapter_id = #{chapterId}
+    </update>
 
 
 </mapper>

@@ -25,4 +25,9 @@ public interface MangaService {
     Manga addManga(String mangaName, String mangaUrl);
 
     void updateMangaStatus(Long mangaId, int mangaStatus);
+
+    /**
+     * 删除漫画（DB + 本地文件）
+     */
+    void deleteManga(Long mangaId);
 }

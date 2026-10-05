@@ -32,4 +32,9 @@ public interface ChapterMapper {
 
     int batchInsert(@Param("chapters") List<Chapter> chapters);
 
+    /**
+     * 更新章节状态
+     */
+    int updateChapterStatus(@Param("chapterId") Long chapterId, @Param("status") Integer status);
+
 }

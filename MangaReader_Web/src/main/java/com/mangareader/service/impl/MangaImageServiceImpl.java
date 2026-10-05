@@ -12,6 +12,8 @@ import java.io.File;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.awt.image.BufferedImage;
+import javax.imageio.ImageIO;
 
 /**
  * <p>项目名称: LeetCode_QA </p>
@@ -84,5 +86,35 @@ public class MangaImageServiceImpl implements MangaImageService {
         log.warn("图片路径不在配置的存储目录内: {}, basePath: {}", fullPath, basePath);
         String fileName = image.getImageName() + "." + image.getImageType();
         return "/images/" + URLEncoder.encode(fileName, StandardCharsets.UTF_8);
+    }
+
+    @Override
+    public void fillImageDimensions(MangaImage image) {
+        // 如果宽高已有值，无需填充
+        if (image.getImageWidth() != null && image.getImageHeight() != null) {
+            return;
+        }
+
+        // 拼接本地文件路径
+        String fullPath = getFullImagePath(image);
+        File imageFile = new File(fullPath);
+        if (!imageFile.exists()) {
+            return;
+        }
+
+        try {
+            BufferedImage bufferedImage = ImageIO.read(imageFile);
+            if (bufferedImage != null) {
+                int width = bufferedImage.getWidth();
+                int height = bufferedImage.getHeight();
+                image.setImageWidth(width);
+                image.setImageHeight(height);
+                // 回写 DB
+                mangaImageMapper.updateImageDimensions(image.getImageId(), width, height);
+                log.debug("[Image-{}] 懒填充图片宽高: {}x{}", image.getImageId(), width, height);
+            }
+        } catch (Exception e) {
+            log.warn("[Image-{}] 懒填充图片宽高失败: {}", image.getImageId(), e.getMessage());
+        }
     }
 }

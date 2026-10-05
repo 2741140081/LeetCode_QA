@@ -28,6 +28,18 @@ spring:
           max-idle: 8
           min-idle: 2
           max-wait: 3000ms
+  # 邮件配置
+  mail:
+    host: smtp.qq.com
+    port: 587
+    username: your-email@qq.com
+    password: your-auth-code
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
   web:
     resources:
       static-locations: classpath:/static/,file:${manga.storage.image-path}/

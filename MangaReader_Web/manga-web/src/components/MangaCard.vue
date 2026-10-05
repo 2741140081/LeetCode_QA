@@ -1,5 +1,5 @@
 <template>
-  <div class="manga-card" @click="$emit('click', manga)">
+  <div class="manga-card" :class="{ selected: selected }" @click="handleClick">
     <div class="cover-wrapper">
       <img
         :src="manga.coverUrl || defaultCover"
@@ -15,6 +15,10 @@
       >
         {{ manga.mangaStatusDesc }}
       </el-tag>
+      <!-- 管理模式的勾选框 -->
+      <div v-if="selectable" class="select-checkbox" @click.stop="$emit('select', manga)">
+        <el-checkbox :model-value="selected" @click.stop="$emit('select', manga)" />
+      </div>
     </div>
     <div class="card-info">
       <h3 class="manga-title">{{ manga.mangaName }}</h3>
@@ -32,11 +36,22 @@ import defaultCover from '@/assets/default_cover.png'
 
 const props = defineProps<{
   manga: MangaVO | ShelfMangaVO
+  selectable?: boolean
+  selected?: boolean
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   click: [manga: MangaVO | ShelfMangaVO]
+  select: [manga: MangaVO | ShelfMangaVO]
 }>()
+
+function handleClick() {
+  if (props.selectable) {
+    emit('select', props.manga)
+  } else {
+    emit('click', props.manga)
+  }
+}
 
 const statusType = computed(() => {
   switch (props.manga.mangaStatusCode) {
@@ -71,6 +86,11 @@ import { computed } from 'vue'
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 }
 
+.manga-card.selected {
+  outline: 3px solid #409eff;
+  outline-offset: -3px;
+}
+
 .cover-wrapper {
   position: relative;
   width: 100%;
@@ -92,6 +112,16 @@ import { computed } from 'vue'
   position: absolute;
   top: 8px;
   right: 8px;
+}
+
+.select-checkbox {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 2;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 4px;
+  padding: 2px;
 }
 
 .card-info {

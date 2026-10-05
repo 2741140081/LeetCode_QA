@@ -81,7 +81,12 @@ public interface MangaMapper {
     int updateTotalChapters(@Param("mangaId") Long mangaId, @Param("totalChapters") Integer totalChapters);
 
     /**
-     * 更新封面图片路径（仅当 cover_image 为空时才更新，避免并发覆盖）
+     * 根据状态查询漫画列表
      */
-    int updateCoverImage(@Param("mangaId") Long mangaId, @Param("coverImage") String coverImage);
+    List<Manga> selectMangasByStatus(@Param("status") Integer status);
+
+    /**
+     * 根据ID删除漫画
+     */
+    int deleteMangaById(@Param("mangaId") Long mangaId);
 }

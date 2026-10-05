@@ -98,12 +98,18 @@
         WHERE manga_id = #{mangaId}
     </update>
 
-    <!-- 更新封面图片（仅当 cover_image 为空时才更新，避免并发覆盖） -->
-    <update id="updateCoverImage">
-        UPDATE manga
-        SET cover_image = #{coverImage}, updated_at = NOW()
-        WHERE manga_id = #{mangaId}
-          AND (cover_image IS NULL OR cover_image = '')
-    </update>
+    <!-- 根据状态查询漫画列表 -->
+    <select id="selectMangasByStatus" resultMap="MangaResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM manga
+        WHERE manga_status = #{status}
+        ORDER BY created_at ASC
+    </select>
+
+    <!-- 根据ID删除漫画 -->
+    <delete id="deleteMangaById">
+        DELETE FROM manga WHERE manga_id = #{mangaId}
+    </delete>
 
 </mapper>
