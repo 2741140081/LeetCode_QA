@@ -94,6 +94,7 @@ public class MangaDownloadServiceImpl implements MangaDownloadService {
             chapter.setChapterNum(idx++);
             chapter.setChapterUrl(entry.getKey());
             chapter.setTitle(entry.getValue());
+            chapter.setChapterStatus(ProcessStatus.PENDING);
             chapter.setCreatedAt(LocalDateTime.now());
             chapters.add(chapter);
         }

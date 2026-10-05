@@ -5,6 +5,7 @@ import com.mangareader.enums.ProcessStatus;
 import com.mangareader.mapper.MangaImageMapper;
 import com.mangareader.model.entity.MangaImage;
 import com.mangareader.service.MangaImageDownloadService;
+import com.mangareader.util.ImageDimensionUtils;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -13,8 +14,6 @@ import org.springframework.stereotype.Service;
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
-import java.awt.image.BufferedImage;
-import javax.imageio.ImageIO;
 
 @Slf4j
 @Service
@@ -107,17 +106,12 @@ public class MangaImageDownloadServiceImpl implements MangaImageDownloadService 
                         imageId, task.getDownloadUrl(), targetPath, finalSize);
 
                 // 下载完成后，读取图片宽高并存储到数据库
-                try {
-                    File imageFile = targetPath.toFile();
-                    BufferedImage bufferedImage = ImageIO.read(imageFile);
-                    if (bufferedImage != null) {
-                        int width = bufferedImage.getWidth();
-                        int height = bufferedImage.getHeight();
-                        mapper.updateImageDimensions(imageId, width, height);
-                        log.info("[Image-{}] 图片宽高已存储: {}x{}", imageId, width, height);
-                    }
-                } catch (Exception e) {
-                    log.warn("[Image-{}] 读取图片宽高失败: {}", imageId, e.getMessage());
+                int[] dimensions = ImageDimensionUtils.readDimensions(targetPath.toFile());
+                if (dimensions != null) {
+                    mapper.updateImageDimensions(imageId, dimensions[0], dimensions[1]);
+                    log.info("[Image-{}] 图片宽高已存储: {}x{}", imageId, dimensions[0], dimensions[1]);
+                } else {
+                    log.warn("[Image-{}] 无法读取图片宽高，文件格式可能不被支持: {}", imageId, targetPath.toFile().getAbsolutePath());
                 }
 
             }

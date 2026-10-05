@@ -4,6 +4,7 @@ import com.mangareader.config.MangaProperties;
 import com.mangareader.mapper.MangaImageMapper;
 import com.mangareader.model.entity.MangaImage;
 import com.mangareader.service.MangaImageService;
+import com.mangareader.util.ImageDimensionUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -12,8 +13,6 @@ import java.io.File;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.awt.image.BufferedImage;
-import javax.imageio.ImageIO;
 
 /**
  * <p>项目名称: LeetCode_QA </p>
@@ -99,22 +98,21 @@ public class MangaImageServiceImpl implements MangaImageService {
         String fullPath = getFullImagePath(image);
         File imageFile = new File(fullPath);
         if (!imageFile.exists()) {
+            log.warn("[Image-{}] 懒填充跳过: 文件不存在, 路径: {}", image.getImageId(), fullPath);
             return;
         }
 
-        try {
-            BufferedImage bufferedImage = ImageIO.read(imageFile);
-            if (bufferedImage != null) {
-                int width = bufferedImage.getWidth();
-                int height = bufferedImage.getHeight();
-                image.setImageWidth(width);
-                image.setImageHeight(height);
-                // 回写 DB
-                mangaImageMapper.updateImageDimensions(image.getImageId(), width, height);
-                log.debug("[Image-{}] 懒填充图片宽高: {}x{}", image.getImageId(), width, height);
-            }
-        } catch (Exception e) {
-            log.warn("[Image-{}] 懒填充图片宽高失败: {}", image.getImageId(), e.getMessage());
+        int[] dimensions = ImageDimensionUtils.readDimensions(imageFile);
+        if (dimensions != null) {
+            int width = dimensions[0];
+            int height = dimensions[1];
+            image.setImageWidth(width);
+            image.setImageHeight(height);
+            // 回写 DB
+            mangaImageMapper.updateImageDimensions(image.getImageId(), width, height);
+            log.info("[Image-{}] 懒填充图片宽高: {}x{}, 路径: {}", image.getImageId(), width, height, fullPath);
+        } else {
+            log.warn("[Image-{}] 懒填充失败: 无法读取图片宽高, 路径: {}", image.getImageId(), fullPath);
         }
     }
 }

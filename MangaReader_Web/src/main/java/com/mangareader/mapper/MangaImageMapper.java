@@ -72,4 +72,11 @@ public interface MangaImageMapper {
     // 按章节和状态统计图片数量
     int countByChapterIdAndStatus(@Param("chapterId") Long chapterId, @Param("status") Integer status);
 
+    /**
+     * 查询章节的第一张图片（按 sort_order 排序）
+     * @param chapterId 章节ID
+     * @return 第一张图片，若无图片则返回 null
+     */
+    MangaImage findFirstImageByChapterId(@Param("chapterId") Long chapterId);
+
 }

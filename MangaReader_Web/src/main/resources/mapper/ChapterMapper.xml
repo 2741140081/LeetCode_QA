@@ -70,7 +70,12 @@
         VALUES
         <foreach collection="chapters" item="chapter" separator=",">
             (#{chapter.mangaId}, #{chapter.chapterNum}, #{chapter.chapterUrl},
-            #{chapter.title}, #{chapter.imageCount}, #{chapter.chapterStatus}, #{chapter.createdAt})
+            #{chapter.title}, #{chapter.imageCount},
+            <choose>
+                <when test="chapter.chapterStatus != null">#{chapter.chapterStatus}</when>
+                <otherwise>0</otherwise>
+            </choose>,
+            #{chapter.createdAt})
         </foreach>
     </insert>
 

@@ -48,8 +48,9 @@ public class MangaImageDownloadScheduledTask {
      */
     @Scheduled(cron = "${manga.download-config.scan-cron}")
     public void scanPendingTasks() {
-        List<MangaImage> tasks = mapper.selectPendingTasks(ProcessStatus.PENDING.getCode(), config.getBatchSize()); // 1表示未下载
+        List<MangaImage> tasks = mapper.selectPendingTasks(ProcessStatus.PENDING.getCode(), config.getBatchSize());
         if (tasks.isEmpty()) {
+            checkAndCompleteMangas();
             return;
         }
         log.info("定时任务扫描到 {} 个待下载漫画图片任务", tasks.size());
@@ -173,6 +174,50 @@ public class MangaImageDownloadScheduledTask {
         // 更新章节状态
         chapterMapper.updateChapterStatus(chapterId, newStatus);
         return newStatus;
+    }
+
+    /**
+     * 检查非完成状态的漫画，若其所有图片均已下载完成，则更新漫画状态为已完成
+     */
+    private void checkAndCompleteMangas() {
+        List<Manga> nonCompletedMangas = mangaMapper.selectNonCompletedMangas();
+        if (nonCompletedMangas.isEmpty()) {
+            return;
+        }
+
+        for (Manga manga : nonCompletedMangas) {
+            List<Chapter> chapters = chapterMapper.findByMangaId(manga.getMangaId());
+            if (chapters.isEmpty()) {
+                continue;
+            }
+
+            int totalImages = 0;
+            int completedImages = 0;
+            boolean allCompleted = true;
+
+            for (Chapter chapter : chapters) {
+                int chapterTotal = mapper.countByChapterId(chapter.getChapterId());
+                if (chapterTotal == 0) {
+                    allCompleted = false;
+                    break;
+                }
+                int chapterCompleted = mapper.countByChapterIdAndStatus(
+                        chapter.getChapterId(), ProcessStatus.COMPLETED.getCode());
+                totalImages += chapterTotal;
+                completedImages += chapterCompleted;
+                if (chapterCompleted < chapterTotal) {
+                    allCompleted = false;
+                    break;
+                }
+            }
+
+            if (allCompleted && totalImages > 0) {
+                mangaMapper.updateMangaStatus(manga.getMangaId(), ProcessStatus.COMPLETED.getCode());
+                log.info("漫画[{}] 所有图片已下载完成，状态已更新为完成", manga.getMangaName());
+                eventPublisher.publishMangaStatus(manga.getMangaId(), manga.getMangaName(),
+                        ProcessStatus.COMPLETED.getCode(), "已完成");
+            }
+        }
     }
 }
 

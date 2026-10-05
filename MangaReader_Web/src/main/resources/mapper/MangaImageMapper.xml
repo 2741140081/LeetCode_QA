@@ -165,4 +165,14 @@
         WHERE chapter_id = #{chapterId} AND download_status = #{status}
     </select>
 
+    <!-- 查询章节的第一张图片 -->
+    <select id="findFirstImageByChapterId" resultMap="MangaImageResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM manga_image
+        WHERE chapter_id = #{chapterId}
+        ORDER BY sort_order ASC
+        LIMIT 1
+    </select>
+
 </mapper>

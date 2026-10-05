@@ -89,4 +89,18 @@ public interface MangaMapper {
      * 根据ID删除漫画
      */
     int deleteMangaById(@Param("mangaId") Long mangaId);
+
+    /**
+     * 查询所有非完成状态的漫画
+     * @return 非完成状态的漫画列表
+     */
+    List<Manga> selectNonCompletedMangas();
+
+    /**
+     * 更新封面图片路径
+     * @param mangaId 漫画ID
+     * @param coverImage 封面图片相对路径
+     * @return 影响行数
+     */
+    int updateCoverImage(@Param("mangaId") Long mangaId, @Param("coverImage") String coverImage);
 }

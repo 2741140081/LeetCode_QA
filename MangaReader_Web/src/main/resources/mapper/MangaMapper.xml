@@ -112,4 +112,19 @@
         DELETE FROM manga WHERE manga_id = #{mangaId}
     </delete>
 
+    <!-- 查询所有非完成状态的漫画 -->
+    <select id="selectNonCompletedMangas" resultMap="MangaResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM manga
+        WHERE manga_status != 2
+    </select>
+
+    <!-- 更新封面图片路径 -->
+    <update id="updateCoverImage">
+        UPDATE manga
+        SET cover_image = #{coverImage}, updated_at = NOW()
+        WHERE manga_id = #{mangaId}
+    </update>
+
 </mapper>
